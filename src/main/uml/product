@@ -1,0 +1,27 @@
+@startuml
+
+title eBao Cloud API
+
+
+class Insurer
+class Package
+class Product
+class PackageProduct
+
+@enduml
+
+
+,-------.      ,-------.
+|Insurer|      |Package|
+|-------|      |-------|
+|-------|------|-------|
+`-------'      `-------'
+    |               |
+    |               |
+    |               |
+    |               |
+,-------.      ,--------------.
+|Product|      |PackageProduct|
+|-------|------|--------------|
+|-------|      |--------------|
+`-------'      `--------------'
