@@ -15,4 +15,6 @@ node_modules/*
 /nbproject/private/
 dist/specs/
 test/specs/local/
+swaggerui.sublime-project
+swaggerui.sublime-workspace
 dist/

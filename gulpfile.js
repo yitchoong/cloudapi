@@ -121,6 +121,11 @@ function _copy() {
     .src(['./src/main/html/**/*'])
     .pipe(gulp.dest('./dist'))
     .on('error', log);
+  // copy all files inside yaml folder
+  gulp
+    .src(['./src/main/yaml/**/*'])
+    .pipe(gulp.dest('./dist/yaml'))
+    .on('error', log);
 }
 gulp.task('dev-copy', ['dev-less', 'copy-local-specs'], _copy);
 
@@ -156,6 +161,7 @@ gulp.task('watch', ['copy-local-specs'], function() {
   return watch([
     './src/**/*.{js,less,handlebars}',
     './src/main/html/*.html',
+    './src/main/yaml/*.yaml',
     './test/specs/**/*.{json,yaml}'
     ],
     function() {
