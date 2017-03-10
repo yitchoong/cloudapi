@@ -425,7 +425,6 @@ paths:
       tags:
         - Proposal
         - Submission
-        
       parameters:
         - name: proposalId
           in: path
@@ -528,7 +527,7 @@ paths:
       description: The end point is used to retrieve the details of an addendum belonging to the given proposal submission.
       tags:
         - Proposal
-        - Submisson
+        - Submission
       parameters:
         - name: proposalId
           in: path
