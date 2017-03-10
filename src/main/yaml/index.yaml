@@ -1,0 +1,210 @@
+swagger: '2.0'
+info:
+  title: eBao Cloud API (Product, Prospect, Quote, Proposal)
+  description: |
+      The eBao LI Sales and Product Engine API is designed to allow third party
+      user / application access one of the most important funtion of eBaoCLoud.
+      The APIs provide product access, calculation and validation features and
+      sales / new business origination.
+  version: 0.0.3
+
+# the domain of the service
+host: localhost:8080
+# host: swagger.zhuliliang.com
+
+schemes:
+  - http
+  - https
+
+basePath: /api/v1
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+
+  # ----------- paths for prospect domain ----------------
+
+  '/prospects':
+    $ref : './prospects.yaml#/paths/~1prospects'
+
+  '/prospects/detailed':
+    $ref : './prospects.yaml#/paths/~1prospects~1detailed'
+
+  '/prospects/{prospectId}':
+    $ref : './prospects.yaml#/paths/~1prospects~1{prospectId}'
+
+  '/prospects/_bulk':
+    $ref : './prospects.yaml#/paths/~1prospects~1_bulk'
+
+  '/prospects/age':
+    $ref : './prospects.yaml#/paths/~1prospects~1age'
+
+  # ----------- paths for product domain ----------------
+
+  '/products':
+    $ref : './products.yaml#/paths/~1products'
+
+  '/products/{productId}':
+    $ref : './products.yaml#/paths/~1products~1{productId}'
+
+  '/products/{productId}/riders':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1riders'
+
+  '/products/{productId}/calculators/age':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1age'
+
+  '/products/{productId}/calculators/premium':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1premium'
+
+  '/products/{productId}/calculators/costOfInsurance':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1costOfInsurance'
+
+  '/products/{productId}/calculators/illustration':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1illustration'
+
+  '/products/{productId}/calculators/adhoc':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1adhoc'
+
+  '/products/{productId}/validators/validateInsured':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1validateInsured'
+
+  '/products/{productId}/validators/validateMain':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1validateMain'
+
+  '/products/{productId}/validators/validateRiders':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1validateRiders'
+
+  '/products/{productId}/validators/validateTopups':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1validateTopups'
+
+  '/products/{productId}/validators/validateWithdrawals':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1validateWithdrawals'
+
+  '/products/{productId}/validators/validateFunds':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1validateFunds'
+
+  '/products/{productId}/validators/adhoc':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1adhoc'
+
+  # ----------- paths for quotation domain ----------------
+
+  '/insurers':
+    $ref : './quotations.yaml#/paths/~1insurers'
+
+  '/insurers/{insurerId}':
+    $ref : './quotations.yaml#/paths/~1insurers~1{insurerId}'
+
+  '/packages':
+    $ref : './quotations.yaml#/paths/~1packages'
+
+  '/packages/detailed':
+    $ref : './quotations.yaml#/paths/~1packages~1detailed'
+
+  '/packages/{packageId}':
+    $ref : './quotations.yaml#/paths/~1packages~1{packageId}'
+
+  '/packages/{packageId}/products/{productId}':
+    $ref : './quotations.yaml#/paths/~1packages~1{packageId}~1products~1{productId}'
+
+  '/packages/filters':
+    $ref : './quotations.yaml#/paths/~1packages~1filters'
+
+  '/packages/{packageId}/quote':
+    $ref : './quotations.yaml#/paths/~1packages~1{packageId}~1quote'
+
+  '/quotes':
+    $ref : './quotations.yaml#/paths/~1quotes'
+
+  '/quotes/detailed':
+    $ref : './quotations.yaml#/paths/~1quotes~1detailed'
+
+  '/quotes/{quoteId}':
+    $ref : './quotations.yaml#/paths/~1quotes~1{quoteId}'
+
+  '/quotes/draft/products/{productId}/riders':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1products~1{productId}~1riders'
+
+  '/quotes/draft/calculators/premium':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1calculators~1premium'
+
+  '/quotes/draft/calculators/illustration':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1calculators~1illustration'
+
+  '/quotes/draft/calculators/adhoc':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1calculators~1adhoc'
+
+  '/quotes/draft/validators/validateMain':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1validators~1validateMain'
+
+  '/quotes/draft/validators/validateRiders':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1validators~1validateRiders'
+
+  '/quotes/draft/validators/validateTopups':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1validators~1validateTopups'
+
+  '/quotes/draft/validators/validateWithdrawals':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1validators~1validateWithdrawals'
+
+  '/quotes/draft/validators/validateFunds':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1validators~1validateFunds'
+
+  '/quotes/draft/validators/adhoc':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1validators~1adhoc'
+
+  '/quotes/draft/illustration':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1illustration'
+
+  '/quotes/{quoteId}/illustration':
+    $ref : './quotations.yaml#/paths/~1quotes~1{quoteId}~1illustration'
+
+  # ----------- paths for proposal domain ----------------
+
+  '/proposals':
+    $ref : './proposals.yaml#/paths/~1proposals'
+
+  '/proposals/detailed':
+    $ref : './proposals.yaml#/paths/~1proposals~1detailed'
+
+  '/proposals/{proposalId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}'
+
+  '/proposals/template/codes/{codeType}':
+    $ref : './proposals.yaml#/paths/~1proposals~1template~1codes~1{codeType}'
+
+  '/proposals/template/sections':
+    $ref : './proposals.yaml#/paths/~1proposals~1template~1sections'
+
+  '/proposals/draft/sections':
+    $ref : './proposals.yaml#/paths/~1proposals~1draft~1sections'
+
+  '/proposals/draft/sections/{sectionName}/status':
+    $ref : './proposals.yaml#/paths/~1proposals~1draft~1sections~1{sectionName}~1status'
+
+  '/proposals/draft/status':
+    $ref : './proposals.yaml#/paths/~1proposals~1draft~1status'
+
+  '/proposals/{proposalId}/submissions':
+    $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}~1submissions'
+
+  '/proposals/{proposalId}/submissions/{submissionId}/addendums':
+    $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}~1submissions~1{submissionId}~1addendums'
+
+  '/proposals/{proposalId}/submissions/{submissionId}/addendums/{addendumId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}~1submissions~1{submissionId}~1addendums~1{addendumId}'
+
+
+
+
+# ---- supporting sections are not required in this file --------------
+
+# definitions:
+
+
+# parameters:
+
+
+# responses:

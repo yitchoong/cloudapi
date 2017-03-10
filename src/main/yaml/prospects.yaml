@@ -1,0 +1,598 @@
+swagger: '2.0'
+info:
+  title: eBao Cloud API (Prospects)
+  description: Sales API for the prospect domain on eBao Cloud
+  version: "0.0.3"
+# the domain of the service
+host: localhost:8080
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /api/v1
+produces:
+  - application/json
+paths:
+  '/prospects':
+    get:
+      summary: Fetch a list of prospects records (basic information)
+      description: |
+        The prospects endpoint returns a list of prospects (with basic information) for the current user based on the session. There are a number of parameters to help with filtering and sorting of the required prospects.
+      parameters:
+        - $ref: '#/parameters/queryOffset'
+        - $ref: '#/parameters/queryLimit'
+        - $ref: '#/parameters/queryKeys'
+        - $ref: '#/parameters/querySort'
+        - $ref: '#/parameters/queryFilter'
+      tags:
+        - Prospect
+      responses:
+        200:
+          description: Returns a list of basic prospect records
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: array
+                items:
+                  $ref: '#/definitions/ProspectBasic'
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+    post:
+      summary: Create a new prospect record
+      description: |
+        A POST request to this end point is used to create a new prospect record. The details of the prospect is submitted in the request body.
+      parameters:
+        - name: bodyParam
+          in: body
+          required: true
+          description: Details of the prospect record to create
+          schema:
+            $ref: '#/definitions/Prospect'
+      tags:
+        - Prospect
+      responses:
+        200:
+          description: The prospect is successfully created. Returns the newly created prospect record (value = Prospect)
+          schema:
+            $ref: '#/definitions/ProspectResult'
+
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/prospects/detailed':
+    post:
+      summary: Fetch a list of detailed prospects records (complete information)
+      description: |
+        The prospects endpoint returns a list of prospects (with complete information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required prospects. Compared to the GET /prospects this allows for fetching a list of prospects with detailed information instead of just basic information. When the list of keys is provided (pkList) in the request, it may cause a conflict with the other parameters e.g. the pkList has 10 items but limit is 5. In such cases, 10 documents will be returned.
+      parameters:
+        - $ref: '#/parameters/queryOffset'
+        - $ref: '#/parameters/queryLimit'
+        - $ref: '#/parameters/querySort'
+        - $ref: '#/parameters/queryPk'
+        - $ref: '#/parameters/queryFilter'
+      tags:
+        - Prospect
+      responses:
+        200:
+          description: Returns a list of detailed prospect records
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: array
+                items:
+                  $ref: '#/definitions/Prospect'
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/prospects/{prospectId}':
+    get:
+      summary: Fetch a prospect record
+      description: This end point is used to fetch detailed prospect information for the given prospect id
+      tags:
+        - Prospect
+      parameters:
+        - $ref: '#/parameters/paramProspectId'
+
+      responses:
+        200:
+          description: Request is succesfully processed. ok will be true and value is a Prospect record
+          schema:
+            $ref: "#/definitions/ProspectResult"
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    delete:
+      summary: Delete a prospect record
+      description: This end point is used to delete the prospect with the given prospect id. The version id of the prospect record is required to ensure there are no changes since the prospect record was fetched. e.g. DELETE /prospects/1234?version=122
+      tags:
+        - Prospect
+      parameters:
+        - $ref: '#/parameters/paramProspectId'
+        - name: version
+          in: query
+          required: true
+          description: The version of the record
+          type: number
+      responses:
+        200:
+          $ref: '#/responses/SuccessResponse'
+        404:
+          $ref: '#/responses/Standard404Response'
+        409:
+          $ref: '#/responses/ConflictResponse'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    put:
+      summary: Save a prospect record
+      description: When updating an existing prospect record, the version attribute must be part of the prospect details in the request body. This is to ensure that there were no changes to the prospect document since it was fetched.
+      tags:
+        - Prospect
+      parameters:
+        - $ref: '#/parameters/paramProspectId'
+        - name: bodyParam
+          in: body
+          description: Represents the prospect record to save
+          schema:
+            $ref: '#/definitions/Prospect'
+
+      responses:
+        200:
+          description: Request is succesfully processed. ok will be true and value is a Prospect record
+          schema:
+            $ref: "#/definitions/ProspectResult"
+        400:
+          $ref: '#/responses/Standard400Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        409:
+          $ref: '#/responses/ConflictResponse'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/prospects/_bulk':
+    post:
+      summary: Bulk creation of prospects
+      description: Allow for creation of multiple prospect records in one request. A possible use case for the client applications is where a list of prospects are uploaded by the user. Instead of creating the prospects one at a time, it would be more efficient to allow for bulk creation.
+      tags:
+        - Prospect
+      parameters:
+        - name: bodyParam
+          in: body
+          description: Representing the prospect record to save
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Bulk'
+
+      responses:
+        200:
+          description: Request is successfully processed. ok will be true, value will be a list containing the prospect records and the outcome of the processing, i.e. value will hold a list of items, and each item will have its own status and error message (if any)
+          schema:
+            $ref: "#/definitions/ProspectsResult"
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/prospects/age':
+    get:
+      summary: Calculate the age given the age method and birth date
+      description: Calculate the age given the age method & birth date. Valid values for the age method are ANB = Age Next Birthday, ALB = Age Last Birthday, ANRB = Age Nearest Birthday. In dealing with prospects, the client application will capture the birth date and may wish to display the age of the prospect. Commonly, the ageing method is defined at the company level and known at design time although the eBaoTech product factory provides fine grain control to set the age method at product level.
+      tags:
+        - Prospect
+
+      parameters:
+        - name: ageMethod
+          in: query
+          required: true
+          type: string
+          description: Valid values are ANB, ALB, ANRB
+        - name: birthDate
+          in: query
+          type: string
+          format: date
+          description: Date format should be YYYY-MM-DD
+          required: true
+
+      responses:
+        200:
+          description: Successful response where the age is returned
+          schema:
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: number
+        400:
+          $ref : '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+# **************** definitions ******************
+
+definitions:
+
+  Bulk:
+    type: object
+    properties:
+      operation:
+        type: string
+        description: Valid value is CREATE
+      data:
+        $ref: '#/definitions/Prospect'
+
+  ProspectBasic:
+    type: object
+    properties:
+      prospectId:
+        type: string
+        description: Unique id for the prospect
+      prospectName:
+        type: string
+        description: Name of the prospect
+      prospectTitle:
+        type: string
+        description: Title given to the person
+      mobileNumber:
+        type: string
+        description: Mobile number of the prospect
+      email:
+        type: string
+        description: Email address for the prospect
+      birthDate:
+        type: string
+        format: date
+        description: Date of birth for this prospect
+      occupation:
+        type: string
+        description: The occupation code for the prospect. Used to determine the risk class.
+      smoker:
+        type: string
+        description: SMOKER to indicate smoker and NON-SMOKER otherwise
+      status:
+        type: string
+        description: Status of the prospect.
+      userName:
+        type: string
+        description: The user that created this prospect record
+      lastModified:
+        type: string
+        format: date
+        description: The last time this prospect record has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold customized fields
+        additionalProperties:
+          type: string
+
+  Prospect:
+    allOf:
+      - $ref: '#/definitions/ProspectBasic'
+      - $ref: '#/definitions/ProspectPersonalData'
+      - properties:
+          addresses:
+            type: array
+            items:
+              $ref: '#/definitions/ProspectAddress'
+          family:
+            type: array
+            items:
+              $ref: '#/definitions/ProspectRelation'
+
+  ProspectAddress:
+    type: object
+    properties:
+      addressType:
+        type: string
+        description: Type of address, usually WORK, HOME, CORRESPONDENCE
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      postcode:
+        type: string
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold customized fields
+        additionalProperties:
+          type: string
+
+  ProspectRelation:
+    type: object
+    properties:
+      relationship:
+        type: string
+        description: Person related to the prospect. Valid values include "SPOUSE","BROTHER","SISTER","FATHER","MOTHER","SON","DAUGHTER"
+      relationName:
+        type: string
+      relationTitle:
+        type: string
+        description: Based on code table for title list
+      relationGender:
+        type: string
+        description: Based on code table for gender. Valid values are MALE, FEMALE
+      relationBirthDate:
+        type: string
+        format: date
+      smoker:
+        type: string
+        description: Based on code table for smoker options. Valid values include SMOKER, NON-SMOKER
+      occupation:
+        type: string
+        description: Based on the occupation code table
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold customized fields
+        additionalProperties:
+          type: string
+
+  ProspectPersonalData:
+    type: object
+    properties:
+      maritalStatus:
+        type: string
+        description: Based on code table for marital status
+      nationality:
+        type: string
+        description: Based on code table for nationalities
+      idType:
+        type: string
+        description: Based on code table for list of valid identification types
+      idNumber:
+        type: string
+        description: Identification reference number
+      birthCountry:
+        type: string
+        description: Based on code table for countries
+      residenceCountry:
+        type: string
+        description: Based on code table for countries
+      height:
+        type: integer
+        description: Height in cms
+      weight:
+        type: integer
+        description: Weight in kgs
+      employmentStatus:
+        type: string
+        description: Based on code table for employment statuses
+      employmentStatusOthers:
+        type: string
+        description: Description of employment status if not in dropdown list
+      companyName:
+        type: string
+        description: Company that the prospect works in
+      officeNumber:
+        type: string
+        description: Phone number at office
+      homePhoneNumber:
+        type: string
+        description: The house phone number
+      mainIncome:
+        type: number
+        format: currency
+        description: The amount of the primary income source
+      bonusIncome:
+        type: number
+        format: currency
+      otherIncome:
+        type: number
+        format: currency
+        description: Other sources of income, e.g. investments
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold customized fields
+        additionalProperties:
+          type: string
+
+  # ----------- Results used in the operations  --------------
+
+  ProspectResult:
+    type: object
+    required:
+      - ok
+    properties:
+      ok:
+        type: boolean
+      value:
+        $ref: '#/definitions/Prospect'
+
+  ProspectsResult:
+    type: object
+    required:
+      - ok
+    properties:
+      ok:
+        type: boolean
+      value:
+        type: array
+        items:
+          type: object
+          properties:
+            status:
+              type: string
+            prospect:
+              $ref: '#/definitions/Prospect'
+            errorMessage:
+              type: string
+
+  # ------------------- Standardized responses ----------------------
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+
+# ***************** parameters **************
+
+parameters:
+
+  queryOffset:
+    name: offset
+    in: query
+    description: Number of records to skip in the result list
+    required: false
+    type: number
+    format: integer
+    default: 0
+
+  queryLimit:
+    name: limit
+    in: query
+    description: Limit the number of rows to return
+    required: false
+    type: number
+    format: integer
+    default: 100
+
+  querySort:
+    name: sort
+    in: query
+    description: Sorting order. Prefix with '-' for descending order
+    required: false
+    type: string
+    format: string
+
+  queryKeys:
+    name: keys
+    in: query
+    description: Specify multiple rows to fetch ?keys=123,456
+    required: false
+    type: array
+    collectionFormat: csv
+    items:
+      type: string
+
+  queryPk:
+    name: pkList
+    in: body
+    description: Specify multiple rows to fetch {pkList:[12,13,1555]}
+    required: false
+    schema:
+      type: object
+      properties:
+        pkList:
+          type: array
+          items:
+            type: number
+
+  queryFilter:
+    name: filter
+    in: query
+    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find rows where name startsWith A and age greater than 30, specify as filter=name\*startsWith\*A;age\*GT\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find rows where name starts with 'A' OR name starts with B, then it can be specified as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
+    required: false
+    type: array
+    collectionFormat: pipes
+    items:
+      type: string
+
+  paramProspectId:
+    name: prospectId
+    in: path
+    required: true
+    description: Unique id for the prospect
+    type: string
+
+
+# *************** responses *******************
+
+responses:
+
+  Standard400Response:
+    description: The request cannot be process due to a client error (submitted data has errors). ok will be set to false.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          $ref: "#/definitions/Error"
+
+  Standard404Response:
+    description: Response when the document is not found. ok will be set to false.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          $ref: "#/definitions/Error"
+
+  Standard500Response:
+    description: An unexpected error occured. ok will be set to false.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          $ref: "#/definitions/Error"
+
+  SuccessResponse:
+    description: Request was successfully processed
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          type: object
+          required:
+            - ok
+          properties:
+            ok:
+              type: boolean
+            value:
+              type: string
+
+  ConflictResponse:
+    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched, i.e. the version does not match the version supplied.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          type: string

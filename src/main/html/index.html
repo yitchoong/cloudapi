@@ -37,8 +37,8 @@
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        //url = "http://localhost:8080/yaml/proposal.yaml";
-        url = "http://swagger.zhuliliang.com/yaml/proposal.yaml";
+        //url = "http://swagger.zhuliliang.com/yaml/proposal.yaml";
+        url = "http://swagger.zhuliliang.com/yaml/index.yaml";
       }
 
       hljs.configure({
@@ -98,8 +98,11 @@
       <!--<div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>-->
       <div class='input'>
       <select placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/>
+        <option value="http://swagger.zhuliliang.com/yaml/index.yaml">Index</option>
         <option value="http://swagger.zhuliliang.com/yaml/products.yaml">Products Spec</option>
-        <option value="http://swagger.zhuliliang.com/yaml/proposal.yaml">Proposal Spec</option>
+        <option value="http://swagger.zhuliliang.com/yaml/prospects.yaml">Prospect Spec</option>
+        <option value="http://swagger.zhuliliang.com/yaml/quotations.yaml">Quotation Spec</option>
+        <option value="http://swagger.zhuliliang.com/yaml/proposals.yaml">Proposal Spec</option>
       </select></div>
       <!--<div id='auth_container'></div>
       <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>

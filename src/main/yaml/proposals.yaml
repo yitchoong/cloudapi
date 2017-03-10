@@ -1,0 +1,2049 @@
+swagger: '2.0'
+info:
+  title: eBao Cloud API (Proposals)
+  description: Sales API for proposal domain in eBao cloud
+  version: "0.0.3"
+# the domain of the service
+host: localhost:8080
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  '/proposals':
+    get:
+      summary: Fetch a list of proposal documents (basic information)
+      description: |
+        This end point returns a list of proposals (with basic information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required proposals.
+      parameters:
+        - $ref: '#/parameters/queryOffset'
+        - $ref: '#/parameters/queryLimit'
+        - $ref: '#/parameters/queryKeys'
+        - $ref: '#/parameters/querySort'
+        - $ref: '#/parameters/queryFilter'
+      tags:
+        - Proposal
+      responses:
+        200:
+          description: Successful response which returns a list of proposal documents with basic information
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: array
+                items:
+                  $ref: '#/definitions/ProposalSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+    post:
+      summary: Create a new proposal document
+      description: |
+        A POST request to this end point is used to create a new proposal document. The details of the proposal is submitted in the request body.
+      tags:
+        - Proposal
+      parameters:
+        - name: bodyParam
+          in: body
+          required: true
+          description: Contains details of the proposal document to create
+          schema:
+            $ref: '#/definitions/Proposal'
+      responses:
+        200:
+          description: Response when the proposal is successfully created. Returns the newly created proposal document (value=new proposal)
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Proposal'
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/detailed':
+    post:
+      summary: Fetch a list of detailed proposal documents (complete information)
+      description: |
+        This endpoint returns a list of proposal documents (with complete information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required proposals. Compared to the end point GET /proposals,  this end point allows for fetching a list of proposals with full information instead of just summary information. A list of keys can also be provided in the request body. When the list of keys is provided in the request, the other parameters may no longer apply (if there is a conflict in the request e.g. limit is set to 5 , but pkList has 10 items)
+      parameters:
+        - $ref: '#/parameters/queryOffset'
+        - $ref: '#/parameters/queryLimit'
+        - $ref: '#/parameters/querySort'
+        - $ref: '#/parameters/queryPk'
+        - $ref: '#/parameters/queryFilter'
+      tags:
+        - Proposal
+      responses:
+        200:
+          description: Successful response which returns a list of detailed proposal documents.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: array
+                items:
+                  $ref: '#/definitions/Proposal'
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/{proposalId}':
+    get:
+      summary: Fetch a proposal document
+      description: Use this end point to fetch a proposal document given the proposal id.
+      tags:
+        - Proposal
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          description: Unique id for the proposal
+          type: string
+      responses:
+        200:
+          description: Successful response where the request is succesfully processed. ok will be true and value is a full proposal document
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Proposal'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    delete:
+      summary: Delete a proposal document
+      description: Delete a proposal for the given proposal id. The version id of the proposal document is also required to ensure there are no changes since the proposal document was fetched.
+      tags:
+        - Proposal
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          description: Unique id for the proposal
+          type: string
+        - name: version
+          in: query
+          required: true
+          description: The version id of the proposal document
+          type: number
+      responses:
+        200:
+          $ref: '#/responses/SuccessResponse'
+        400:
+          $ref: '#/responses/Standard400Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        409:
+          $ref: '#/responses/ConflictResponse'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    put:
+      summary: Save a proposal record
+      description: Use this end point to save a proposal record. When updating an existing proposal document, the version attributes must be provided as part of the proposal document submitted. This is to ensure that there were no changes to the proposal document since it was fetched. This end point can also be used to create a new proposal when the proposalId is known (i.e. controlled by the client).
+      tags:
+        - Proposal
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          description: Unique id for the proposal
+          type: string
+        - name: bodyParam
+          in: body
+          description: Submitted details for the proposal document
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Proposal'
+
+      responses:
+        200:
+          description: Response when the request is succesfully processed. ok will be true and value will hold the new / updated proposal document
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Proposal'
+        400:
+          $ref: '#/responses/Standard400Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        409:
+          $ref: '#/responses/ConflictResponse'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/template/codes/{codeType}':
+    get:
+      summary: Fetch a list of proposal code values for a given code type.
+      description: This end-point should be used at design time, to get the valid static codes and their values. These codes and values will be used in the select (list) controls in the client application. For example, to get the list of nationalties use /proposals/template/codes/nationality.
+      tags:
+        - Proposal
+        - Design-time
+      parameters:
+        - name: codeType
+          in: path
+          required: true
+          description: The type of code required
+          type: string
+      responses:
+        200:
+          description: Successful response which returns a list of codes and values
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  textValue:
+                    type: string
+                  textValue2:
+                    type: string
+                  numberValue:
+                    type: number
+                  dateValue:
+                    type: string
+                    format: date
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/template/sections':
+    get:
+      summary: Fetch all the possible sections (with its questions) from the template proposal
+      description: This end-point is to be used at design time. It provides all the possible sections and questions for a given company and language setting. The intent is to obtain all the valid sections and questions that will be used when developing the client application.
+      tags:
+        - Proposal
+        - Design-time
+      parameters:
+        - name: companyId
+          in: query
+          required: true
+          type: string
+          description: The unique id for the company. To get the list of companies, the the /companies end-point.
+        - name: language
+          in: query
+          required: false
+          type: string
+          description: The language for questions titles and labels. If not specified, the the default language = en
+      responses:
+        200:
+          description: Successful response, i.e. the all the possible sections and possible questions are returned. In a sense, this is like the question bank for the specified company's proposal form.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/ProposalTemplate'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/draft/sections':
+    post:
+      summary: Generate the applicable sections (and applicable questions) of the draft proposal based on the supplied quote details.
+      description: This end point has a subtle difference compared to the GET/proposals/template/sections end point. This end point is to be used at run-time to get the list of applicable sections and questions instead of all the possible sections and questions. The applicable sections and questions will be a subset of the sections and questions in the template proposal. To determine the applicable sections and questions, factors like company, product, first party (vs third party), gender, age of the insured, etc, are considered. All these factors are available in the quote document.
+      tags:
+        - Proposal
+      parameters:
+        - name: bodyParam
+          in: body
+          required: true
+          description: Quote object which contains factors to determine the applicable sections and questions.
+          schema:
+            $ref: '#/definitions/Quote'
+      responses:
+        200:
+          description: Successful response where value holds the list of applicable sections and applicable questions.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/ApplicableProposalSections'
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/draft/sections/{sectionName}/status':
+    post:
+      summary: Generate the status for the section based on the submitted draft proposal.
+      description: Use this end point to check if all the captured data for the section is complete. In the client application, this can be manifested visually as a tick (checked-ok) against the section(page) to indicate that the section information is complete.
+      tags:
+        - Proposal
+      parameters:
+        - name: sectionName
+          in: path
+          required: true
+          type: string
+          description: The name of the section to be checked
+        - name: bodyParam
+          in: body
+          required: true
+          description: The draft proposal with the section for validation. It is best to include all the sections to cater for cases where the completeness of the section data is dependent on the other sections.
+          schema:
+            $ref: '#/definitions/Proposal'
+
+      responses:
+        200:
+          description: Successful response where ok is true or false. In the case where ok=false (i.e. incomplete, questionList holds the list of question ids (qid) that are still required)
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              questionList:
+                type: array
+                items:
+                  type: number
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/draft/status':
+    post:
+      summary: Generate the status of the draft proposal (submitted)
+      description: Use this end-point to check on the status of proposal based on all the submitted data. The possible statuses are PENDING, PENDING-SIGNATURE, PENDING-AGENT-DECLARATION, PENDING-SUBMISSION,SUBMITTED, COMPLETED. If the status returned is PENDING, it means that one of more sections has incomplete data. When all the sections are complete, then the draft proposal is PENDING-SIGNATURE from the customer. The next status is PENDING-AGENT-DECLARATION, then PENDING-SUBMISSION, then SUBMITTED and finally COMPLETED.
+      tags:
+        - Proposal
+      parameters:
+        - name: bodyParam
+          in: body
+          required: true
+          description: The draft proposal with all the applicable sections
+          schema:
+            $ref: '#/definitions/Proposal'
+      responses:
+        200:
+          description: Successful response. ok will be set to true, and value.status is the status of the proposal based on the submitted data. If the status = PENDING, then pendingSections will be a list of the sections which are incomplete.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  pendingSections:
+                    type: array
+                    items:
+                      type: string
+        400:
+          $ref: '#/responses/Standard400Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/{proposalId}/submissions':
+    get:
+      summary: Fetch all the submissions for the requested proposal
+      description: Use this end-point to fetch all the submissions belonging to the proposal. At the moment, there is only one submission allowed per proposal.
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          type: string
+      tags:
+        - Proposal
+        - Submission
+      responses:
+        200:
+          description: Successful response which returns a list of proposal submissions.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: array
+                items:
+                  $ref: '#/definitions/Submission'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new submission document for the given proposal
+      description: This end point is used to submit a proposal. The proposal must be in the PENDING-SUBMISSION status. THe proposal must have been previously saved (since we require the proposal id)
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Successful response to create a new proposal submission. Returns the new submission document.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Submission'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/{proposalId}/submissions/{submissionId}/addendums':
+    get:
+      summary: Fetch all the addendums for the given submission belonging to requested proposalId
+      description: Addendums are additional information to the submission. Addendums may be requested if there are additional details required to process the submission. E.g. addedums can be additional information about certain illness, doctor reports etc.
+      tags:
+        - Proposal
+        - Submission
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          type: string
+        - name: submissionId
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Successful response which returns a list of submission addendums
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                type: array
+                items:
+                  $ref: '#/definitions/Addendum'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+    post:
+      summary: Submit (create) a new addendum for the given proposal submission.
+      description: This end point is used to submit a new addendum for the already submitted proposal. The addendum is used to augment information already submitted to assist in the processing of the submission.
+      tags:
+        - Proposal
+        - Submission
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          type: string
+        - name: submissionId
+          in: path
+          required: true
+          type: string
+        - name: bodyParam
+          in: body
+          required: true
+          description: Details of the addendum
+          schema:
+            $ref: '#/definitions/Addendum'
+      responses:
+        200:
+          description: Successful response where the newly created addendum document is returned.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Addendum'
+        400:
+          $ref: '#/responses/Standard400Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/{proposalId}/submissions/{submissionId}/addendums/{addendumId}':
+    get:
+      summary: Fetch the addendum for the specified proposal submission.
+      description: The end point is used to retrieve the details of an addendum belonging to the given proposal submission.
+      tags:
+        - Proposal
+        - Submisson
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          type: string
+        - name: submissionId
+          in: path
+          required: true
+          type: string
+        - name: addendumId
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Successful response where the requested addendum is returned.
+          schema:
+            type: object
+            required:
+              - ok
+            properties:
+              ok:
+                type: boolean
+              value:
+                $ref: '#/definitions/Addendum'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+# **************** definitions ******************
+
+definitions:
+
+  ProposalSummary:
+    allOf:
+      - $ref: '#/definitions/PolicyholderSection'
+      - $ref: '#/definitions/ProposedInsuranceSection'
+      - $ref: '#/definitions/PremiumPaymentSection'
+      - properties:
+          proposalId:
+            type: string
+            description: Unique id for the proposal
+          status:
+            type: string
+            description: Status of the proposal
+          userName:
+            type: string
+            description: The user that created this proposal
+          lastModified:
+            type: string
+            format: date
+            description: The last time this proposal document has been modified
+          version:
+            type: number
+            description: The revision number used for optimistic locking
+
+
+  Proposal:
+    allOf:
+      - $ref: '#/definitions/ProposedInsuranceSection'
+      - $ref: '#/definitions/PolicyholderSection'
+      - $ref: '#/definitions/PolicyholderDisclosureSection'
+      - $ref: '#/definitions/LifeAssuredSection'
+      - $ref: '#/definitions/LifeAssuredDisclosureSection'
+      - $ref: '#/definitions/FamilyHistorySection'
+      - $ref: '#/definitions/PremiumPaymentSection'
+      - $ref: '#/definitions/BeneficialOwnerSection'
+      - $ref: '#/definitions/BeneficiarySection'
+      - $ref: '#/definitions/DocumentAttachmentSection'
+      - $ref: '#/definitions/SpecialRequestSection'
+      - $ref: '#/definitions/InformationAuthorisationSection'
+      - $ref: '#/definitions/DeclarationAndAuthoritySection'
+      - $ref: '#/definitions/AgentReportSection'
+      - $ref: '#/definitions/AgentDeclarationSection'
+      - properties:
+          proposalId:
+            type: string
+            description: Unique id for the proposal
+          status:
+            type: string
+            description: Status of the proposal
+          extensionSections:
+            type: object
+            description: Additional sections to be added due to customizations
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: string
+          userName:
+            type: string
+            description: The user that created this proposal
+          lastModified:
+            type: string
+            format: date
+            description: The last time this proposal document has been modified
+          version:
+            type: number
+            description: The revision number used for optimistic locking
+
+
+  # ------ Definitions to support the proposal template -----------
+  BasicQuestion:
+    type: object
+    properties:
+      qid:
+        type: number
+        description: Question Id (qid) to identify the question
+      qtype:
+        type: string
+        description: type of question, valid values are attr, object, list
+      attrName:
+        type: string
+        description: This is the attribute name
+      attrType:
+        type: string
+        description: The data type. Valid values are text, number, date, enum, yesno
+      required:
+        type: boolean
+        description: whether the attribute is mandatory or optional
+      title:
+        type: string
+        description: Some questions have just a statement like a title. Can be set to null
+      label:
+        type: string
+        description: Label to be used for the attribute
+      objectFields:
+        description: This fields is required when qtype=object
+        type: array
+        items:
+          $ref: '#/definitions/BasicQuestion'
+  # work around as specs does not seem to support recursive definitions
+
+  ProposalTemplate:
+    type: array
+    items:
+      type: object
+      properties:
+        sectionName:
+          type: string
+          description: Name of the section e.g. policyholderSection
+        questionList:
+          type: array
+          items:
+              type: object
+              properties:
+                  qid:
+                    type: number
+                    description: Question Id (qid) to identify the question
+                  qtype:
+                    type: string
+                    description: type of question, valid values are attr, object, list
+                  attrName:
+                    type: string
+                    description: This is the attribute name
+                  attrType:
+                    type: string
+                    description: The data type. Valid values are text, number, date, enum, yesno
+                  required:
+                    type: boolean
+                    description: whether the attribute is mandatory or optional
+                  title:
+                    type: string
+                    description: Some questions have just a statement like a title. Can be set to null
+                  label:
+                    type: string
+                    description: Label to be used for the attribute
+                  objectFields:
+                    description: This fields is required when qtype=object
+                    type: array
+                    items:
+                      $ref: '#/definitions/BasicQuestion'
+                  listFields:
+                    description: This fields is required when qtype=list
+                    type: array
+                    items:
+                      $ref: '#/definitions/BasicQuestion'
+
+  ApplicableProposalSections:
+    type: array
+    items:
+      properties:
+        sectionName:
+          type: string
+        questionList:
+          type: array
+          description: List of question numbers that are applicable for the section
+          items:
+            type: number
+
+            # type: object
+            # properties:
+            #   qid:
+            #     type: number
+
+
+  # ------ Definitions for the submissions and addendums -------------
+
+  Submission:
+    type: object
+    properties:
+      submissionId:
+        type: string
+        description: Unique id for the submission
+      submissionDate:
+        type: string
+        format: date
+      submissionType:
+        type: string
+        description: submission type e.g. proposal
+      submissionReference:
+        type: string
+        description: Unique id identifying the submission type e.g. the proposalId
+      status:
+        type: string
+        description: Status of the submission
+      messages:
+        type: array
+        description: messages can be used to provide more information on the status of the submission
+        items:
+          type: object
+          properties:
+            messageDate:
+              type: string
+            message:
+              type: string
+            status:
+              type: string
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      addendums:
+        type: array
+        description: Holds a list of id for the related addendums
+        items:
+          type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  Addendum:
+    type: object
+    properties:
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      addendumId:
+        type: string
+        description: Unique id for the addendum
+      submissionId:
+        type: string
+        description: Reference to the submission
+      submissionType:
+        type: string
+        description: Type of submission e.g. proposal
+      submissionReference:
+        type: string
+        description: E.g. the proposal id
+      submittedDate:
+        type: string
+      addendumType:
+        type: string
+      addendum:
+        type: string
+        description: Base64 to hold the uploaded document
+      remarks:
+        type: string
+        description: Some notes to go with the addendum.
+      status:
+        type: string
+        description: the addendum status
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  # ------ Definitions for the various sections of a proposal ----
+
+  PolicyholderSection:
+    type: object
+    properties:
+      fullName:
+        type: string
+      birthPlace:
+        type: string
+      birthDate:
+        type: string
+        format: date
+      age:
+        type: number
+      idType:
+        type: string
+        description: The identification type; a enumerated list based on a code table e.g. "NRIC", "PASSPORT". "KTP", "BIRTHCERT" etc
+      idTypeOther:
+        type: string
+        description: Useful only in circumstances where the enumerated list does not contain the required identification type
+      idNumber:
+        type: string
+        description: The identification number
+      idExpiryDate:
+        type: string
+        format: date
+        description: Some forms of identification may have an expiry date, e.g. passports have expiry dates.
+      nationality:
+        type: string
+        description: Nationality of the policyholder. Should be selected from an enumerated list of nationalities.
+      religion:
+        type: string
+        description: The religion should be an enumerated list
+      maritalStatus:
+        type: string
+        description: Whether the policyholder is married, single, widowed etc. Select from an code list.
+      gender:
+        type: string
+        description: Gender of the policyholder. Male or Female.
+      taxIdNo:
+        type: string
+      taxFileNo:
+        type: string
+      homeAddress:
+        type: string
+      homeAddress2:
+        type: string
+      homeCity:
+        type: string
+      homePostcode:
+        type: string
+      homeCountry:
+        type: string
+        description: Should be from a coded list of countries
+      homeTelNo:
+        type: string
+        description: Home telephone number
+      mobileNo:
+        type: string
+      mobileNo2:
+        type: string
+      email:
+        type: string
+      pdpaConsent:
+        type: boolean
+        description: Usually a checkbox to get consent to contact the policyholder for servicing and marketing purposes.
+      jobCategory:
+        type: string
+      jobDurationYears:
+        type: number
+        description: How long policyholder has worked in his/her current job
+      jobDurationMonths:
+        type: number
+      sector:
+        type: string
+        description: Normally select from a coded list
+      occupation:
+        type: string
+        description: Select from a coded list
+      companyName:
+        type: string
+        description: Company name of employer
+      jobClass:
+        type: string
+        description: Risk class given the occupation
+      jobDescription:
+        type: string
+        description: Description of the job
+      department:
+        type: string
+      rank:
+        type: string
+      industry:
+        type: string
+      officeAddress:
+        type: string
+      officeAddress2:
+        type: string
+      officeCity:
+        type: string
+      officePostcode:
+        type: string
+      officeCountry:
+        type: string
+        description: Should be from a coded list of countries
+      officeTelNo:
+        type: string
+        description: Office telephone number
+      officeEmail:
+        type: string
+      incomeSources:
+        type: array
+        items:
+          type: object
+          properties:
+            incomeType:
+              type: string
+            incomeAmount:
+              type: number
+              format: currency
+      premiumSourceOfFunds:
+        type: number
+        description: Source of funds to pay for premium
+      insuranceObjective:
+        type: string
+        description: a code list of objectives e.g. protection, education,etc.
+      mailingAddressType:
+        type: string
+        description: Expected values are HOME, OFFICE, and OTHERS
+      otherMailingAddress:
+        type: string
+      otherMailingAddress2:
+        type: string
+      otherMailingCity:
+        type: string
+      otherMailingCountry:
+        type: string
+      otherMailingPostcode:
+        type: string
+      relationshipWithInsured:
+        type: string
+        description: A coded list of relationships, e.g. spouse, son, daugther etc
+      relationshipWithInsuredOthers:
+        type: string
+        description: Relationship is other than available in drop down list
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  LifeAssuredSection:
+    type: object
+    properties:
+      fullName:
+        type: string
+      birthPlace:
+        type: string
+      birthDate:
+        type: string
+        format: date
+      age:
+        type: number
+      idType:
+        type: string
+        description: The identification type; a enumerated list based on a code table e.g. "NRIC", "PASSPORT". "KTP", "BIRTHCERT" etc
+      idTypeOther:
+        type: string
+        description: Useful only in circumstances where the enumerated list does not contain the required identification type
+      idNumber:
+        type: string
+        description: The identification number
+      idExpiryDate:
+        type: string
+        format: date
+        description: Some forms of identification may have an expiry date, e.g. passports have expiry dates.
+      nationality:
+        type: string
+        description: Nationality of the policyholder. Should be selected from an enumerated list of nationalities.
+      religion:
+        type: string
+        description: The religion should be an enumerated list
+      maritalStatus:
+        type: string
+        description: Whether the policyholder is married, single, widowed etc. Select from an code list.
+      gender:
+        type: string
+        description: Gender of the policyholder. Male or Female.
+      taxIdNo:
+        type: string
+      taxFileNo:
+        type: string
+      homeAddress:
+        type: string
+      homeAddress2:
+        type: string
+      homeCity:
+        type: string
+      homePostcode:
+        type: string
+      homeCountry:
+        type: string
+        description: Should be from a coded list of countries
+      homeTelNo:
+        type: string
+        description: Home telephone number
+      mobileNo:
+        type: string
+      mobileNo2:
+        type: string
+      email:
+        type: string
+
+      jobCategory:
+        type: string
+      jobDurationYears:
+        type: number
+        description: How long policyholder has worked in his/her current job
+      jobDurationMonths:
+        type: number
+      sector:
+        type: string
+        description: Normally select from a coded list
+      occupation:
+        type: string
+        description: Select from a coded list
+      companyName:
+        type: string
+        description: Company name of employer
+      jobClass:
+        type: string
+        description: Risk class given the occupation
+      jobDescription:
+        type: string
+        description: Description of the job
+      department:
+        type: string
+      rank:
+        type: string
+      industry:
+        type: string
+      officeAddress:
+        type: string
+      officeAddress2:
+        type: string
+      officeCity:
+        type: string
+      officePostcode:
+        type: string
+      officeCountry:
+        type: string
+        description: Should be from a coded list of countries
+      officeTelNo:
+        type: string
+        description: Office telephone number
+      officeEmail:
+        type: string
+      incomeSources:
+        type: array
+        items:
+          type: object
+          properties:
+            incomeType:
+              type: string
+            incomeAmount:
+              type: number
+              format: currency
+
+      relationshipWithPolicyholder:
+        type: string
+        description: A coded list of relationships, e.g. spouse, son, daugther etc
+      relationshipWithPolicyholderOthers:
+        type: string
+        description: Relationship is other than available in drop down list
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  BeneficialOwnerSection:
+    allOf:
+      - $ref: '#/definitions/BeneficialOwner'
+
+  BeneficiarySection:
+    type: array
+    items:
+      $ref: '#/definitions/Beneficiary'
+
+  PremiumPaymentSection:
+    allOf:
+      - $ref: '#/definitions/PremiumPayment'
+
+  ProposedInsuranceSection:
+    allOf:
+      - $ref: '#/definitions/ProposedInsurance'
+
+  DocumentAttachmentSection:
+    type: array
+    items:
+      $ref: '#/definitions/DocumentAttachment'
+
+  DeclarationAndAuthoritySection:
+    type: object
+    properties:
+      policyholderSignature:
+        $ref: '#/definitions/Signature'
+      lifeAssuredSignature:
+        $ref: '#/definitions/Signature'
+      guardianSignature:
+        $ref: '#/definitions/Signature'
+      agentSignature:
+        $ref: '#/definitions/Signature'
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  AgentReportSection:
+    type: object
+    properties:
+      policyholderReport:
+        $ref: '#/definitions/AgentReportData'
+      lifeAssuredReport:
+        $ref: '#/definitions/AgentReportData'
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  AgentDeclarationSection:
+    type: object
+    properties:
+      agentSignature:
+        $ref: '#/definitions/Signature'
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  SpecialRequestSection:
+    type: object
+    properties:
+      backDate:
+        type: string
+        format: date
+      otherSpecialRequest:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  InformationAuthorisationSection:
+    type: object
+    properties:
+      pdpaConsent:
+        type: boolean
+        description: Consent to contact policyholder for servicing and marketing purposes.
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  FamilyHistorySection:
+    type: object
+    properties:
+      policyholderFamilyHasGeneticDisease:
+        type: boolean
+      policyholderFamilyDetails:
+        type: array
+        items:
+          $ref: '#/definitions/FamilyHistoryData'
+
+      lifeAssuredFamilyHasGeneticDisease:
+        type: boolean
+      lifeAssuredFamilyDetails:
+        type: array
+        items:
+          $ref: '#/definitions/FamilyHistoryData'
+
+  PolicyholderDisclosureSection:
+    allOf:
+      - $ref: '#/definitions/DisclosureData'
+
+  LifeAssuredDisclosureSection:
+    allOf:
+      - $ref: '#/definitions/DisclosureData'
+
+  # ------ End of proposal sections definitions -------------
+
+  BeneficialOwner:
+    type: object
+    properties:
+      hasBeneficialOwner:
+        type: boolean
+      beneOwnerName:
+        type: string
+      beneOwnerRelationshipPh:
+        type: string
+        description: Relationship to policyholder. Coded list
+      beneOwnerContactNumber:
+        type: string
+      beneOwnerIdType:
+        type: string
+      beneOwnerIdNumber:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  Beneficiary:
+    type: object
+    properties:
+      itemNo:
+        type: number
+      beneficiaryName:
+        type: string
+      birthDate:
+        type: string
+        format: date
+      gender:
+        type: string
+        description: Male or Female
+      relationshipWithInsured:
+        type: string
+        description: Coded list of relationships
+      percentage:
+        type: number
+        format: percentage
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  PremiumPayment:
+    type: object
+    properties:
+      billingAccountNo:
+        type: string
+      billingAccountOwner:
+        type: string
+      billingBank:
+        type: string
+      billingBranch:
+        type: string
+      refundAccountNo:
+        type: string
+      refundAccountOwner:
+        type: string
+      refundBank:
+        type: string
+      refundBranch:
+        type: string
+      premiumPaymentFreq:
+        type: string
+        description: Coded list MONTHLY, QUARTERLY, HALF-YEARLY, YEARLY
+      renewalPaymentMethod:
+        type: string
+        description: How renewal premiums will be paid, Credit Card, Direct Debit
+      renewalPayee:
+        type: string
+        description: Default should be policyholder, other options could be life assured
+      renewalSourceOfFunds:
+        type: string
+        description: Source of funds for the renewal premiums
+      billingCurrency:
+        type: string
+        description: Coded list of applicable currencies e.g. "4" for USD
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  Quote:
+    allOf:
+      - $ref: './quotations.yaml#/definitions/Quote'
+
+  ProposedInsurance:
+    allOf:
+      - $ref: './quotations.yaml#/definitions/Quote'
+
+  DocumentAttachment:
+    type: object
+    properties:
+      documentType:
+        type: string
+        description: Type of document, coded list of document types eg. NRIC, Passport, Credit Card etc
+      remarks:
+        type: string
+      documentRef:
+        type: string
+        description: a data url with the photo or image (usually base64)
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  Signature:
+    type: object
+    properties:
+      signatureDate:
+        type: string
+        format: date
+      signatureLocation:
+        type: string
+      signatoryName:
+        type: string
+        description: Name of person who signed
+      signature:
+        type: string
+        description: base64 of signature image
+      signatoryRole:
+        type: string
+
+  AgentReportData:
+    type: object
+    properties:
+      knownDurationYears:
+        type: number
+      knownDurationMonths:
+        type: number
+      relationship:
+        type: string
+        description: relation between agent and policyholder / life assured
+      income:
+        type: number
+      incomeSource:
+        type: string
+      jobDescription:
+        type: string
+      physicalAssessment:
+        type: string
+      knowledgeOfSickness:
+        type: string
+      existingMedicalPolicies:
+        type: string
+      sponsor:
+        type: string
+      sponsorInsuranceInfo:
+        type: string
+      criminalRecord:
+        type: boolean
+      goodFinancialSituation:
+        type: boolean
+      suitableProposal:
+        type: boolean
+      proposalExplained:
+        type: boolean
+      falsehoodConsequencesUnderstoold:
+        type: boolean
+      agentHelpInFillingForm:
+        type: boolean
+      agentHelpReviewDone:
+        type: boolean
+      goodAgentAssessment:
+        type: boolean
+      hasNonApparentFactors:
+        type: boolean
+      hasNonApparentFactorsDesc:
+        type: string
+      isReplacementOfPolicy:
+        type: boolean
+      replacementOfPolicyReason:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  CurrentPolicyInfo:
+    type: object
+    properties:
+      company:
+        type: string
+      policyNumber:
+        type: string
+      policyDate:
+        type: string
+        format: date
+      sumAssured:
+        type: number
+      accidentSumAssured:
+        type: number
+      currency:
+        type: string
+        description: Coded list of currency codes
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  SubStandardPolicyInfo:
+    type: object
+    properties:
+      insuranceType:
+        type: string
+      insurer:
+        type: string
+        description: Name of insurance company
+      policyNumber:
+        type: string
+      policyDate:
+        type: string
+        format: date
+      sumAssured:
+        type: number
+      reason:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  PendingPolicyInfo:
+    type: object
+    properties:
+      insuranceType:
+        type: string
+      insurer:
+        type: string
+        description: Name of insurance company
+      policyNumber:
+        type: string
+      policyDate:
+        type: string
+        format: date
+      sumAssured:
+        type: number
+      reason:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  FamilyHistoryData:
+    type: object
+    properties:
+      relationship:
+        type: string
+      isAlive:
+        type: boolean
+        description: Whether relation is still alive or deceased
+      currentAge:
+        type: number
+        description: Current age
+      currentHealthCondition:
+        type: string
+      deceaseAge:
+        type: number
+        description: Age when relation was deceased
+      causeOfDeath:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  BasicPersonalData:
+    type: object
+    properties:
+      height:
+        type: number
+      weight:
+        type: number
+      isHealthy:
+        type: string
+        description: YES or NO
+      ifUnhealthDescription:
+        type: string
+      underDoctorCare:
+        type: string
+        description: YES or NO
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  HealthData:
+    type: object
+    properties:
+      healthMentalPhysicalDisorder:
+        type: string
+        description: YES or NO
+      healthEpilepsy:
+        type: string
+        description: YES or NO
+      healthDiabetes:
+        type: string
+        description: YES or NO
+      healthEyes:
+        type: string
+        description: YES or NO
+      healthENT:
+        type: string
+        description: YES or NO
+      healthLungs:
+        type: string
+        description: YES or NO
+      healthHeart:
+        type: string
+        description: YES or NO
+      healthHeartNoise:
+        type: string
+        description: YES or NO
+      healthHeartIrregularBeat:
+        type: string
+        description: YES or NO
+      healthHeartBloodPressure:
+        type: string
+        description: YES or NO
+      healthLiver:
+        type: string
+        description: YES or NO
+      healthStomach:
+        type: string
+        description: YES or NO
+      healthPancreas:
+        type: string
+        description: YES or NO
+      healthGenitals:
+        type: string
+        description: YES or NO
+      healthWeightChange:
+        type: string
+        description: YES or NO
+      healthWeightChangeKgs:
+        type: number
+      healthWeightChangeGainLoss:
+        type: string
+        description: GAIN or LOSS
+      healthWeightChangeReason:
+        type: string
+      healthUrinary:
+        type: string
+        description: YES or NO
+      healthMuscle:
+        type: string
+        description: YES or NO
+      healthCancer:
+        type: string
+        description: YES or NO
+      healthNerve:
+        type: string
+        description: YES or NO
+      healthBoneSkull:
+        type: string
+        description: YES or NO
+      healthGlandBlood:
+        type: string
+        description: YES or NO
+      healthImmuneInfection:
+        type: string
+        description: YES or NO
+      healthCellGrowth:
+        type: string
+        description: YES or NO
+      healthHiv:
+        type: string
+        description: YES or NO
+      hivTest:
+        type: string
+        description: YES or NO
+      hivTestDate:
+        type: string
+        format: date
+      hivTestReason:
+        type: string
+      hivTestResult:
+        type: string
+      hivSymptoms:
+        type: string
+        description: YES or NO
+      hivSymptomDate:
+        type: string
+        format: date
+      hivSymptomsReason:
+        type: string
+      hivSymptomsCurrentCondition:
+        type: string
+      hasScans:
+        type: string
+        description: YES or NO
+      scanList:
+        type: array
+        items:
+          type: object
+          properties:
+            scanType:
+              type: string
+            scanDate:
+              type: string
+              format: date
+            scanClinic:
+              type: string
+            scanReason:
+              type: string
+            scanResult:
+              type: string
+
+      hasDiagnosticTest:
+        type: string
+        description: YES or NO
+      diagnosticTestName:
+        type: string
+      diagnosticTestDate:
+        type: string
+        format: date
+      diagnosticTestMedicationDurationYears:
+        type: number
+      diagnosticTestMedicationDurationMonths:
+        type: number
+
+      hasTreatments:
+        type: string
+        description: YES or NO
+      treatmentList:
+        type: array
+        items:
+          type: object
+          properties:
+            treatmentCondition:
+              type: string
+            treatmentDate:
+              type: string
+              format: date
+            treatmentClinic:
+              type: string
+            treatmentType:
+              type: string
+            treatmentResult:
+              type: string
+      familyHasGeneticDisease:
+        type: string
+        description: YES or NO
+      familyGeneticDiseaseList:
+        type: array
+        items:
+          type: object
+          properties:
+            familyRelationship:
+              type: string
+            familyOnsetAge:
+              type: number
+            familyCurrentAge:
+              type: number
+            familyIllness:
+              type: string
+            familyAgeDeceased:
+              type: number
+      healthOtherConditions:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+
+  LifeStyleData:
+    type: object
+    properties:
+        consumeAlcohol:
+          type: string
+          description: YES or NO
+        consumeAlcoholConsumption:
+          type: number
+        consumeAlcoholType:
+          type: string
+        consumeAlcoholDuration:
+          type: number
+        alcoholTreatment:
+          type: string
+          description: YES or NO
+        consumeDrugs:
+          type: string
+          description: YES or NO
+        consumeDrugName:
+          type: string
+        consumeDrugDuration:
+          type: number
+        smoking:
+          type: string
+          description: SMOKER or NON-SMOKER
+        smokingSticksPerDay:
+          type: number
+        smokingDuration:
+          type: number
+        useTobacco:
+          type: string
+          description: YES or NO
+        useTobaccoType:
+          type: string
+        useTobaccoDailyAmount:
+          type: number
+        useTobaccoDurationYears:
+          type: number
+        useTobaccoDateCeased:
+          type: string
+          format: date
+        useTobaccoCeaseReason:
+          type: string
+        unscheduledFlights:
+          type: string
+          description: YES or NO
+        militaryForce:
+          type: string
+          description: YES or NO
+        dangerousSports:
+          type: string
+          description: YES or NO
+        dangerousSportsDetails:
+          type: string
+        liveOverseas:
+          type: string
+          description: YES or NO
+        liveOverseaseCountry:
+          type: string
+        liveOverseasDurationMonths:
+          type: number
+        liveOverseasReason:
+          type: string
+        extensionFields:
+          type: object
+          description: Use this object to hold the aditional fields due to local customizations
+          additionalProperties:
+            type: string
+
+  DoctorData:
+    type: object
+    properties:
+      doctorName:
+        type: string
+      doctorAddress:
+        type: string
+      doctorAddress2:
+        type: string
+      doctorAddressCity:
+        type: string
+      doctorAddressPostcode:
+        type: string
+      doctorAddressCountry:
+        type: string
+      doctorLastVisitDate:
+        type: string
+        format: date
+      doctorLastVisitReason:
+        type: string
+      doctorLastVisitResult:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  FemaleHealthData:
+    type: object
+    properties:
+      isPregnant:
+        type: string
+        description: YES or NO
+      pregnantMonths:
+        type: number
+      pregnantWeeks:
+        type: number
+      pregnantLastMenstruationDate:
+        type: string
+        format: date
+      pregnancyComplicationsHistory:
+        type: string
+        description: YES or NO
+      hasAbnormalities:
+        type: string
+        description: YES or NO. Abnornalities of the reproductive system
+      hasIrregularityScreening:
+        type: string
+        description: YES or NO. E.g. of screenings are papsmear, mammography, biopsy etc
+      hasBreastLumps:
+        type: string
+        description: YES or NO
+      hasBreastCancer:
+        type: string
+        description: YES or NO
+      hasIrregularMenstruation:
+        type: string
+        description: YES or NO
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  JuvenileData:
+    type: object
+    properties:
+      birthType:
+        type: string
+        description: list of values e.g. normal, caesar
+      assistedByVacuum:
+        type: string
+        description: YES or NO
+      assistedByForceps:
+        type: string
+        description: YES or NO
+      assistedByOthers:
+        type: string
+        description: Description of assistance other than vacuum or forceps
+      reasonForAssistedBirth:
+        type: string
+      doctorName:
+        type: string
+      hospital:
+        type: string
+      pregnancyDurationMonths:
+        type: number
+      pregnancyDurationWeeks:
+        type: number
+      birthWeightInKgs:
+        type: number
+      birthHeightInCms:
+        type: number
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+
+  DisclosureData:
+    allOf:
+    - $ref : '#/definitions/BasicPersonalData'
+    - $ref : '#/definitions/HealthData'
+    - $ref : '#/definitions/FemaleHealthData'
+    - $ref : '#/definitions/JuvenileData'
+    - $ref : '#/definitions/LifeStyleData'
+    - $ref : '#/definitions/DoctorData'
+    - $ref : '#/definitions/FamilyHistoryData'
+    - properties:
+        isReplacementOfPolicy:
+          type: string
+          description: YES or NO
+        hasExistingPolicies:
+          type: string
+          description: YES or NO
+        existingPolicies:
+          type: array
+          items:
+            $ref: '#/definitions/CurrentPolicyInfo'
+        hasSubStandardPolicies:
+          type: string
+          description: YES or NO
+        subStandardPolicies:
+          type: array
+          items:
+            $ref: '#/definitions/SubStandardPolicyInfo'
+        hasPendingPolicies:
+          type: string
+          description: YES or NO
+        pendingPolicies:
+          type: array
+          items:
+            $ref: '#/definitions/PendingPolicyInfo'
+        additionalClarifications:
+          type: string
+          description: Place for additional clarifications to any of the questions
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+
+# ***************** parameters **************
+
+parameters:
+
+  queryOffset:
+    name: offset
+    in: query
+    description: Number of records to skip in the result list
+    required: false
+    type: number
+    format: integer
+    default: 0
+
+  queryLimit:
+    name: limit
+    in: query
+    description: Limit the number of rows to return
+    required: false
+    type: number
+    format: integer
+    default: 100
+
+  querySort:
+    name: sort
+    in: query
+    description: Sorting order. Prefix with '-' for descending order
+    required: false
+    type: string
+    format: string
+
+  queryKeys:
+    name: keys
+    in: query
+    description: Specify multiple rows to fetch ?keys=123,456
+    required: false
+    type: array
+    collectionFormat: csv
+    items:
+      type: string
+
+  queryPk:
+    name: pkList
+    in: body
+    description: Specify multiple rows to fetch {pkList:[12,13,1555]}
+    required: false
+    schema:
+      type: object
+      properties:
+        pkList:
+          type: array
+          items:
+            type: number
+
+  queryFilter:
+    name: filter
+    in: query
+    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find rows where name startsWith A and age greater than 30, specify as filter=name\*startsWith\*A;age\*GT\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find rows where name starts with 'A' OR name starts with B, then it can be specified as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
+
+    required: false
+    type: array
+    collectionFormat: pipes
+    items:
+      type: string
+
+# *************** responses *******************
+
+responses:
+
+  Standard400Response:
+    description: The request cannot be process due to a client error (submitted data has errors). ok will be set to false.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          $ref: "#/definitions/Error"
+
+  Standard404Response:
+    description: Response when the document is not found. ok will be set to false.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          $ref: "#/definitions/Error"
+
+  Standard500Response:
+    description: An unexpected error occured. ok will be set to false.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          $ref: "#/definitions/Error"
+
+  SuccessResponse:
+    description: Request was successfully processed
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          type: object
+          required:
+            - ok
+          properties:
+            ok:
+              type: boolean
+            value:
+              type: string
+
+  ConflictResponse:
+    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched, i.e. the version does not match the version supplied.
+    schema:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        value:
+          type: string

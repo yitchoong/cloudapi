@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Product)
   description: Sales API for the product domain on eBao Cloud
-  version: "0.0.1"
+  version: "0.0.3"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -50,7 +50,7 @@ paths:
 
   '/products/{productId}':
     get:
-      summary: Fetch the product document for the given product id.
+      summary: Fetch a product.
       description: This end point can be used to fetch the detailed product information. It will include all the product parameters, including the limits. The available values for coverage terms, premium payment terms, payment methods will also be included.
       tags:
         - Product
@@ -77,7 +77,7 @@ paths:
 
   '/products/{productId}/riders':
     get:
-      summary: Fetch the list of attachable riders for the given main product and already attached riders.
+      summary: Fetch the list of attachable riders for the given main product and currently attached riders.
       description: This end point is typically used to generate a list of attachable riders that will be presented as a drop down list in the client application UI. Apart from the main product id, the list of riders that are already attached also determine the remaining attachable riders. These can be mutually exclusive riders e.g. "Waiver Plus" can no longer be attached if "Waiver Premium" is already attached.
       tags:
         - Product
@@ -112,7 +112,7 @@ paths:
 
   '/products/{productId}/calculators/age':
     get:
-      summary: Calculate the age given the product id and birthdate
+      summary: Calculate the age given the product id and birth date
       description: Use this end point to calculate the age. The product id is used to determine the age method which will affect the calculation of the age. Pass the birth date (YYYY-MM-DD) in as a query parameter.
       tags:
         - Product
@@ -152,7 +152,7 @@ paths:
 
   '/products/{productId}/calculators/premium':
     post:
-      summary: Generate the results of the premium calculator using the details of the proposed insurance.
+      summary: Compute the results of the premium calculator using the details of the proposed insurance.
       description: Use this end point to trigger the calculation of the premium for all the products in the proposed insurance. The proposed insurance details must include the proposed life assured.
       tags:
         - Product
@@ -184,7 +184,7 @@ paths:
 
   '/products/{productId}/calculators/costOfInsurance':
     post:
-      summary: Generate the results of the cost of insurance calculator using the details of the proposed insurance.
+      summary: Compute the results of the cost of insurance calculator using the details of the proposed insurance.
       description: Use this end point to trigger the calculation of the cost of insurance for all the products in the proposed insurance. The proposed insurance details must include the proposed life assured. The cost of insurance is applicable only to investment products.
       tags:
         - Product
@@ -216,7 +216,7 @@ paths:
 
   '/products/{productId}/calculators/illustration':
     post:
-      summary: Generate the results of the illustration calculator using the details of the proposed insurance.
+      summary: Compute the results of the illustration calculator using the details of the proposed insurance.
       description: Use this end point to trigger the calculation of the fields required for the illustration. The illustrations field are configured when setting up the product in the product factory.
       tags:
         - Product
@@ -248,7 +248,7 @@ paths:
 
   '/products/{productId}/calculators/adhoc':
     post:
-      summary: Generate the results of the adhoc calculator using the details of the proposed insurance and a list of illustration fields to calculate.
+      summary: Compute the results of the adhoc calculator for the list of illustration fields based on the proposed insurance.
       description: Use this end point when the client applications needs fine grain control over which of the illustration fields to calculate for. The list of required illustration fields is passed in via the request body parameter. The illustrations field are configured when setting up the product in the product factory.
       tags:
         - Product
@@ -287,7 +287,7 @@ paths:
 
   '/products/{productId}/validators/validateInsured':
     post:
-      summary: Validate the life assured for the given product id
+      summary: Validate the eligibility of life assured to purchase the product.
       description: This end point is used in certain scenarios, where the product is selected first and the the life insured is selected. The validate-insured validator will check the age and gender requirements for the product are met.
       tags:
         - Product
@@ -332,7 +332,7 @@ paths:
 
   '/products/{productId}/validators/validateMain':
     post:
-      summary: Generate the results of the validate-main validator using the proposed insurance details.
+      summary: Trigger the validate-main validator using the proposed insurance details.
       description: Use this end point to validate the main product for the proposed insurance details supplied in the request body. Typically in the client application, the main product details are captured in its own page (section). This end point can be called to validate the input of the main product when the client application navigates away from the page (section).
       tags:
         - Product
@@ -366,7 +366,7 @@ paths:
 
   '/products/{productId}/validators/validateRiders':
     post:
-      summary: Generate the results of the validate-riders validator using the proposed insurance details.
+      summary: Trigger the validate-riders validator using the proposed insurance details.
       description: Use this end point to validate all the riders attached to the main product using the proposed insurance details supplied in the request body. Checks typically include the minimum and maximum coverage amounts, the age limits of the insured, etc. Typically used when navigating away from the page (section) which captures the riders.
       tags:
         - Product
@@ -400,7 +400,7 @@ paths:
 
   '/products/{productId}/validators/validateTopups':
     post:
-      summary: Generate the results of the validate-topups validator using the proposed insurance details.
+      summary: Trigger the validate-topups validator using the proposed insurance details.
       description: Use this end point to validate all the topups using the proposed insurance details supplied in the request body. Input of topups are only required in the case of investment policies. Validation include minimum topup amounts.
       tags:
         - Product
@@ -434,7 +434,7 @@ paths:
 
   '/products/{productId}/validators/validateWithdrawals':
     post:
-      summary: Generate the results of the validate-withdrawals validator using the proposed insurance details.
+      summary: Trigger the validate-withdrawals validator using the proposed insurance details.
       description: Use this end point to validate all the withdrawals using the proposed insurance details supplied in the request body. Input of withdrawals are only required in the case of investment policies. Validation include minimum withdrawal amounts and whether withdrawals are allowed (e.g. withdrawals may not be allowed in the initial 5 years)
       tags:
         - Product
@@ -468,7 +468,7 @@ paths:
 
   '/products/{productId}/validators/validateFunds':
     post:
-      summary: Generate the results of the validate-funds validator using the proposed insurance details.
+      summary: Trigger the validate-funds validator using the proposed insurance details.
       description: Use this end point to validate all the fund allocations using the proposed insurance details supplied in the request body. Input of fund allocations are required for investment proposals. Validation include minimum allocation (e.g. min of 10%) and fixed quantums (e.g. allocations must be multiples of 5%)
       tags:
         - Product
@@ -502,7 +502,7 @@ paths:
 
   '/products/{productId}/validators/adhoc':
     post:
-      summary: Generate the results of the adhoc validator using the proposed insurance details and a list of validators to trigger.
+      summary: Generate the results of the adhoc validator for the list of submitted validators using the proposed insurance details.
       description: Use this end point to validate when the client application requires fine grain control over which validators need to be run. The list of validators to trigger must be in the request details as part of the request body. An an example, this endpoint can be used to validate the topups and withdrawals, which may be on the same page of the client application e.g. validatorList= [validateTopups, validateWithdrawals]
       tags:
         - Product
