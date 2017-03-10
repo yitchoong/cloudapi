@@ -422,6 +422,10 @@ paths:
     post:
       summary: Create a new submission document for the given proposal
       description: This end point is used to submit a proposal. The proposal must be in the PENDING-SUBMISSION status. THe proposal must have been previously saved (since we require the proposal id)
+      tags:
+        - Proposal
+        - Submission
+        
       parameters:
         - name: proposalId
           in: path
