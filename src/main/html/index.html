@@ -37,8 +37,9 @@
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        //url = "http://localhost:8080/yaml/proposal.yaml";
-        url = "http://swagger.zhuliliang.com/yaml/proposal.yaml";
+        // url = "http://localhost:8080/yaml/proposal.yaml";
+        // url = "http://swagger.zhuliliang.com/yaml/proposal.yaml";
+        url = "/yaml/proposal.yaml";
       }
 
       hljs.configure({
@@ -98,9 +99,16 @@
       <!--<div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>-->
       <div class='input'>
       <select placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/>
-        <option value="http://swagger.zhuliliang.com/yaml/products.yaml">Products Spec</option>
-        <option value="http://swagger.zhuliliang.com/yaml/proposal.yaml">Proposal Spec</option>
-      </select></div>
+        <!--<option value="http://swagger.zhuliliang.com/yaml/products.yaml">Products Spec</option>
+        <option value="http://swagger.zhuliliang.com/yaml/proposal.yaml">Proposal Spec</option> -->
+        <option value="#">Select a specification</option>
+        <option value="../yaml/index.yaml">Complete specification</option>
+        <option value="../yaml/prospects.yaml">Prospect specification</option>
+        <option value="../yaml/products.yaml">Product specification</option>
+        <option value="../yaml/quotations.yaml">Quotation specification</option>
+        <option value="../yaml/proposals.yaml">Proposal specification</option>
+
+        </select></div>
       <!--<div id='auth_container'></div>
       <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
       -->
