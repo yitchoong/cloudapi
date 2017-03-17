@@ -2,52 +2,62 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Prospects)
   description: Sales API for the prospect domain on eBao Cloud
-  version: "0.0.3"
+  version: "0.0.4"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
 schemes:
   - http
+  - https
 # will be prefixed to all paths
 basePath: /api/v1
 produces:
   - application/json
+
+# ---- Security Definitions -----------
+securityDefinitions:
+  APISecurity:
+    type: apiKey
+    in: header
+    name: Token
+
 paths:
   '/prospects':
     get:
       summary: Fetch a list of prospects records (basic information)
       description: |
         The prospects endpoint returns a list of prospects (with basic information) for the current user based on the session. There are a number of parameters to help with filtering and sorting of the required prospects.
+      security:
+        - APISecurity: []
       parameters:
         - $ref: '#/parameters/queryOffset'
         - $ref: '#/parameters/queryLimit'
         - $ref: '#/parameters/queryKeys'
         - $ref: '#/parameters/querySort'
         - $ref: '#/parameters/queryFilter'
+
       tags:
         - Prospect
       responses:
         200:
           description: Returns a list of basic prospect records
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/ProspectBasic'
+            type: array
+            items:
+              $ref: '#/definitions/ProspectBasic'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
+
     post:
       summary: Create a new prospect record
       description: |
         A POST request to this end point is used to create a new prospect record. The details of the prospect is submitted in the request body.
+      security:
+        - APISecurity: []
       parameters:
         - name: bodyParam
           in: body
@@ -59,12 +69,14 @@ paths:
         - Prospect
       responses:
         200:
-          description: The prospect is successfully created. Returns the newly created prospect record (value = Prospect)
+          description: The prospect is successfully created. Returns the newly created prospect record
           schema:
-            $ref: '#/definitions/ProspectResult'
+            $ref: '#/definitions/Prospect'
 
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -72,12 +84,14 @@ paths:
     post:
       summary: Fetch a list of detailed prospects records (complete information)
       description: |
-        The prospects endpoint returns a list of prospects (with complete information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required prospects. Compared to the GET /prospects this allows for fetching a list of prospects with detailed information instead of just basic information. When the list of keys is provided (pkList) in the request, it may cause a conflict with the other parameters e.g. the pkList has 10 items but limit is 5. In such cases, 10 documents will be returned.
+        This end point returns a list of prospects (with complete information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required prospects. Compared to GET /prospects, this end point allows for fetching a list of prospects with detailed information instead of just basic information.
+      security:
+        - APISecurity: []
       parameters:
         - $ref: '#/parameters/queryOffset'
         - $ref: '#/parameters/queryLimit'
         - $ref: '#/parameters/querySort'
-        - $ref: '#/parameters/queryPk'
+        - $ref: '#/parameters/queryKeys'
         - $ref: '#/parameters/queryFilter'
       tags:
         - Prospect
@@ -85,25 +99,22 @@ paths:
         200:
           description: Returns a list of detailed prospect records
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/Prospect'
+            type: array
+            items:
+              $ref: '#/definitions/Prospect'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
   '/prospects/{prospectId}':
     get:
-      summary: Fetch a prospect record
-      description: This end point is used to fetch detailed prospect information for the given prospect id
+      summary: Fetch a prospect document
+      description: This end point is used to fetch detailed prospect document for the given prospect id. The prospect document can then be used for editing or for deletion.
+      security:
+        - APISecurity: []
       tags:
         - Prospect
       parameters:
@@ -111,17 +122,21 @@ paths:
 
       responses:
         200:
-          description: Request is succesfully processed. ok will be true and value is a Prospect record
+          description: Response for the successful retrieval of the prospect document.
           schema:
-            $ref: "#/definitions/ProspectResult"
+            $ref: "#/definitions/Prospect"
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
           $ref: '#/responses/Standard500Response'
 
     delete:
-      summary: Delete a prospect record
-      description: This end point is used to delete the prospect with the given prospect id. The version id of the prospect record is required to ensure there are no changes since the prospect record was fetched. e.g. DELETE /prospects/1234?version=122
+      summary: Delete a prospect document.
+      description: This end point is used to delete the prospect document with the given prospect id. The version of the prospect document is required to ensure there are no changes since the prospect document was fetched. e.g. DELETE /prospects/1234?version=122
+      security:
+        - APISecurity: []
       tags:
         - Prospect
       parameters:
@@ -134,6 +149,8 @@ paths:
       responses:
         200:
           $ref: '#/responses/SuccessResponse'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         409:
@@ -142,25 +159,30 @@ paths:
           $ref: '#/responses/Standard500Response'
 
     put:
-      summary: Save a prospect record
-      description: When updating an existing prospect record, the version attribute must be part of the prospect details in the request body. This is to ensure that there were no changes to the prospect document since it was fetched.
+      summary: Save a prospect document.
+      description: When updating an existing prospect document, the version field must be part of the prospect details in the request body. This is to ensure that there were no changes to the prospect document since it was fetched.
+      security:
+        - APISecurity: []
       tags:
         - Prospect
       parameters:
         - $ref: '#/parameters/paramProspectId'
         - name: bodyParam
           in: body
+          required: true
           description: Represents the prospect record to save
           schema:
             $ref: '#/definitions/Prospect'
 
       responses:
         200:
-          description: Request is succesfully processed. ok will be true and value is a Prospect record
+          description: Response when the prospect document is successfully updated.
           schema:
-            $ref: "#/definitions/ProspectResult"
+            $ref: "#/definitions/Prospect"
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         409:
@@ -171,23 +193,60 @@ paths:
   '/prospects/_bulk':
     post:
       summary: Bulk creation of prospects
-      description: Allow for creation of multiple prospect records in one request. A possible use case for the client applications is where a list of prospects are uploaded by the user. Instead of creating the prospects one at a time, it would be more efficient to allow for bulk creation.
+      description: Allow for the creation of multiple prospect records in one request. A possible use case for the client applications is where a list of prospects are uploaded by the user. Instead of creating the prospects one at a time, it would be more efficient to allow for bulk creation.
+      security:
+        - APISecurity: []
       tags:
         - Prospect
       parameters:
         - name: bodyParam
           in: body
           description: Representing the prospect record to save
+          required: true
           schema:
             type: array
             items:
-              $ref: '#/definitions/Bulk'
+              type: object
+              properties:
+                operation:
+                  type: string
+                  description: Valid value is CREATE
+                assignmentId:
+                  type: string
+                doc:
+                  $ref : '#/definitions/Prospect'
 
       responses:
         200:
-          description: Request is successfully processed. ok will be true, value will be a list containing the prospect records and the outcome of the processing, i.e. value will hold a list of items, and each item will have its own status and error message (if any)
+          description: Response where the request is successfully processed. The response will the list containing the prospect records. All prospect documents must be successfully processed for a 200 response.
           schema:
-            $ref: "#/definitions/ProspectsResult"
+            type: array
+            items:
+              $ref: '#/definitions/Prospect'
+        400:
+          description: Response when one or more prospect documents has errors
+          schema:
+            type: array
+            items:
+             type: object
+             properties:
+              ok:
+                type: boolean
+              doc:
+                $ref: '#/definitions/Prospect'
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    message:
+                      type: string
+                    field:
+                      type: string
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -195,6 +254,8 @@ paths:
     get:
       summary: Calculate the age given the age method and birth date
       description: Calculate the age given the age method & birth date. Valid values for the age method are ANB = Age Next Birthday, ALB = Age Last Birthday, ANRB = Age Nearest Birthday. In dealing with prospects, the client application will capture the birth date and may wish to display the age of the prospect. Commonly, the ageing method is defined at the company level and known at design time although the eBaoTech product factory provides fine grain control to set the age method at product level.
+      security:
+        - APISecurity: []
       tags:
         - Prospect
 
@@ -215,37 +276,132 @@ paths:
         200:
           description: Successful response where the age is returned
           schema:
-            required:
-              - ok
             properties:
-              ok:
-                type: boolean
-              value:
+              age:
                 type: number
         400:
           $ref : '#/responses/Standard400Response'
+        401:
+          $ref : '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
+
+
+  '/assignments':
+    get:
+      summary: Fetch a list of assignment documents
+      description: |
+        This end point returns a list of assignments for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required assignment documents.
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref: '#/parameters/queryOffset'
+        - $ref: '#/parameters/queryLimit'
+        - $ref: '#/parameters/queryKeys'
+        - $ref: '#/parameters/querySort'
+        - $ref: '#/parameters/queryFilter'
+
+      tags:
+        - Prospect
+        - Assignment
+      responses:
+        200:
+          description: Returns a list of assignment (of prospects) documents
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Assignment'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+  '/assignments/_bulk':
+    post:
+      summary: Bulk creation of assignments
+      description: This end point is used for insurers to create documents for the assignment of prospects to the intermediaries. As an example, the insurer may have collected a number of leads due to a roadshow and would like the intermediaries to follow up. Assuming that the insurer has an application that can communicate with the eBao cloud services, it could create a list of assignment documents on to the eBao cloud platform. The intermediaries may be given the option to "take-up" the assigments. Apart from the creation of assignment documents, this end point can also be used to delete assignment documents. This can be done by specifing the operation as "DELETE" for the assignment document (in the bodyParam). The assigner and assignerReference in the assignment document will be used to find the assignment document to be removed.
+      security:
+        - APISecurity: []
+      tags:
+        - Prospect
+        - Assignment
+      parameters:
+        - name: bodyParam
+          in: body
+          description: Representing the assignment of prospect documents
+          required: true
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                operation:
+                  type: string
+                  description: Valid value is CREATE, DELETE
+                doc:
+                  $ref : '#/definitions/Assignment'
+
+      responses:
+        200:
+          description: Response where the request is successfully processed. The response will the list of the assignment documents (created or deleted). All assignment documents must be successfully processed for a 200 response.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Assignment'
+        400:
+          description: Response when one or more assignment documents has errors
+          schema:
+            type: array
+            items:
+             type: object
+             properties:
+              ok:
+                type: boolean
+              doc:
+                $ref: '#/definitions/Assignment'
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    message:
+                      type: string
+                    field:
+                      type: string
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
 
 # **************** definitions ******************
 
 definitions:
 
-  Bulk:
-    type: object
-    properties:
-      operation:
-        type: string
-        description: Valid value is CREATE
-      data:
-        $ref: '#/definitions/Prospect'
+  # Bulk:
+  #   type: object
+  #   properties:
+  #     operation:
+  #       type: string
+  #       description: Valid value is CREATE
+  #     doc:
+  #       $ref: '#/definitions/Prospect'
 
   ProspectBasic:
     type: object
     properties:
-      prospectId:
+      pk:
         type: string
         description: Unique id for the prospect
+      doctype:
+        type: string
+        default: "Prospect"
       prospectName:
         type: string
         description: Name of the prospect
@@ -411,49 +567,49 @@ definitions:
         additionalProperties:
           type: string
 
-  # ----------- Results used in the operations  --------------
-
-  ProspectResult:
+  Assignment:
     type: object
-    required:
-      - ok
     properties:
-      ok:
-        type: boolean
-      value:
+      pk:
+        type: string
+        readOnly: true
+      doctype:
+        type: string
+        default: "Assignment"
+        readOnly: true
+      assigner:
+        type: string
+      assignerReference:
+        type: string
+        description: Assigner's unique reference to this assignment document
+      assignmentType:
+        type: string
+        default: "Prospect"
+      expiryDate:
+        type: string
+        format: date
+      assignee:
+        type: string
+      status:
+        type: string
+      userName:
+        type: string
+        description: The user that created this prospect record
+      lastModified:
+        type: string
+        format: date
+        description: The last time this prospect record has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold customized fields
+        additionalProperties:
+          type: string
+      data:
         $ref: '#/definitions/Prospect'
 
-  ProspectsResult:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        type: array
-        items:
-          type: object
-          properties:
-            status:
-              type: string
-            prospect:
-              $ref: '#/definitions/Prospect'
-            errorMessage:
-              type: string
-
-  # ------------------- Standardized responses ----------------------
-
-  Error:
-    type: object
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
-      fields:
-        type: string
 
 # ***************** parameters **************
 
@@ -495,23 +651,23 @@ parameters:
     items:
       type: string
 
-  queryPk:
-    name: pkList
-    in: body
-    description: Specify multiple rows to fetch {pkList:[12,13,1555]}
-    required: false
-    schema:
-      type: object
-      properties:
-        pkList:
-          type: array
-          items:
-            type: number
+  # queryPk:
+  #   name: pkList
+  #   in: body
+  #   description: Specify multiple rows to fetch {pkList:[12,13,1555]}
+  #   required: false
+  #   schema:
+  #     type: object
+  #     properties:
+  #       pkList:
+  #         type: array
+  #         items:
+  #           type: number
 
   queryFilter:
     name: filter
     in: query
-    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find rows where name startsWith A and age greater than 30, specify as filter=name\*startsWith\*A;age\*GT\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find rows where name starts with 'A' OR name starts with B, then it can be specified as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
+    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find documents where name startsWith A AND age greater than 30, specify as filter=name\*startsWith\*A;age\*gt\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find documents where name starts with 'A' OR name starts with B, then specify as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
     required: false
     type: array
     collectionFormat: pipes
@@ -531,68 +687,63 @@ parameters:
 responses:
 
   Standard400Response:
-    description: The request cannot be process due to a client error (submitted data has errors). ok will be set to false.
+    description: Response to indicate that the request cannot be processed due to a client error (submitted data has errors).
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+  Standard401Response:
+    description: Response when the client is not authorized for this operation.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "Authentication credentials were missing or incorrect"
 
   Standard404Response:
-    description: Response when the document is not found. ok will be set to false.
+    description: Response when the document is not found.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "The item does not exist"
 
   Standard500Response:
-    description: An unexpected error occured. ok will be set to false.
+    description: Response when there is an unexpected server error.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "An unexpected error has occurred. Please try again later"
 
   SuccessResponse:
-    description: Request was successfully processed
+    description: Response for request successfully processed
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          type: object
-          required:
-            - ok
-          properties:
-            ok:
-              type: boolean
-            value:
-              type: string
+        message:
+          type: string
+          description: "The request was successfully processed"
 
   ConflictResponse:
-    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched, i.e. the version does not match the version supplied.
+    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched. The current document version does not match the version supplied.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
+        message:
           type: string
+          description: "The document has changed since it was last fetched. Please fetch the document again to get the latest version of the document"

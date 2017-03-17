@@ -13,3 +13,4 @@ dist/*.html text
 
 src/main/html/fonts/*.ttf binary
 src/main/html/images/*.png binary
+assets/**/*.png binary
