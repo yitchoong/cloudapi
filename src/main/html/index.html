@@ -106,13 +106,14 @@
     <form id='api_selector'>
       <!--<div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>-->
       <div class='input'>
-      <select placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/>
-      <script type="text/javascript">
-        for (var i = 0; i <= urls.length - 1; i++) {
-          document.write("<option value=\"" + urls[i][0] +"\">" + urls[i][1] + "</option>\n");
-        }
-      </script>
-      </select></div>
+        <select placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/>
+        <script type="text/javascript">
+          for (var i = 0; i <= urls.length - 1; i++) {
+            document.write("<option value=\"" + urls[i][0] +"\">" + urls[i][1] + "</option>\n");
+          }
+        </script>
+        </select>
+      </div>
       <!--<div id='auth_container'></div>
       <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
       -->

@@ -7,7 +7,7 @@ SwaggerUi.Views.HeaderView = Backbone.View.extend({
     'submit #api_selector'          : 'showCustom',
     'keyup #input_baseUrl'          : 'showCustomOnKeyup',
     'keyup #input_apiKey'           : 'showCustomOnKeyup',
-    'change #input_baseUrl'        : 'showCustom'
+    'change #input_baseUrl'         : 'showCustom'
   },
 
   initialize: function(){},

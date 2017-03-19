@@ -18,6 +18,30 @@ var cssnano = require('gulp-cssnano');
 var pkg = require('./package.json');
 var sourcemaps = require('gulp-sourcemaps');
 
+var bootprint = require('bootprint');
+var bootprintopenapi = require('bootprint-openapi');
+
+var yamls = [
+  ["index", "Index"],
+  ["products", "Product Spec"],
+  ["prospects", "Prospect Spec"],
+  ["quotations", "Quotation Spec"],
+  ["proposals", "Proposal Spec"]
+];
+
+/**
+ * build document
+ */
+gulp.task('bootprint-openapi', [], function () {
+  for (var i = yamls.length - 1; i >= 1; i--) {
+    bootprint
+      .load(bootprintopenapi)
+      .build('./src/main/yaml/' + yamls[i][0] + '.yaml', './dist/yaml/doc/' + yamls[i][0] + '/')
+      .generate()
+      .done(console.log);
+  }
+});
+
 
 var banner = ['/**',
   ' * <%= pkg.name %> - <%= pkg.description %>',
@@ -192,7 +216,7 @@ gulp.task('handlebars', function () {
 });
 
 gulp.task('default', function(callback) {
-    runSequence(['dist', 'copy'],
+    runSequence(['dist', 'copy'],['bootprint-openapi'],
                 ['uglify-libs', 'minify-css'],
                 callback);
 });
