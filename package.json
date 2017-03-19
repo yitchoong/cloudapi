@@ -14,6 +14,7 @@
   "main": "dist/swagger-ui.js",
   "scripts": {
     "build": "npm run handlebars && gulp",
+    "doc": "gulp bootprint-openapi",
     "handlebars": "handlebars ./src/main/template -f ./src/main/template/templates.js && gulp handlebars",
     "serve": "gulp serve",
     "prejshint": "gulp",
@@ -63,6 +64,8 @@
     "run-sequence": "^1.2.2",
     "selenium-webdriver": "^2.45.0",
     "sinon-chai": "2.8.0",
-    "swagger-client": "2.1.32"
+    "swagger-client": "2.1.32",
+    "bootprint": "1.0.0",
+    "bootprint-openapi": "1.0.1"
   }
 }
