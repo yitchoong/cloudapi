@@ -24,6 +24,12 @@ produces:
 consumes:
   - application/json
 
+securityDefinitions:
+  APISecurity:
+    type: apiKey
+    in: header
+    name: Token
+
 paths:
 
   # ----------- paths for prospect domain ----------------
@@ -42,6 +48,12 @@ paths:
 
   '/prospects/age':
     $ref : './prospects.yaml#/paths/~1prospects~1age'
+
+  '/assignments':
+    $ref : './prospects.yaml#/paths/~1assignments'
+
+  '/assignments/_bulk':
+    $ref : './prospects.yaml#/paths/~1assignments~1_bulk'
 
   # ----------- paths for product domain ----------------
 
