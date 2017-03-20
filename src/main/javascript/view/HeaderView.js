@@ -47,7 +47,7 @@ SwaggerUi.Views.HeaderView = Backbone.View.extend({
 
     var doclink = urls[$('#input_baseUrl').val()].doc;
     $(this.docLink)[0].href = doclink;
-    if (doclink == '#') {
+    if (doclink === '#') {
       $(this.docLink)[0].target = '_self';
     }
     else {
