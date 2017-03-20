@@ -1,4 +1,14 @@
 'use strict';
+/*setup yaml files*/
+var baseURL = window.location.protocol+ '//' + window.location.hostname+(window.location.port ? ':'+window.location.port: '') +'/';
+//var baseURL = ‘http://localhost:8080/‘;
+var urls = {
+  index:      {yaml: baseURL + 'yaml/index.yaml', doc: '#', desc: 'Index'},
+  products:   {yaml: baseURL + 'yaml/products.yaml', doc: baseURL + 'yaml/doc/products/', desc: 'Product Spec'},
+  prospects:  {yaml: baseURL + 'yaml/prospects.yaml', doc: baseURL + 'yaml/doc/prospects/', desc: 'Prospect Spec'},
+  quotations: {yaml: baseURL + 'yaml/quotations.yaml', doc: baseURL + 'yaml/doc/quotations/', desc: 'Quotation Spec'},
+  proposals:  {yaml: baseURL + 'yaml/proposals.yaml', doc: baseURL + 'yaml/doc/proposals/', desc: 'Proposal Spec'}
+};
 
 SwaggerUi.Views.HeaderView = Backbone.View.extend({
   events: {
@@ -9,6 +19,8 @@ SwaggerUi.Views.HeaderView = Backbone.View.extend({
     'keyup #input_apiKey'           : 'showCustomOnKeyup',
     'change #input_baseUrl'         : 'showCustom'
   },
+
+  docLink: '#doc_link',
 
   initialize: function(){},
 
@@ -30,8 +42,10 @@ SwaggerUi.Views.HeaderView = Backbone.View.extend({
     }
 
     this.trigger('update-swagger-ui', {
-      url: $('#input_baseUrl').val()
+      url: urls[$('#input_baseUrl').val()].yaml
     });
+
+    $(this.docLink)[0].href = urls[$('#input_baseUrl').val()].doc;
   },
 
   update: function(url, apiKey, trigger){
@@ -39,7 +53,7 @@ SwaggerUi.Views.HeaderView = Backbone.View.extend({
       trigger = false;
     }
 
-    $('#input_baseUrl').val(url);
+    //$('#input_baseUrl').val(url);
 
     if (trigger) {
       this.trigger('update-swagger-ui', {url:url});
