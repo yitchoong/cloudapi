@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Product)
   description: Sales API for the product domain on eBao Cloud
-  version: "0.0.3"
+  version: "0.0.4"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -13,6 +13,13 @@ basePath: /v1
 produces:
   - application/json
 
+# ---- Security Definitions -----------
+securityDefinitions:
+  APISecurity:
+    type: apiKey
+    in: header
+    name: Token
+
 paths:
 
   '/products':
@@ -21,14 +28,22 @@ paths:
       description: Use this endpoint to get a list of available main products given company id and birth date of the insured. The company id and birth date can optionally be supplied to filter the list of available main products. The authenticated user will be used to determine the channel that the intermediary belongs to. The channel is then used to filter the list of available products as well. The company id and the insured's birth date is optional as some client applications allow the user to select the product before determining the client.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
+        - $ref : '#/parameters/language'
         - $ref : '#/parameters/queryOffset'
         - $ref : '#/parameters/queryLimit'
         - $ref : '#/parameters/querySort'
-        - name: companyId
+        - name: productType
           in: query
           required: false
-          description: The company id is used to filter the products belonging to the specified list of companies e.g. companyId=001,002
+          type: string
+          description: Filter products based  on the product type i.e. Main or Rider
+        - name: insurerIds
+          in: query
+          required: false
+          description: Filter products that belong to the list of insurers e.g. insurerIds=001,002
           type: array
           items:
             type: string
@@ -36,61 +51,63 @@ paths:
           in: query
           required: false
           type: string
-          description: The birth date of the insured. This will be used to calculate the age of the insured which is in turn used to filter the available products.
+          description: Filter products where the calculated age (using the birth date) is within the minimum and maximum age limit.
+        - name: gender
+          in: query
+          required: false
+          type: string
+          description: Filter products which are targeted at specific products. Male or Female
 
       responses:
         200:
-          description: Successful response to fetch a list of main products
+          description: Successful response to fetch a list of products
           schema:
             type: array
             items:
               $ref: '#/definitions/ProductSummary'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}':
     get:
-      summary: Fetch a product.
-      description: This end point can be used to fetch the detailed product information. It will include all the product parameters, including the limits. The available values for coverage terms, premium payment terms, payment methods will also be included.
+      summary: Fetch a product document.
+      description: This end point can be used to fetch the detailed product information. It will include all the product parameters, including the limits. Additionally, the available values for coverage terms, premium payment terms, payment methods are also be included in the product document.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: the id of the main product
-          type: string
+        - $ref: '#/parameters/language'
+        - $ref: '#/parameters/productId'
       responses:
         200:
-          description: Successful response to fetch a product (will full details)
+          description: Successful response for fetching a product (will full details)
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Product'
+            $ref: '#/definitions/Product'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/riders':
-    get:
+    post:
       summary: Fetch the list of attachable riders for the given main product and currently attached riders.
-      description: This end point is typically used to generate a list of attachable riders that will be presented as a drop down list in the client application UI. Apart from the main product id, the list of riders that are already attached also determine the remaining attachable riders. These can be mutually exclusive riders e.g. "Waiver Plus" can no longer be attached if "Waiver Premium" is already attached.
+      description: This end point is typically used to generate a list of attachable riders that will be presented as a drop down list in the client application UI. Apart from the main product id, the list of riders that are already attached is also a factor in determining the remaining attachable riders. These can be mutually exclusive riders e.g. "Waiver Plus" rider can no longer be attached if the "Waiver Premium" rider is already attached.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          type: string
-          required: true
-          description: Unique id of the main product
-        - name: insuranceDetails
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
-          description: Details of the insurance including the life assureds, main product details and riders already attached
+          description: Details of the proposed insurance including the life assureds, main product details and riders already attached
           schema:
             $ref : '#/definitions/ProposedInsurance'
 
@@ -98,71 +115,63 @@ paths:
         200:
           description: Successful response that returns the list of riders together with their product parameters.
           schema:
-            $ref: '#/definitions/ProductAttachableRidersResponse'
+            type: array
+            items:
+              $ref : '#/definitions/Product'
         400:
-          description: Response when there are errors in the client input.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/calculators/age':
     get:
       summary: Calculate the age given the product id and birth date
-      description: Use this end point to calculate the age. The product id is used to determine the age method which will affect the calculation of the age. Pass the birth date (YYYY-MM-DD) in as a query parameter.
+      description: Use this end point to calculate the age. The product id is used to determine the age method which will affect the calculation of the age. Pass in the birth date (YYYY-MM-DD) as a query parameter e.g. GET /products/5212/calculators/age?birthDate=1978-06-22
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: the id of the main product
-          type: string
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
         - name: birthDate
           in: query
           required: true
           type: string
-          description: the birth date in YYYY-MM-DD format
+          description: The birth date in YYYY-MM-DD format
       responses:
         200:
-          description: Successful response calculate the age. Response.value will hold the calculated age
+          description: Successful response and calculated age is returned.
           schema:
             type: object
-            required:
-              - ok
             properties:
-              ok:
-                type: boolean
-              value:
+              age:
                 type: number
         400:
-          description: Response when there are errors in the input, e.g. date is not in the required format
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/calculators/premium':
     post:
-      summary: Compute the results of the premium calculator using the details of the proposed insurance.
-      description: Use this end point to trigger the calculation of the premium for all the products in the proposed insurance. The proposed insurance details must include the proposed life assured.
+      summary: Compute the results of the product premium calculator using the details of the proposed insurance.
+      description: Use this end point to trigger the calculation of the premium for all the products (main and riders) in the proposed insurance. The proposed insurance details must include the proposed life assured.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id of the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
           description: Proposed insurance details required to calculate the premium, i.e. insureds, main product, and riders input
@@ -170,98 +179,96 @@ paths:
             $ref : '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Successful response. Contains the request input with the addition of the premium amount (firstYearPremium) for the main product and riders
+          description: Successful response that contains the request input with the addition of the premium amount (firstYearPremium) for the main product and riders
           schema:
-            $ref: '#/definitions/ProductCalculatorResponse'
+            $ref: '#/definitions/ProposedInsurance'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/calculators/costOfInsurance':
     post:
-      summary: Compute the results of the cost of insurance calculator using the details of the proposed insurance.
-      description: Use this end point to trigger the calculation of the cost of insurance for all the products in the proposed insurance. The proposed insurance details must include the proposed life assured. The cost of insurance is applicable only to investment products.
+      summary: Compute the results of the product's cost of insurance calculator using the details of the proposed insurance.
+      description: Use this end point to trigger the calculation of the monthly cost of insurance for all the products in the proposed insurance parameter. The proposed insurance details must include the proposed life assured. The monthly cost of insurance is applicable only to investment products.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id of the main product
-          type: string
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
         - name: proposedInsurance
           in: body
           required: true
-          description: Proposed insurance details required to calculate the cost of insurance, i.e. insureds, main product, and riders input
+          description: Proposed insurance details required to calculate the cost of insurance, i.e. insureds, main product, and riders
           schema:
             $ref : '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Successful response. Contains the request input with the addition of the premium amount (firstYearPremium) for the main product and riders
+          description: Successful response that contains the request input with the addition of the monthly cost of insurance (monthlyCostOfInsurance) for the main product and riders
           schema:
-            $ref: '#/definitions/ProductCalculatorResponse'
+            $ref: '#/definitions/ProposedInsurance'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/calculators/illustration':
     post:
-      summary: Compute the results of the illustration calculator using the details of the proposed insurance.
-      description: Use this end point to trigger the calculation of the fields required for the illustration. The illustrations field are configured when setting up the product in the product factory.
+      summary: Compute the results of the product illustration calculator using the details of the proposed insurance.
+      description: Use this end point to trigger the calculation of the fields required for the illustration. The illustrations field are configured when setting up the product in the eBaoTech product factory.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id of the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
-          description: Proposed insurance details required to calculate the illustration fields, i.e. insureds, main product, and riders input
+          description: Proposed insurance details required to calculate the illustration fields, i.e. insureds, main product, and riders, topups, withdrawals, fund allocations
           schema:
             $ref : '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Successful response. Contains the request input with the addition of the result of the calculations (illustrationFields) for the main product and riders
+          description: Successful response that contains the request input with the addition of the result of the calculations (illustrationFields) for the main product and riders
           schema:
-            $ref: '#/definitions/ProductCalculatorResponse'
+            $ref: '#/definitions/ProposedInsurance'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
+
 
   '/products/{productId}/calculators/adhoc':
     post:
-      summary: Compute the results of the adhoc calculator for the list of illustration fields based on the proposed insurance.
-      description: Use this end point when the client applications needs fine grain control over which of the illustration fields to calculate for. The list of required illustration fields is passed in via the request body parameter. The illustrations field are configured when setting up the product in the product factory.
+      summary: Compute the results for the requested list of illustration fields using the product adhoc calculator and the details of the proposed insurance.
+      description: Use this end point when the client applications needs fine grain control over which of the illustration fields to trigger the calculation for. The requested list of illustration fields is passed in via the request body parameter. The illustrations field are configured when setting up the product in the eBaoTech product factory.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id of the main product
-          type: string
-        - name: params
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
-          description: The list of illustration fields and the proposed insurance details required to calculate the illustration fields, i.e. insureds, main product, and riders input
+          description: The parameter that contains the list of illustration fields and the proposed insurance details i.e. insureds, main product, and riders, topups, withdrawals, and fund allocations
           schema:
             type: object
             properties:
@@ -273,31 +280,30 @@ paths:
                 $ref : '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Successful response. Contains the request input with the addition of the calculated values (illustrationFields) for the main product and riders
+          description: Successful response that contains the request input with the addition of the calculated values (illustrationFields) for the main product and riders
           schema:
-            $ref: '#/definitions/ProductCalculatorResponse'
+            $ref: '#/definitions/ProposedInsurance'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/validateInsured':
     post:
       summary: Validate the eligibility of life assured to purchase the product.
-      description: This end point is used in certain scenarios, where the product is selected first and the the life insured is selected. The validate-insured validator will check the age and gender requirements for the product are met.
+      description: This end point is used in certain scenarios, where the product is selected and then followed by the selection of the life assured. Where the life assured is selected first, the available list of products will have been filter for their age and gender requirements. The validateInsured validator will check that the age and gender requirements for the product are met.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: insured
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
           description: An object that holds the details of the insured person
@@ -311,72 +317,72 @@ paths:
                 format: date
               gender:
                 type: string
-                description: MALE or FEMALE
+                description: Male or Female
               smoking:
                 type: string
+              occupation:
+                type: string
+                description: The occupation is used to determine the risk class
+              riskClass:
+                type: string
+                description: Can be provided instead of the occupation
       responses:
         200:
-          description: Response when the validation has no errors
+          description: Response when the validation has no errors. Returns the complete product document.
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/Product'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/validateMain':
     post:
-      summary: Trigger the validate-main validator using the proposed insurance details.
-      description: Use this end point to validate the main product for the proposed insurance details supplied in the request body. Typically in the client application, the main product details are captured in its own page (section). This end point can be called to validate the input of the main product when the client application navigates away from the page (section).
+      summary: Trigger the validateMain validator to check the main product in the proposed insurance details.
+      description: Use this end point to validate the main product details. Typically in the front end client application, the main product details are captured in its own page (section). This end point can be called to validate the input of the main product when the client application navigates away from the page (section).
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
-          description: The proposed insurance details, minimally with the insureds and main product information
+          description: The proposed insurance details, minimally with the insureds and main product input
           schema:
             $ref: '#/definitions/ProposedInsurance'
       responses:
         200:
           description: Response when the validation of the main product has no errors
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/validateRiders':
     post:
-      summary: Trigger the validate-riders validator using the proposed insurance details.
-      description: Use this end point to validate all the riders attached to the main product using the proposed insurance details supplied in the request body. Checks typically include the minimum and maximum coverage amounts, the age limits of the insured, etc. Typically used when navigating away from the page (section) which captures the riders.
+      summary: Trigger the validateRiders validator to check the riders input in the proposed insurance details.
+      description: Use this end point to validate all the riders attached to the main product for the proposed insurance details supplied in the request body. Checks typically include the minimum and maximum coverage amounts, the age limits of the insured, etc. Typically used when navigating away from the page (section) which captures the riders input.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
           description: The proposed insurance details, minimally with the insureds, main product, and riders information
@@ -384,33 +390,30 @@ paths:
             $ref: '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Response when the validation has no errors
+          description: Response when the validation has no errors in the riders
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/validateTopups':
     post:
-      summary: Trigger the validate-topups validator using the proposed insurance details.
-      description: Use this end point to validate all the topups using the proposed insurance details supplied in the request body. Input of topups are only required in the case of investment policies. Validation include minimum topup amounts.
+      summary: Trigger the validateTopups validator to check the top-up values in the proposed insurance details.
+      description: Use this end point to validate all the topups in the proposed insurance details supplied in the request body. Input of topups are only required for investment policies.
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
           description: The proposed insurance details, minimally with the insureds, main product, and topups information
@@ -418,33 +421,30 @@ paths:
             $ref: '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Response when the validation has no errors
+          description: Response when the validation has no errors in the top-ups.
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/validateWithdrawals':
     post:
-      summary: Trigger the validate-withdrawals validator using the proposed insurance details.
-      description: Use this end point to validate all the withdrawals using the proposed insurance details supplied in the request body. Input of withdrawals are only required in the case of investment policies. Validation include minimum withdrawal amounts and whether withdrawals are allowed (e.g. withdrawals may not be allowed in the initial 5 years)
+      summary: Trigger the validateWithdrawals validator to check the withdrawals in the proposed insurance details.
+      description: Use this end point to validate all the withdrawals using the proposed insurance details supplied in the request body. Input of withdrawals are only required for investment policies. Validation include minimum withdrawal amounts and whether the year of the withdrawals are allowed (e.g. withdrawals may not be allowed in the initial 5 years)
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
           description: The proposed insurance details, minimally with the insureds, main product, and withdrawals information
@@ -452,33 +452,30 @@ paths:
             $ref: '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Response when the validation has no errors
+          description: Response when the validation has no errors in the withdrawals
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/validateFunds':
     post:
-      summary: Trigger the validate-funds validator using the proposed insurance details.
-      description: Use this end point to validate all the fund allocations using the proposed insurance details supplied in the request body. Input of fund allocations are required for investment proposals. Validation include minimum allocation (e.g. min of 10%) and fixed quantums (e.g. allocations must be multiples of 5%)
+      summary: Trigger the validateFunds validator to check the fund allocations in the proposed insurance details in the body parameter.
+      description: Use this end point to validate all the fund allocations using the proposed insurance details supplied in the request body. Input of fund allocations are required for investment proposals. Validation include minimum allocation (e.g. min of 10%) and allowed quantums (e.g. allocations must be multiples of 5%)
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
           description: The proposed insurance details, minimally with the insureds, main product, and fund allocation information
@@ -486,60 +483,145 @@ paths:
             $ref: '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Response when the validation has no errors
+          description: Response when the validation has no errors in the fund allocations
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+            $ref: '#/responses/Standard400Response'
+        401:
+            $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
   '/products/{productId}/validators/adhoc':
     post:
-      summary: Generate the results of the adhoc validator for the list of submitted validators using the proposed insurance details.
-      description: Use this end point to validate when the client application requires fine grain control over which validators need to be run. The list of validators to trigger must be in the request details as part of the request body. An an example, this endpoint can be used to validate the topups and withdrawals, which may be on the same page of the client application e.g. validatorList= [validateTopups, validateWithdrawals]
+      summary: Generate the results for the requested list of validators using the adhoc validator and the details of the proposed insurance submitted in the body paramater.
+      description: Use this end point to trigger specific validators when the client application requires fine grain control over the validation. The list of validators to trigger must be in the request details as part of the body parameter. An an example, this endpoint can be used to validate the topups and withdrawals, which may be on the same page of the client application e.g. validatorList= ["validateTopups", "validateWithdrawals"]
       tags:
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - name: productId
-          in: path
-          required: true
-          description: Unique id for the main product
-          type: string
-        - name: proposedInsurance
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
           in: body
           required: true
-          description: The proposed insurance details, minimally with the insureds, and main product information
+          description: An object containing the validator list and the proposed insurance details, minimally with the insureds, and main product information
           schema:
-            allOf:
-              - $ref: '#/definitions/ProposedInsurance'
-              - properties:
-                  valdatorList:
-                    type: array
-                    items:
-                      type: string
+            type: object
+            properties:
+              validatorList:
+                type: array
+                items:
+                  type: string
+              proposedInsurance:
+                $ref : '#/definitions/ProposedInsurance'
       responses:
         200:
-          description: Response when the validation has no errors
+          description: Response when the validation has no errors for the requested validator list
           schema:
-            $ref: '#/definitions/ValidatorSuccessResponse'
+            $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          description: The response when there are errors from the validation. Response.errorList will hold a list of the errors.
-          schema:
-            $ref: '#/definitions/ValidatorErrorResponse'
+            $ref: '#/responses/Standard400Response'
+        401:
+            $ref: '#/responses/Standard401Response'
         404:
-          description: Response when the product document is not found.
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/responses/Standard404Response'
         500:
-          $ref: '#/responses/Standard500ErrorResponse'
+          $ref: '#/responses/Standard500Response'
 
+  '/products/{productId}/templates/illustration':
+    get:
+      summary: Fetch the illustration template for the product
+      description: This end point should be used at design time as it provides an html template on the illustration for the given product. It typically would contain static and dynamic elements. It is meant to provide a sample of how the illustration output should look like and also where the dynamic elements (fields) are on the template. The data for dynamic elements can be fullfilled by the /products/{productId}/illustration end point. The actual output of the illustration can be implemented in any format and it is the decision of the front end application.
+      tags:
+        - Product
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+
+      responses:
+        200:
+          description: Successful response and the template is returned
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: HTML string containing the template
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/products/{productId}/calculators/illustration/fields':
+    get:
+      summary: Fetch the list of illustration calculator fields for the product
+      description: This end point should be used at design time to obtain a list of the illustration fields that have been configured for the product. This list can be useful when the client wants to have fine-grain control over which of the illustration fields calculation should be triggered (POST /products/{productId}/calculators/adhoc)
+      tags:
+        - Product
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+
+      responses:
+        200:
+          description: Successful response that return a list of illustration fields (name and description)
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                fieldName:
+                  type: string
+                description:
+                  type: string
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/products/{productId}/validators':
+    get:
+      summary: Fetch the list of available validators for the product
+      description: This end point is expected to be used at design time. It can be used to get a listing of the available validators for the product. This is useful when the client application requires fine grain control over the triggering of the various validators. Triggering of the specific validators can be done using the /products/{productId}/validators/adhoc end point.
+      tags:
+        - Product
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+
+      responses:
+        200:
+          description: Successful response that return a list of validators that are available for the product
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                fieldName:
+                  type: string
+                description:
+                  type: string
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
 
 # ******************************  definitions  ***************************
 definitions:
@@ -584,9 +666,15 @@ definitions:
   ProductSummary:
     type: object
     properties:
-      productId:
+      pk:
         type: string
         description: Unique id for the productId
+      doctype:
+        type: string
+        default: "Product"
+      productCode:
+        type: string
+        description: Code for the product  i.e. internal_id
       productName:
         type: string
       insType:
@@ -717,20 +805,12 @@ definitions:
       insuredNumber:
         type: number
         description: Used to identified the insured in the insured list
-      firstYearPremium:
-        type: number
-        description: This should normally be a calculated field from the backend
       displayPremiumIndi:
         type: string
         description: value should be "Y" or "N"
-      monthlyCoi:
-        type: number
-        description: the monthly cost of insurance for ILP products - calculated by the back end
       displayMonthlyCoi:
         type: string
         description: value should be "Y" or "N"
-      illustrationFields:
-        $ref: '#/definitions/IllustrationMap'
 
   ProductCoveragePeriod:
     type: object
@@ -796,7 +876,6 @@ definitions:
         type: string
         description: The data type of the input field i.e. String, Date or Number or Enum (for cases where the drop down list obtained from the response from the end point /products/{productId} e.g. coveragePeriods, currency)
 
-
   Product:
     allOf:
       - $ref: '#/definitions/ProductSummary'
@@ -857,6 +936,62 @@ definitions:
         type: string
         description: Generally SMOKER or NON-SMOKER and used as a factor to determine the risk premium
 
+  # Products fields that are expected from the clients when they submit their requests
+  ProductInput:
+    type: object
+    properties:
+      productId:
+        type: string
+      productCode:
+        type: string
+      productName:
+        type: string
+      lifeAssuredNumber:
+        type: integer
+        description: index into the insured list i.e. identify person playing role of insured for this product
+      sumAssured:
+        type: number
+      coverageTermType:
+        type: string
+      coverageTermValue:
+        type: number
+      premiumPaymentTermType:
+        type: string
+      premiumPaymentTermValue:
+        type: number
+      targetPremium:
+        type: number
+      regularTopup:
+        type: number
+      commencementDate:
+        type: string
+        format: date
+      packageId:
+        type: string
+      currency:
+        type: string
+      benefitLevel:
+        type: string
+      benefitPlan:
+        type: string
+      coverageEndAge:
+        type: number
+      premiumTermEndAge:
+        type: number
+      saUnit:
+        type: number
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold local customized fields
+        additionalProperties:
+          type: string
+      firstYearPremium:
+        type: number
+      monthlyCostOfInsurance:
+        type: number
+      illustrationFields:
+        $ref: '#/definitions/IllustrationMap'
+
   ProposedInsurance:
     properties:
       insuredList:
@@ -879,11 +1014,11 @@ definitions:
         type: string
         description: The user that created this quotation
       mainProduct:
-        $ref: '#/definitions/ProductSummary'
+        $ref: '#/definitions/ProductInput'
       riderList:
         type: array
         items:
-          $ref: '#/definitions/ProductSummary'
+          $ref: '#/definitions/ProductInput'
       fundList:
         type: array
         items:
@@ -921,95 +1056,25 @@ definitions:
       #   type: number
 
 
-  ProductAttachableRidersResponse:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        type: object
-        properties:
-          riderList:
-            type: array
-            items:
-              $ref: '#/definitions/ProductSummary'
-
-  ProductCalculatorResponse:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        $ref: '#/definitions/ProposedInsurance'
-
-  ValidatorSuccessResponse:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        type: string
-        description: Simple message do advise that there are no validation errors
-
-  ValidatorErrorResponse:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      errorList:
-        type: array
-        items:
-          type: object
-          properties:
-            validator:
-              description: Name of the validators that emitted the error
-              type: string
-            errors:
-              description: The errors emitted by the validator. Designed to allow for multiple error messages per validator
-              type: array
-              items:
-                type: string
-
-  # *** Definitions used for some common responses
-
-  # SuccessResponse:
-  #   type: object
-  #   required:
-  #     - ok
-  #   properties:
-  #     ok:
-  #       type: boolean
-  #     value:
-  #       type: string
-
-  ErrorResponse:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      error:
-        $ref: '#/definitions/Error'
-
-  Error:
+  ValidatorSuccessResult:
     type: object
     properties:
-      code:
-        type: integer
-        format: int32
       message:
+        description: Simple message to indicate no validation errors e.g. ok
         type: string
-      fields:
-        type: string
+        default: "ok"
+
+
+  # Error:
+  #   type: object
+  #   properties:
+  #     code:
+  #       type: integer
+  #       format: int32
+  #     message:
+  #       type: string
+  #     fields:
+  #       type: string
 
 
 # ********************* parameters *************************
@@ -1041,6 +1106,19 @@ parameters:
     type: string
     format: string
 
+  language:
+    name: lang
+    in: header
+    description: Language to be used in case the response has text data (e.g. error messages)
+    type: string
+    required: false
+
+  productId:
+    name: productId
+    in: path
+    type: string
+    required: true
+    description: Unique id for the product
 
 
 # ************************ responses ****************************
@@ -1048,37 +1126,45 @@ parameters:
 responses:
 
   Standard400Response:
-    description: The request cannot be process due to a client error (submitted data has errors)
+    description: Response to indicate that the request cannot be processed due to a client error (submitted data has errors).
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
 
-  Standard500ErrorResponse:
-    description: An unexpected error occured.
+  Standard401Response:
+    description: Response when the client is not authorized for this operation.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "Authentication credentials were missing or incorrect"
 
-  # SuccessResponse:
-  #   description: Request was successfully processed
-  #   schema:
-  #     type: object
-  #     required:
-  #       - ok
-  #     properties:
-  #       ok:
-  #         type: boolean
-  #       value:
-  #         $ref: "#/definitions/SuccessResponse"
+  Standard404Response:
+    description: Response when the document is not found.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "The item does not exist"
+
+  Standard500Response:
+    description: Response when there is an unexpected server error.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "An unexpected error has occurred. Please try again later"

@@ -6,7 +6,7 @@ info:
       user / application access one of the most important funtion of eBaoCLoud.
       The APIs provide product access, calculation and validation features and
       sales / new business origination.
-  version: 0.0.3
+  version: 0.0.4
 
 # the domain of the service
 host: localhost:8080
@@ -101,6 +101,15 @@ paths:
 
   '/products/{productId}/validators/adhoc':
     $ref : './products.yaml#/paths/~1products~1{productId}~1validators~1adhoc'
+
+  '/products/{productId}/templates/illustration':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1templates~1illustration'
+
+  '/products/{productId}/calculators/illustration/fields':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1illustration~1fields'
+
+  '/products/{productId}/validators':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1validators'
 
   # ----------- paths for quotation domain ----------------
 
