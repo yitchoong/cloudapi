@@ -414,6 +414,8 @@ definitions:
       email:
         type: string
         description: Email address for the prospect
+      gender:
+        type: string
       birthDate:
         type: string
         format: date
