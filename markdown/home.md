@@ -3,6 +3,7 @@
 |---------|-----------|------------|-------------------------------------|
 | Mar 13 2017 | eBao - PBU Life  | 0.0.1     | Initial version
 | Mar 22 2017 | eBao - PBU Life  | 0.0.2     | Separate wiki pages
+| Mar 27 2017 | eBao - PBU Life  | 0.0.3     | Include Insurer, Proposer in Product domain
 
 ### <a name="intro">1.0 Introduction   </a>
 
@@ -76,9 +77,15 @@ The eBaoTech Cloud services are organized by domains. The domains are:
 
 Please refer to the [specification](http://swagger.ebaocloud.life) for the available services under each of the domains.
 
+The following is a diagram of the various domains with their respective resources that they manage.
+
+![](../assets/screens/class.png)
+
 The purpose of this document is to supplement the eBaoTech Cloud API specifications, i.e. for the purpose of making it easier to understand how the API services can be used. The APIs are designed to help in the building of front end applications that are targeted at the life insurance sales process.
 
 To aid in the understanding of the available APIs, we will discuss example use cases. For each of the domains, we will discuss one or more use cases, and for each use case, we will highlight how the eBaoTech Cloud APIs are used to accomplish the required task. Sequence diagrams serve as a useful tool to demonstrate the calls to the APIs. Where appropriate, sample mock up screens are also used to help provide context for the discussions.
+
+
 
 The follow the following links for the discussion on the various use cases.
 
