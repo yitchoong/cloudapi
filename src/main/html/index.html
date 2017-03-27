@@ -33,21 +33,21 @@
 
   <script type="text/javascript">
     /*setup yaml files*/
-    var baseURL = "http://" + window.location.hostname+(window.location.port ? ':'+window.location.port: '') +"/";
+    var baseURL = window.location.protocol+ "//" + window.location.hostname+(window.location.port ? ':'+window.location.port: '') +"/";
     //var baseURL = "http://localhost:8080/";
     var urls = [
-      [baseURL + "yaml/index.yaml", "Index"],
-      [baseURL + "yaml/products.yaml", "Product Spec"],
-      [baseURL + "yaml/prospects.yaml", "Prospect Spec"],
-      [baseURL + "yaml/quotations.yaml", "Quotation Spec"],
-      [baseURL + "yaml/proposals.yaml", "Proposal Spec"]
+      ['index', 'Index'],
+      ['products', 'Product Spec'],
+      ['prospects', 'Prospect Spec'],
+      ['quotations', 'Quotation Spec'],
+      ['proposals', 'Proposal Spec']
     ];
     $(function () {
       var url = window.location.search.match(/url=([^&]+)/);
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        url = urls[0][0];
+        url = baseURL + 'yaml/index.yaml';
       }
 
       hljs.configure({
@@ -106,16 +106,18 @@
     <form id='api_selector'>
       <!--<div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>-->
       <div class='input'>
-      <select placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/>
-      <script type="text/javascript">
-        for (var i = 0; i <= urls.length - 1; i++) {
-          document.write("<option value=\"" + urls[i][0] +"\">" + urls[i][1] + "</option>\n");
-        }
-      </script>
-      </select></div>
+        <select placeholder="" id="input_baseUrl" name="baseUrl" type="text"/>
+        <script type="text/javascript">
+          for (var i = 0; i <= urls.length - 1; i++) {
+            document.write("<option value=\"" + urls[i][0] +"\">" + urls[i][1] + "</option>\n");
+          }
+        </script>
+        </select>
+      </div>
       <!--<div id='auth_container'></div>
       <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
       -->
+      <div class='input'><a id="doc_link" class="header__btn" href="#" target="_self" data-sw-translate>Document</a></div>
     </form>
   </div>
 </div>
