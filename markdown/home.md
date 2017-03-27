@@ -76,9 +76,15 @@ The eBaoTech Cloud services are organized by domains. The domains are:
 
 Please refer to the [specification](http://swagger.ebaocloud.life) for the available services under each of the domains.
 
+The following is a diagram of the various domains with their respective resources that they manage.
+
+![](../assets/screens/class.png)
+
 The purpose of this document is to supplement the eBaoTech Cloud API specifications, i.e. for the purpose of making it easier to understand how the API services can be used. The APIs are designed to help in the building of front end applications that are targeted at the life insurance sales process.
 
 To aid in the understanding of the available APIs, we will discuss example use cases. For each of the domains, we will discuss one or more use cases, and for each use case, we will highlight how the eBaoTech Cloud APIs are used to accomplish the required task. Sequence diagrams serve as a useful tool to demonstrate the calls to the APIs. Where appropriate, sample mock up screens are also used to help provide context for the discussions.
+
+
 
 The follow the following links for the discussion on the various use cases.
 

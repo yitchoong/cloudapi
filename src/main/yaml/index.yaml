@@ -6,11 +6,12 @@ info:
       user / application access one of the most important funtion of eBaoCLoud.
       The APIs provide product access, calculation and validation features and
       sales / new business origination.
-  version: 0.0.4
+  version: 0.0.5
+  # re-align objects in the products and quotation domains
 
 # the domain of the service
 host: localhost:8080
-# host: swagger.zhuliliang.com
+
 
 schemes:
   - http
@@ -56,6 +57,33 @@ paths:
     $ref : './prospects.yaml#/paths/~1assignments~1_bulk'
 
   # ----------- paths for product domain ----------------
+
+  '/insurers':
+    $ref : './products.yaml#/paths/~1insurers'
+
+  '/insurers/{insurerId}':
+    $ref : './products.yaml#/paths/~1insurers~1{insurerId}'
+
+  '/packages':
+    $ref : './products.yaml#/paths/~1packages'
+
+  '/packages/detailed':
+    $ref : './products.yaml#/paths/~1packages~1detailed'
+
+  '/packages/{packageId}':
+    $ref : './products.yaml#/paths/~1packages~1{packageId}'
+
+  '/packages/{packageId}/products/{productId}':
+    $ref : './products.yaml#/paths/~1packages~1{packageId}~1products~1{productId}'
+
+  '/packages/filters':
+    $ref : './products.yaml#/paths/~1packages~1filters'
+
+  '/packages/{packageId}/favourite':
+    $ref : './products.yaml#/paths/~1packages~1{packageId}~1favourite'
+
+  '/packages/{packageId}/quote':
+    $ref : './products.yaml#/paths/~1packages~1{packageId}~1quote'
 
   '/products':
     $ref : './products.yaml#/paths/~1products'
@@ -112,30 +140,6 @@ paths:
     $ref : './products.yaml#/paths/~1products~1{productId}~1validators'
 
   # ----------- paths for quotation domain ----------------
-
-  '/insurers':
-    $ref : './quotations.yaml#/paths/~1insurers'
-
-  '/insurers/{insurerId}':
-    $ref : './quotations.yaml#/paths/~1insurers~1{insurerId}'
-
-  '/packages':
-    $ref : './quotations.yaml#/paths/~1packages'
-
-  '/packages/detailed':
-    $ref : './quotations.yaml#/paths/~1packages~1detailed'
-
-  '/packages/{packageId}':
-    $ref : './quotations.yaml#/paths/~1packages~1{packageId}'
-
-  '/packages/{packageId}/products/{productId}':
-    $ref : './quotations.yaml#/paths/~1packages~1{packageId}~1products~1{productId}'
-
-  '/packages/filters':
-    $ref : './quotations.yaml#/paths/~1packages~1filters'
-
-  '/packages/{packageId}/quote':
-    $ref : './quotations.yaml#/paths/~1packages~1{packageId}~1quote'
 
   '/quotes':
     $ref : './quotations.yaml#/paths/~1quotes'
