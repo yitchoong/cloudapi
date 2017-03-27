@@ -2,12 +2,15 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Product)
   description: Sales API for the product domain on eBao Cloud
-  version: "0.0.4"
+  version: "0.0.5"
+  # version 0.0.5 include insurer and package resources here
+
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
 schemes:
   - http
+  - https
 # will be prefixed to all paths
 basePath: /v1
 produces:
@@ -21,6 +24,313 @@ securityDefinitions:
     name: Token
 
 paths:
+
+  '/insurers':
+    get:
+      summary: Fetch a list of insurer documents
+      description: |
+        This endpoint returns a list of insurers.There are a number of parameters to help with filtering and sorting of the required insurer documents.
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/queryFilter'
+      tags:
+        - Insurer
+      responses:
+        200:
+          description: Successful response to fetching a list of insurers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Insurer'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/insurers/{insurerId}':
+    get:
+      summary: Fetch an insurer document
+      description: This end point is used to get the insurer for the requested insurer id.
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - name: insurerId
+          in: path
+          required: true
+          description: Unique id of the insurer
+          type: string
+      tags:
+        - Insurer
+      responses:
+        200:
+          description: Successful response to fetching an insurer document
+          schema:
+            $ref: '#/definitions/Insurer'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages':
+    get:
+      summary: Fetch a list of packages (basic information).
+      description: This endpoint returns a list of packages with basic information about the package. There are a number of parameters to help with filtering and sorting of the required documents.
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - name : favourite
+          in: query
+          type: string
+          allowEmptyValue: true
+          required: false
+          description: Specific filter to get the favourite packages for the user
+      tags:
+        - Package
+      responses:
+        200:
+          description: Successful response to fetching a list of packages.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PackageSummary'
+        400:
+          $ref: '#/responses/Standard404Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages/detailed':
+    get:
+      summary: Fetch a list of detailed packages (full information).
+      description: This endpoint returns a list of packages with complete information about the package. There are a number of parameters to help with filtering and sorting of the required prospects. This endpoint differs from GET /packages in that it returns packages with full information instead of just basic information. A use case is when multiple packages are selected for further processing.
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - name : favourite
+          in: query
+          type: string
+          required: false
+          allowEmptyValue: true
+          description: Specific filter to get the favourite packages for the user
+      tags:
+        - Package
+      responses:
+        200:
+          description: Successful response to fetching a list of packages (complete information).
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Package'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages/{packageId}':
+    get:
+      summary: Fetch a package document document (complete information)
+      description: Use this end point to fetch a complete package document
+      tags:
+        - Package
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/packageId'
+      responses:
+        200:
+          description: Successful response when fething a package.
+          schema:
+            $ref: '#/definitions/Package'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages/{packageId}/products/{productId}':
+    get:
+      summary: Fetch a package product document
+      description: Packages will contain main product and rider products. Use this end point when the client wants to fetch additional information about a package-product (main or rider product) document. The document contains mainly textual information to explain the features of the package product.
+      tags:
+        - Package
+        - Product
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/packageId'
+        - $ref: '#/parameters/productId'
+
+      responses:
+        200:
+          description: Successful response where the package product document is returned.
+          schema:
+            $ref: '#/definitions/PackageProduct'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages/filters':
+    get:
+      summary: Fetch the list of pre-defined search fields and values for packages.
+      description: To support the search function on mobile environments, it is easier to provide a list of pre-defined search values for the search fields. These can then be selected instead of using the keyboard to enter the search value. The predefined values are for insurers, product category, and benefit type fields.
+      tags:
+        - Package
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+
+      responses:
+        200:
+          description: Successful response where the pre-defined search values are returned.
+          schema:
+            type: object
+            properties:
+              insurers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                      insurerId:
+                        type: string
+                      insurerName:
+                        type: string
+              productCategories:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    categoryId:
+                      type: string
+                    categoryName:
+                      type: string
+                    displayOrder:
+                      type: number
+              benefitTypes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    benefitId:
+                      type: string
+                    benefitName:
+                      type: string
+                    benefitDesc:
+                      type: string
+
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages/{packageId}/favourite':
+    post:
+      summary: Set a package as favourite
+      description: This end point is used to mark a package as a favourite package. It is linked to the currently authenticated user.
+      tags:
+        - Package
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/packageId'
+      responses:
+        200:
+          description: Successful response when setting a favourite package
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Simple message to indicate that the operation was successful. e.g. OK
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    delete:
+      summary: Remove a package as favourite
+      description: This end point is used to unmark a package as a favourite package. It is linked to the currently authenticated user.
+      tags:
+        - Package
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/packageId'
+      responses:
+        200:
+          description: Successful response when unmarking a favourite package
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Simple message to indicate that the operation was successful. e.g. OK
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/packages/{packageId}/quote':
+    get:
+      summary: Fetch the initial quote data for a given package
+      description: After viewing the package information, the client application proceeds with the quote based on the package. This endpoint will fetch the initial data for a new quote based on the selected package. Based on the package id, the package main product and riders plus additional available riders are included in the initial data. Additionally, the product parameters for all the products (main and riders) also be included in the initial quote data.
+      tags:
+        - Package
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/packageId'
+      responses:
+        200:
+          description: Successful response to a request to fetch the initial data for a new quote. The productList is a list with all the products. The first item is always the main product.
+          schema:
+            $ref: '#/definitions/NewQuote'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
 
   '/products':
     get:
@@ -626,6 +936,387 @@ paths:
 # ******************************  definitions  ***************************
 definitions:
 
+  Insurer:
+    type: object
+    properties:
+      pk:
+        type: string
+        description: Unique id for the insurer
+      doctype:
+        type: string
+        default: "Insurer"
+      insurerName:
+        type: string
+        description: Name of the insurer
+      shortName:
+        type: string
+        description: Insurer short Name
+      logo:
+        type: string
+        description: Reference to the image to use for the insurer logo (e.g. zurich.png)
+      telephone:
+        type: string
+        description: Phone number for the insurer
+      url:
+        type: string
+        description: Url for the insurer website
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  # summary information about a package product
+
+  PackageProductSummary:
+    type: object
+    properties:
+      pk:
+        type: string
+        description: Unique id to identify the product
+      doctype:
+        type: string
+        default: "PackageProduct"
+      version:
+        type: string
+      packageProductName:
+        type: string
+        description: Name of the product
+      insType:
+        type: string
+        description: To indicate if main or rider 1=Main, 2=Rider
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  PackageProduct:
+    allOf:
+      - $ref: '#/definitions/PackageProductSummary'
+      - properties:
+          underwritingRule:
+            type: object
+            properties:
+              insurerRule:
+                type: string
+                description: Description of the insurer underwriting rules
+              productRule:
+                type: string
+                description: Description of the product unerwriting rule
+          liabilities:
+            type: array
+            items:
+              type: object
+              properties:
+                liabDesc:
+                  type: string
+                  description: Description about the liability
+          caseStudies:
+            type: array
+            items:
+              type: object
+              properties:
+                caseStudyFileRef:
+                  type: string
+                  description: Reference to a pdf to describe the case study
+                displayOrder:
+                  type: number
+                  description: For the ordering of the case studies
+
+          remark:
+            type: string
+            description: Additional remarks about this product
+
+          diseaseInfo:
+            type: string
+            description: Information about diseases covered for the product
+
+          termAndConditions:
+            type: string
+            description: Writeup about the detailed terms and conditions of the insurance contract
+
+  PackageLiability:
+    type: object
+    properties:
+      liabId:
+        type: string
+        description: Unique id for the liability
+      liabType:
+        type: string
+        description: Type of liability (category)
+      liabDesc:
+        type: string
+        description: The description for the liability
+      displayOrder:
+        type: number
+        description: Controls the ordering when displaying the liability information.
+
+  # PackageBenefit:
+  #   type: object
+  #   properties:
+  #     benefitId:
+  #       type: string
+  #       description: Unique id of the benefit
+  #     benefitName:
+  #       type: string
+  #       description: Name of the benefit
+  #     benefitDesc:
+  #       type: string
+  #       description: Description about the benefit
+  #     displayOrder:
+  #       type: number
+  #       description: Controls the ordering when displaying the benefit
+
+  PackageCoveragePeriod:
+    type: object
+    properties:
+      coverageType:
+        type: string
+        description: Coverage type is usually in duration (e.g. 10 years) or the end age (e.g. until age 65)
+      coverageValue:
+        type: number
+        description: Depending on the coverageType, the meaning of this field is either the number of years to cover OR the coverage end age.
+
+  PackagePremiumPaymentTerm:
+    type: object
+    properties:
+      termType:
+        type: string
+        description: Either duration or end age i.e. pay premium for 20 years (duration) or pay premium premium until age 55 (end age)
+      termValue:
+        type: number
+        description: Number representing the duration or end age depending on termType
+
+  PackageProductFeature:
+    type: object
+    properties:
+      featureId:
+        type: string
+        description: Unique id for the feature
+      featurePic:
+        type: string
+        description: Reference to the image to highlight the feature
+      displayOrder:
+        type: number
+        description: Ordering information when displaying the feature
+
+  PackageHighlight:
+    type: object
+    properties:
+      highLightId:
+        type: string
+        description: Unique id for the hightlight
+      description:
+        type: string
+        description: Description of the package hightligh
+      displayOrder:
+        type: number
+        description: Ordering information
+
+  PackageAttachableRider:
+    type: object
+    properties:
+      productId:
+        type: string
+        description: Either the main product or a rider (in the case of dependent riders) i.e. the primary product
+      attachId:
+        type: string
+        description: The attachable rider i.e. the secondary product.
+      compulsory:
+        type: string
+        description: Flag to indicate if this relationship is mandatory. Can be used to represent mandatory riders that must be attached to the main product
+      attachedProductName:
+        type: string
+        description: Name of the attachable rider
+
+  PackageSummary:
+    type: object
+    properties:
+      packageId:
+        type: string
+        description: Unique id for the package
+      packageName:
+        type: string
+        description: Name of the package
+      examplePremium:
+        type: number
+        description: Typical premium
+      favourite:
+        type: boolean
+        description: Flag to mark the package as a favourite of the user
+      isNew:
+        type: boolean
+        description: New package or otherwise
+      productCategory:
+        type: string
+        description: Product category e.g. Whole Life, Endowment, Health, Accident
+      ageRange:
+        type: object
+        properties:
+          minAge:
+            type: number
+            description: Minimum age of life assured
+          minAgeUnit:
+            type: string
+            description: The unit for the mininum age (e.g. years, days)
+          maxAge:
+            type: number
+            description: Max age of the life assured
+          maxAgeUnit:
+            type: string
+            description: The unit for the maximum age
+      visitNumber:
+        type: number
+        description: Count of the number of times the user has viewed this package
+      tagList:
+        type: array
+        items:
+          type: object
+          properties:
+            tagId:
+              type: string
+              description: Unique id for the tag
+            tagName:
+              type: string
+              description: Name for the tag
+            tagPic:
+              type: string
+              description: The reference for the picture to load
+      coveragePeriods:
+        type: array
+        items:
+          $ref: "#/definitions/PackageCoveragePeriod"
+      # benefits:
+      #   type: array
+      #   items:
+      #     $ref: "#/definitions/PackageBenefit"
+      highlights:
+        type: array
+        items:
+          $ref: '#/definitions/PackageHighlight'
+
+      liabilities:
+        type: array
+        items:
+          $ref: "#/definitions/PackageLiability"
+
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: string
+
+  Package:
+    allOf:
+      - $ref: '#/definitions/PackageSummary'
+      - properties:
+          insurer:
+            $ref: '#/definitions/Insurer'
+          premiumPaymentTerms:
+            type: array
+            items:
+              $ref: '#/definitions/PackagePremiumPaymentTerm'
+          features:
+            type: array
+            items:
+              $ref: '#/definitions/PackageProductFeature'
+          mainProduct:
+            $ref: "#/definitions/PackageProductSummary"
+          attachableRiders:
+            type: array
+            items:
+              $ref: '#/definitions/PackageAttachableRider'
+
+          # age range already in the PackageSummary
+
+          # ageRange:
+          #   type: object
+          #   properties:
+          #     minAge:
+          #       type: number
+          #       description: Minimum age of life assured
+          #     minAgeUnit:
+          #       type: string
+          #       description: The unit for the mininum age (e.g. years, months)
+          #     maxAge:
+          #       type: number
+          #       description: Max age of the life assured
+          #     maxAgeUnit:
+          #       type: string
+          #       description: The unit for the maximum age
+
+          # Does not seem used  -- remove first
+
+          # amountLimit:
+          #   type: object
+          #   properties:
+          #     minAmount:
+          #       type: number
+          #       description: Mininum amount
+          #     maxAmount:
+          #       type: number
+          #       description: Maximum amount
+          #     currency:
+          #       type: string
+          #       description: Currency of the limit
+
+  # definition for object when asking for a new quote
+
+  NewQuote:
+    type: object
+    properties:
+      packageId:
+        type: string
+      packageName:
+        type: string
+      insurer:
+        $ref: '#/definitions/Insurer'
+      productList:
+        type: array
+        items:
+          $ref: '#/definitions/Product'
+      valueAddedList:
+        type: array
+        items:
+          type: object
+          properties:
+            valueAddedId:
+              type: string
+            valueAddedName:
+              type: string
+            valueAddedDesc:
+              type: string
+            valueAddedCode:
+              type: string
+            valueAddedPic:
+              type: string
+            displayOrder:
+              type: number
+      insuranceSpiritList:
+        type: array
+        items:
+          type: object
+          properties:
+            spiritId:
+              type: string
+            spiritName:
+              type: string
+            defaultSpirit:
+              type: string
+      suggestedReason:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: object
+          additionalProperties:
+            type: string
+
+
 
   Fund:
     type: object
@@ -783,34 +1474,41 @@ definitions:
             type: string
       pointToPh:
         type: string
+        description: Flag to indicate if product applies to policholder
       pointToSecInsured:
         type: string
+        description: Flag to indicate if product applies to second insured
       smokingIndi:
         type: string
+        description: Flag to indicate if smoking status is a risk attribute
       jobIndi:
         type: string
+        description: Flag to indicate if occupation is a risk attribute
       socialInsureIndi:
         type: string
       isWaiver:
         type: string
+        description: Flag to indicate if this is a waiver product
       isAnnuityProduct:
         type: string
+        description: Flag to indicate if this is an annuity product
       isPackageProduct:
         type: string
+        description: Flag to indicate if this is a package product
       saEqual:
         type: string
         description: Rider SA to be equal to main SA
       attachCompulsory:
         type: string
-      insuredNumber:
-        type: number
-        description: Used to identified the insured in the insured list
       displayPremiumIndi:
         type: string
         description: value should be "Y" or "N"
       displayMonthlyCoi:
         type: string
         description: value should be "Y" or "N"
+      pointToSpouse:
+        type: string
+        description: Flag to indicate if product applies to spouse
 
   ProductCoveragePeriod:
     type: object
@@ -980,17 +1678,17 @@ definitions:
         type: number
       saUnit:
         type: number
-      extensionFields:
-        type: object
-        description: extensionFields is an object to hold local customized fields
-        additionalProperties:
-          type: string
       firstYearPremium:
         type: number
       monthlyCostOfInsurance:
         type: number
       illustrationFields:
         $ref: '#/definitions/IllustrationMap'
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold local customized fields
+        additionalProperties:
+          type: string
 
   ProposedInsurance:
     properties:
@@ -1106,6 +1804,28 @@ parameters:
     type: string
     format: string
 
+  queryKeys:
+    name: keys
+    in: query
+    description: Specify multiple rows to fetch ?keys=123,456
+    required: false
+    type: array
+    collectionFormat: csv
+    items:
+      type: string
+
+  queryFilter:
+    name: filter
+    in: query
+    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find rows where name startsWith A and age greater than 30, specify as filter=name\*startsWith\*A;age\*GT\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find rows where name starts with 'A' OR name starts with B, then it can be specified as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
+
+    required: false
+    type: array
+    collectionFormat: pipes
+    items:
+      type: string
+
+
   language:
     name: lang
     in: header
@@ -1119,6 +1839,13 @@ parameters:
     type: string
     required: true
     description: Unique id for the product
+
+  packageId:
+    name: packageId
+    in: path
+    required: true
+    description: Unique id for the package
+    type: string
 
 
 # ************************ responses ****************************
