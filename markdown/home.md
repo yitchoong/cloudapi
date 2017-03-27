@@ -3,6 +3,7 @@
 |---------|-----------|------------|-------------------------------------|
 | Mar 13 2017 | eBao - PBU Life  | 0.0.1     | Initial version
 | Mar 22 2017 | eBao - PBU Life  | 0.0.2     | Separate wiki pages
+| Mar 27 2017 | eBao - PBU Life  | 0.0.3     | Include Insurer, Proposer in Product domain
 
 ### <a name="intro">1.0 Introduction   </a>
 
