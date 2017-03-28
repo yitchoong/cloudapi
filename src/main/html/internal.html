@@ -36,18 +36,18 @@
     var baseURL = window.location.protocol+ "//" + window.location.hostname+(window.location.port ? ':'+window.location.port: '') +"/";
     //var baseURL = "http://localhost:8080/";
     var urls = [
-      // ['index', 'Index'],
+      ['index', 'Index'],
       ['products', 'Product Spec'],
-      // ['prospects', 'Prospect Spec'],
-      // ['quotations', 'Quotation Spec'],
-      // ['proposals', 'Proposal Spec'],
+      ['prospects', 'Prospect Spec'],
+      ['quotations', 'Quotation Spec'],
+      ['proposals', 'Proposal Spec'],
     ];
     $(function () {
       var url = window.location.search.match(/url=([^&]+)/);
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        url = baseURL + 'yaml/products.yaml';
+        url = baseURL + 'yaml/index.yaml';
       }
 
       hljs.configure({
@@ -117,7 +117,7 @@
       <!--<div id='auth_container'></div>
       <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
       -->
-      <div class='input'><a id="doc_link" class="header__btn" href="/yaml/doc/products" target="_blank" data-sw-translate>Document</a></div>
+      <div class='input'><a id="doc_link" class="header__btn" href="#" target="_self" data-sw-translate>Document</a></div>
     </form>
   </div>
 </div>

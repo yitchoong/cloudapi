@@ -7,7 +7,7 @@ var urls = {
   products:   {yaml: baseURL + 'yaml/products.yaml', doc: baseURL + 'yaml/doc/products/', desc: 'Product Spec'},
   prospects:  {yaml: baseURL + 'yaml/prospects.yaml', doc: baseURL + 'yaml/doc/prospects/', desc: 'Prospect Spec'},
   quotations: {yaml: baseURL + 'yaml/quotations.yaml', doc: baseURL + 'yaml/doc/quotations/', desc: 'Quotation Spec'},
-  proposals:  {yaml: baseURL + 'yaml/proposals.yaml', doc: baseURL + 'yaml/doc/proposals/', desc: 'Proposal Spec'}
+  proposals:  {yaml: baseURL + 'yaml/proposals.yaml', doc: baseURL + 'yaml/doc/proposals/', desc: 'Proposal Spec'},
 };
 
 SwaggerUi.Views.HeaderView = Backbone.View.extend({
