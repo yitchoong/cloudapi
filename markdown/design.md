@@ -24,9 +24,9 @@ API是平台对外提供服务能力的载体，API的设计需要体现这一�
     * ``` DELETE /prospects/id``` 删除某prospect
     * ``` DELETE /proposals/id``` 删除某proposal
   * 复杂查询和保费（包括其他费）计算，严格讲都是GET操作，但因为都需要传如大量参数，可以用POST。
-    * ```POST /product/calculator/premium```
-    * ```POST /product/query```
-    * ```POST /product/calculator/validation```
+    * ```POST /products/calculator/premium```
+    * ```POST /products/query```
+    * ```POST /products/calculator/validation```
   * Request (TBD)，需要加入auth信息，租户信息
   * Response (TBD)
 * #### 需要特别注意的问题
