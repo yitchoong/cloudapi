@@ -45,9 +45,17 @@ paths:
         200:
           description: Successful response to fetching a list of insurers
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Insurer'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/Insurer'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
+
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -107,9 +115,16 @@ paths:
         200:
           description: Successful response to fetching a list of packages.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/PackageSummary'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/PackageSummary'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
         400:
           $ref: '#/responses/Standard404Response'
         401:
@@ -142,9 +157,16 @@ paths:
         200:
           description: Successful response to fetching a list of packages (complete information).
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Package'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/Package'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -372,13 +394,73 @@ paths:
         200:
           description: Successful response to fetch a list of products
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/ProductSummary'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/ProductSummary'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
+
+  '/products/detailed':
+    get:
+      summary: Fetch a list of product (full information)
+      description: Use this endpoint to get a list of products with their complete information. This end point is similar to GET /products with the exception that the complete product information is returned.
+      tags:
+        - Product
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/querySort'
+        - name: productType
+          in: query
+          required: false
+          type: string
+          description: Filter products based  on the product type i.e. Main or Rider
+        - name: insurerIds
+          in: query
+          required: false
+          description: Filter products that belong to the list of insurers e.g. insurerIds=001,002
+          type: array
+          items:
+            type: string
+        - name: birthDate
+          in: query
+          required: false
+          type: string
+          description: Filter products where the calculated age (using the birth date) is within the minimum and maximum age limit.
+        - name: gender
+          in: query
+          required: false
+          type: string
+          description: Filter products which are targeted at specific products. Male or Female
+
+      responses:
+        200:
+          description: Successful response to fetch a list of products with full information
+          schema:
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/Product'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
         401:
           $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
+
 
   '/products/{productId}':
     get:
@@ -428,6 +510,46 @@ paths:
             type: array
             items:
               $ref : '#/definitions/Product'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/products/{productId}/illustration':
+    post:
+      summary: Generate the illustration (plan) data.
+      description: This end point is used to generate all the data that is required for presentation the ilustration (plan) to the customer. It differs from /products/{productId}/calculators/illustration as it includes the static product information (writeups) about the products in the plan.
+      tags:
+        - Product
+        - Illustration
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
+        - name: bodyParam
+          in: body
+          required: true
+          description: Details of the proposed insurance including the life assureds, main product details and riders already attached
+          schema:
+            $ref : '#/definitions/ProposedInsurance'
+
+      responses:
+        200:
+          description: Successful response that returns the proposed insurance, the table of benefits, and static plan information about benefits, features, and highlights of the plan.
+          schema:
+            type: object
+            properties:
+              proposedInsurance:
+                $ref : '#/definitions/ProposedInsurance'
+              tableOfBenefits:
+                $ref : '#/definitions/TableOfBenefits'
+              planInfo:
+                $ref : '#/definitions/PlanInfo'
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -535,7 +657,7 @@ paths:
   '/products/{productId}/calculators/illustration':
     post:
       summary: Compute the results of the product illustration calculator using the details of the proposed insurance.
-      description: Use this end point to trigger the calculation of the fields required for the illustration. The illustrations field are configured when setting up the product in the eBaoTech product factory.
+      description: Use this end point to trigger the calculation of the fields required for the illustration. The illustrations field are configured when setting up the product in the eBaoTech product factory. The table of benefits is also available in the response.
       tags:
         - Product
       security:
@@ -548,12 +670,18 @@ paths:
           required: true
           description: Proposed insurance details required to calculate the illustration fields, i.e. insureds, main product, and riders, topups, withdrawals, fund allocations
           schema:
-            $ref : '#/definitions/ProposedInsurance'
+            $ref: '#/definitions/ProposedInsurance'
+
       responses:
         200:
-          description: Successful response that contains the request input with the addition of the result of the calculations (illustrationFields) for the main product and riders
+          description: Successful response that contains the request input with the addition of the result of the calculations (illustrationFields) for the main product and riders. Also includes the table of benefits.
           schema:
-            $ref: '#/definitions/ProposedInsurance'
+            type: object
+            properties:
+              proposedInsurance:
+                $ref : '#/definitions/ProposedInsurance'
+              tableOfBenefits:
+                $ref : '#/definitions/TableOfBenefits'
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -642,7 +770,7 @@ paths:
           schema:
             $ref: '#/definitions/Product'
         400:
-          $ref: '#/responses/Standard400Response'
+          $ref: '#/responses/Validator400Response'
         401:
           $ref: '#/responses/Standard401Response'
         404:
@@ -673,7 +801,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          $ref: '#/responses/Standard400Response'
+          $ref: '#/responses/Validator400Response'
         401:
           $ref: '#/responses/Standard401Response'
         404:
@@ -704,7 +832,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          $ref: '#/responses/Standard400Response'
+          $ref: '#/responses/Validator400Response'
         401:
           $ref: '#/responses/Standard401Response'
         404:
@@ -735,7 +863,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          $ref: '#/responses/Standard400Response'
+          $ref: '#/responses/Validator400Response'
         401:
           $ref: '#/responses/Standard401Response'
         404:
@@ -766,7 +894,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidatorSuccessResult'
         400:
-          $ref: '#/responses/Standard400Response'
+          $ref: '#/responses/Validator400Response'
         401:
           $ref: '#/responses/Standard401Response'
         404:
@@ -797,7 +925,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidatorSuccessResult'
         400:
-            $ref: '#/responses/Standard400Response'
+            $ref: '#/responses/Validator400Response'
         401:
             $ref: '#/responses/Standard401Response'
         404:
@@ -835,7 +963,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidatorSuccessResult'
         400:
-            $ref: '#/responses/Standard400Response'
+            $ref: '#/responses/Validator400Response'
         401:
             $ref: '#/responses/Standard401Response'
         404:
@@ -1509,6 +1637,11 @@ definitions:
       pointToSpouse:
         type: string
         description: Flag to indicate if product applies to spouse
+      inputFields:
+        type: array
+        items:
+          $ref: '#/definitions/ProductInputFields'
+
 
   ProductCoveragePeriod:
     type: object
@@ -1602,10 +1735,6 @@ definitions:
             type: array
             items:
               $ref: '#/definitions/ProductPaymentMethod'
-          inputFields:
-            type: array
-            items:
-              $ref: '#/definitions/ProductInputFields'
 
   Insured:
     type: object
@@ -1682,6 +1811,12 @@ definitions:
         type: number
       monthlyCostOfInsurance:
         type: number
+      premiumAmount:
+        type: number
+        description: Premium amount taking into account the payment frequency (mode)
+      paymentMode:
+        type: string
+        description: The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly, 4=Monthly, 5=Single
       illustrationFields:
         $ref: '#/definitions/IllustrationMap'
       extensionFields:
@@ -1689,6 +1824,43 @@ definitions:
         description: extensionFields is an object to hold local customized fields
         additionalProperties:
           type: string
+
+  # Fund:
+  #   type: object
+  #   properties:
+  #     fundCode:
+  #       type: string
+  #       description: The code for the fund
+  #     fundName:
+  #       type: string
+  #       description: Name of the fund for investment policies
+  #     targetPremiumPercent:
+  #       type: number
+  #       description: The percentage allocation for target (basic) premium
+  #     adhocPercent:
+  #       type: number
+  #       description: The percentage allocation for ad-hoc topups
+  #     regularTopupPercent:
+  #       type: number
+  #       format: percentage
+  #       description: The percentage allocation for regular topups
+
+  # Topup:
+  #   type: object
+  #   properties:
+  #     year:
+  #       type: number
+  #     amount:
+  #       type: number
+
+  # Withdrawal:
+  #   type: object
+  #   properties:
+  #     year:
+  #       type: number
+  #     amount:
+  #       type: number
+
 
   ProposedInsurance:
     properties:
@@ -1751,6 +1923,115 @@ definitions:
       # type: object
       # additionalProperties:
       #   type: number
+
+  TableOfBenefits:
+    type: object
+    properties:
+      columnTitles:
+        type: array
+        items:
+          type: object
+          properties:
+            columnNo:
+              type: integer
+            columnTitle:
+              type: string
+      tableData:
+        type: array
+        items:
+          type: object
+          properties:
+            columnNo:
+              type: integer
+            value:
+              type: number
+
+  PlanHighlight:
+    allOf:
+      - $ref: '#/definitions/PackageHighlight'
+
+  PlanFeature:
+    allOf:
+    - $ref: '#/definitions/PackageProductFeature'
+
+  PlanValueAdd:
+    type: object
+    properties:
+      valueAddedId:
+        type: string
+      valueAddedName:
+        type: string
+      valueAddedDesc:
+        type: string
+      valueAddedCode:
+        type: string
+      valueAddedPic:
+        type: string
+      displayOrder:
+        type: number
+
+  PlanInfo:
+    type: object
+    properties:
+      planLiability:
+        type: object
+        properties:
+          multiProduct:
+            type: boolean
+          liabCategoryList:
+            type: array
+            items:
+              type: object
+              properties:
+                categoryId:
+                  type: string
+                categoryName:
+                  type: string
+                simpleLiabList:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      packageId:
+                        type: string
+                      productid:
+                        type: string
+                      liabId:
+                        type: string
+                      liabName:
+                        type: string
+                      liabDisplayName:
+                        type: string
+                      libDescQuote:
+                        type: string
+                      libCalcType:
+                        type: string
+                      libCalcMethod:
+                        type: string
+                      liabAmount:
+                        type: number
+                      needDiseaseIndi:
+                        type: string
+                      totalAmount:
+                        type: number
+                      libDesc:
+                        type: string
+                      liabList:
+                        type: string
+                      categoryName:
+                        type: string
+      planHighlights:
+        type: array
+        items:
+          $ref: '#/definitions/PlanHighlight'
+      planFeatures:
+        type: array
+        items:
+          $ref: '#/definitions/PlanFeature'
+      planValueAddedList:
+        type: array
+        items:
+          $ref: '#/definitions/PlanValueAdd'
 
 
   ValidatorSuccessResult:
@@ -1894,3 +2175,22 @@ responses:
         message:
           type: string
           description: "An unexpected error has occurred. Please try again later"
+
+  Validator400Response:
+    description: Response when validation fails
+    schema:
+      type: object
+      properties:
+        errorList:
+          type: array
+          items:
+            type: object
+            properties:
+              validator:
+                description: Name of the validators that emitted the error
+                type: string
+              errors:
+                description: The errors emitted by the validator. Designed to allow for multiple error messages per validator
+                type: array
+                items:
+                  type: string

@@ -56,7 +56,7 @@ User -> F : Search prospects
 activate F
 F -> ebao : GET /prospects?filter=prospectName*startsWith*Albert
 activate ebao
-ebao --> F : HTTP 200 []
+ebao --> F : HTTP 200 {docs:[],..}
 deactivate ebao
 F --> User : No prospects found
 User -> F : New prospect
@@ -80,7 +80,7 @@ deactivate F
   activate F
   F -> ebao : GET /prospects?filter=prospectName*startsWith*Albert
   activate ebao
-  ebao --> F : HTTP 200 []
+  ebao --> F : HTTP 200 {docs:[],..}
   deactivate ebao
   F --> User: No prospects found
   User -> F : New prospect
@@ -106,7 +106,7 @@ deactivate F
   activate F
   F -> ebao : GET /prospects?filter=prospectName*startsWith*Albert
   activate ebao
-  ebao --> F : HTTP 200 []
+  ebao --> F : HTTP 200 {docs:[],..}
   deactivate ebao
   F --> User: No prospects found
   User -> F : New prospect
@@ -135,7 +135,7 @@ deactivate F
   activate F
   F -> ebao : GET /prospects?filter=prospectName*startsWith*Albert%20Tan
   activate ebao
-  ebao --> F : HTTP 200 [{prospectId:10001, prospectName: "Albert Tan",version:1, ...}]
+  ebao --> F : HTTP 200 {docs:[{prospectId:10001, prospectName: "Albert Tan",version:1, ...}],..}
   deactivate ebao
 
   User -> F : Select prospect 10001 for editing
@@ -173,7 +173,7 @@ User -> F : Search prospects
 activate F
 F -> ebao : GET /prospects?filter=prospectName*startsWith*Albert%20Tan
 activate ebao
-ebao --> F : HTTP 200 [{prospectId:10001, prospectName: "Albert Tan",version:1, ...}]
+ebao --> F : HTTP 200 {docs: [{prospectId:10001, prospectName: "Albert Tan",version:1, ...}],..}
 deactivate ebao
 F --> User: Display list of prospects
 User -> F : Select prospect 10001 for editing
@@ -217,7 +217,7 @@ User -> F : Search prospects "Albert Tan"
 activate F
 F -> ebao : POST /prospects/detailed\n?filter=prospectName*startsWith*Albert%20Tan&offset=0&limit=10
 activate ebao
-ebao --> F : HTTP 200 [{prospectId:10001, prospectName: "Albert Tan",version:1, ...}]
+ebao --> F : HTTP 200 {docs:[{prospectId:10001, prospectName: "Albert Tan",version:1, ...}],..}
 deactivate ebao
 F --> User: Display list of prospects ( rows 1-10 )
 User -> F : Select prospect 10001 for editing
@@ -266,7 +266,7 @@ User -> F : Preview assignments
 activate F
 F -> ebao : GET /assignments?filter=assignmentType*eq*Prospect
 activate ebao
-ebao --> F : HTTP 200 [{pk: 2000, assignmentType:"Prospect", data:{prospectName: "Lin Dan", agent:"agent007",..}},\n {pk: 2001, assignmentType:"Prospect", data:{prospectName: "Lu Kai", agent:"agent007",..}},..]
+ebao --> F : HTTP 200 {docs:[{pk: 2000, assignmentType:"Prospect", data:{prospectName: "Lin Dan", agent:"agent007",..}},\n {pk: 2001, assignmentType:"Prospect", data:{prospectName: "Lu Kai", agent:"agent007",..}},..],...}
 deactivate ebao
 F --> User : Display assignments
 User -> F : Select Lin Dan ,Lu Kai.\nAccept.
@@ -290,7 +290,7 @@ participant "eBao Cloud" as ebao
 ins -> ebao : GET /assignments?filter=expired*eq*true
 activate ins
 activate ebao
-ebao --> ins :  HTTP 200 [{pk: 2000, assignmentType:"Prospect", prospectName: "Rudy Hartono", agent:"agent009",...}]
+ebao --> ins :  HTTP 200 {docs:[{pk: 2000, assignmentType:"Prospect", prospectName: "Rudy Hartono", agent:"agent009",...}],...}
 deactivate ebao
 ins -> ins : Store the list of expired assignments locally
 deactivate ins
