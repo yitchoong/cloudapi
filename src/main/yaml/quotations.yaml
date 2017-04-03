@@ -864,6 +864,12 @@ definitions:
         description: Rider SA to be equal to main SA
       attachCompulsory:
         type: string
+      insuredNumber:
+        type: number
+        description: Used to identified the insured in the insured list
+      firstYearPremium:
+        type: number
+        description: This should normally be a calculated field from the backend
       displayPremiumIndi:
         type: string
         description: value should be "Y" or "N"
@@ -1391,6 +1397,123 @@ definitions:
             items:
               type: string
 
+  # -------- The following are definitions of objects used in results
+
+  IllustrationField:
+    additionalProperties:
+      type: number
+
+  # -- an alternate definition of the model for the illustration fields
+  # QuoteIllustration:
+  #   type: object
+  #   properties:
+  #     illusMap:
+  #       description: This is a nested object. The first level key represents the performance level i.e. 1=low, 2=mid, 3=high and the 2nd level key represents the year. The result is an object which holds the name of the calculated field and its value
+  #       type: object
+  #       properties:
+  #         2:
+  #           type: object
+  #           properties:
+  #             1:
+  #               $ref: '#/definitions/IllustrationField'
+  #             2:
+  #               $ref: '#/definitions/IllustrationField'
+  #             99:
+  #               $ref: '#/definitions/IllustrationField'
+
+  IllustrationMap:
+    type: object
+    description: |
+      These are a list of dynamic fields that are calculated by the product factory. The result is a nested object. The first level keys represent the year. Against each year is an object with all the illustrations fields and their value e.g. { 1 : {annualPremium: 12000, ....}, 2 : {annualPremium:12000,....}, ..., 99: {} }. Year 0 means it is a single-valued field. For multi-valued fields, it will be stored under year 1 - 99.
+    properties:
+      0:
+        $ref : '#/definitions/IllustrationField'
+      1:
+        $ref : '#/definitions/IllustrationField'
+      2:
+        $ref : '#/definitions/IllustrationField'
+      99:
+        $ref : '#/definitions/IllustrationField'
+
+      # type: object
+      # additionalProperties:
+      #   type: number
+
+  QuoteIllustration:
+    allOf:
+      - $ref: '#/definitions/Quote'
+      - $ref: '#/definitions/Package'
+      # - $ref: '#/definitions/IllustrationMap' # embedded in Quote.illustrationFields
+      - properties:
+          planLiabilityList:
+            type: object
+            properties:
+              multiProduct:
+                type: boolean
+              liabCategoryList:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    categoryId:
+                      type: string
+                    categoryName:
+                      type: string
+                    simpleLiabList:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          packageId:
+                            type: string
+                          productid:
+                            type: string
+                          liabId:
+                            type: string
+                          liabName:
+                            type: string
+                          liabDisplayName:
+                            type: string
+                          libDescQuote:
+                            type: string
+                          libCalcType:
+                            type: string
+                          libCalcMethod:
+                            type: string
+                          liabAmount:
+                            type: number
+                          needDiseaseIndi:
+                            type: string
+                          totalAmount:
+                            type: number
+                          libDesc:
+                            type: string
+                          liabList:
+                            type: string
+                          categoryName:
+                            type: string
+
+          extensionFields:
+            type: object
+            description: Use this object to hold the aditional fields due to local customizations
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: string
+
+  # ----- definitions of various results that will be used in responses ----
+
+  QuoteIllustrationResult:
+    type: object
+    required:
+      - ok
+    properties:
+      ok:
+        type: boolean
+      value:
+        $ref: '#/definitions/QuoteIllustration'
+
+>>>>>>> 8d09c4d3254d7f262d93d1b456285c5a9aee9823
   ProductAttachableRidersResult:
     type: object
     properties:

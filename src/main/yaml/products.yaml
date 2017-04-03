@@ -1908,7 +1908,6 @@ definitions:
 
   IllustrationMap:
     type: object
-    readOnly: true
     description: |
       These are a list of dynamic fields that are calculated by the product factory. The result is a nested object. The first level keys represent the year. Against each year is an object will all the illustrations fields and their value e.g. { 1 : {annualPremium: 12000, ....}, 2 : {annualPremium:12000,....}, ..., 99: {} }. Year 0 means it is not a multivalued field, i.e. a single valued field (only 1 value).
     properties:
