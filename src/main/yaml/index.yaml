@@ -88,11 +88,17 @@ paths:
   '/products':
     $ref : './products.yaml#/paths/~1products'
 
+  '/products/detailed':
+    $ref : './products.yaml#/paths/~1products~1detailed'
+
   '/products/{productId}':
     $ref : './products.yaml#/paths/~1products~1{productId}'
 
   '/products/{productId}/riders':
     $ref : './products.yaml#/paths/~1products~1{productId}~1riders'
+
+  '/products/{productId}/illustration':
+    $ref : './products.yaml#/paths/~1products~1{productId}~1illustration'
 
   '/products/{productId}/calculators/age':
     $ref : './products.yaml#/paths/~1products~1{productId}~1calculators~1age'
@@ -150,11 +156,20 @@ paths:
   '/quotes/{quoteId}':
     $ref : './quotations.yaml#/paths/~1quotes~1{quoteId}'
 
+  '/quotes/draft/products':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1products'
+
+  '/quotes/draft/products/{productId}':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1products~1{productId}'
+
   '/quotes/draft/products/{productId}/riders':
     $ref : './quotations.yaml#/paths/~1quotes~1draft~1products~1{productId}~1riders'
 
   '/quotes/draft/calculators/premium':
     $ref : './quotations.yaml#/paths/~1quotes~1draft~1calculators~1premium'
+
+  '/quotes/draft/calculators/costOfInsurance':
+    $ref : './quotations.yaml#/paths/~1quotes~1draft~1calculators~1costOfInsurance'
 
   '/quotes/draft/calculators/illustration':
     $ref : './quotations.yaml#/paths/~1quotes~1draft~1calculators~1illustration'
@@ -185,6 +200,16 @@ paths:
 
   '/quotes/{quoteId}/illustration':
     $ref : './quotations.yaml#/paths/~1quotes~1{quoteId}~1illustration'
+
+  '/quotes/{quoteId}/illustration/shares':
+    $ref : './quotations.yaml#/paths/~1quotes~1{quoteId}~1illustration~1shares'
+
+  '/quotes/{quoteId}/illustration/shares/{shareId}':
+    $ref : './quotations.yaml#/paths/~1quotes~1{quoteId}~1illustration~1shares~1{shareId}'
+
+  '/quotes/templates':
+    $ref : './quotations.yaml#/paths/~1quotes~1templates'
+
 
   # ----------- paths for proposal domain ----------------
 

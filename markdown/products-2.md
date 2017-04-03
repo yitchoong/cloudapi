@@ -7,7 +7,7 @@ The following is a diagram showing the relationship between these three resource
 ![](../assets/screens/class-product.png)
 
 
-An Insurer is a resource that represents the company that offers the life products for sale. Only basic information about the insurer is required from the eBaoTech cloud services.
+An Insurer is a resource that represents the company that offers the life products for sale. Only basic information about the insurer is available in the eBaoTech cloud services.
 
 A Package is a way to bundle a set of products together for the purposes of distribution, i.e. these are a set of products that are complementary together. Packages will typically contain one main product plus a number of rider products. A useful analogy would be when selling a car (main product), there can be a number of accessories that are bundled together (rider products). To aid in the selling process, the package will contain information about the product features highlights, obligations, and benefits.
 
@@ -32,7 +32,7 @@ In order to derive the illustration, two things are required:
   &nbsp;
   Using the eBaoTech product factory, there are many product attributes that can be defined, including the limits used for validation (age limits), and rates (premium rates, bonus rates) used by the calculation formulas (e.g. premium calculations, charges etc). In setting up the product attributes, there is also the concept of main products versus rider products. As mentioned earlier, a good analogy is that of buying a car. The base car is the main product and it is normally sold with both mandatory and recommended accessories. As an example, air-conditioning may be a mandatory accessory but leather seats are optional. Similarly, in life insurance, riders can be mandatory or optional.
   &nbsp;
-  Apart from the product attributes, the product factory also allows for the definition of relationships between the products, specifically the relationship between main and rider products as well as relationships between riders. The relationships are also the basis for packages.
+  Apart from the product attributes, the product factory also allows for the definition of relationships between the products, specifically the relationship between main and rider products as well as relationships between riders.
   &nbsp;
   To continue with the car analogy, a spoiler kit may only be applicable to sedan models. Additionally, the customer may have a choice of the  "premium spoiler kit" or the "basic spoiler kit". Since, a car can only have one spoiler kit, they are mutually exclusive. In life insurance, main products have a list of attachable riders. For example, some riders are only attachable to investment linked products (e.g. unit deduction riders). In a similar fashion to spoiler kits, there are also riders that have mutually exclusive relationships, e.g. only one waiver premium rider can be attached.
   &nbsp;
@@ -149,7 +149,7 @@ With both the traditional and insurance products, the front end application can 
 Based on the above, let us look explore in more detail, how the product services can be used for our use case, i.e. a front-end application built to facilitate brokers with the quotation process.
 
 ##### 2.1 Browse Packages
-Let us start the scenario where the intermediary (broker) taps on the quote module of the front end application.
+Let us start the scenario where the intermediary (broker) taps on the option to browse the packages in the front end application.
 
 ```puml
 title **Browse Packages**
@@ -162,11 +162,11 @@ user -> front : Tap quote module
 activate front
 front -> ebao : GET /packages?limit=20
 activate ebao
-ebao --> front : HTTP 200 [{pk:9001,packageName:"Acme Savings", ... },{..},..]
+ebao --> front : HTTP 200 {docs:[{pk:9001,packageName:"Acme Savings", ... },{..},..],..}
 deactivate ebao
 front --> user : Render browse package UI
 ```
-In this case, the UI will render the first 20 packages. Assuming that these are not the packages that the user wants, he/she then looks for packages offered by the Careful Insurer. He uses the "Advanced Search" link.
+In this case, the UI will render the first 20 packages. Assuming that these are not the packages that the user wants, he/she then looks for packages offered by the Careful Insurer. He uses the "Advanced Search" link. Please refer to the use case section for the screen mock-ups.
 
 ```puml
 title **Filter Packages**
@@ -185,7 +185,7 @@ front --> user : Render Advance search page with pre-defined values
 user -> front : Selects Careful insurer
 front -> ebao : GET /packages?filter=Insurer*startsWith*Careful%20Insurer&limit=20
 activate ebao
-ebao --> front : HTTP 200 [{pk:9101, packageName:"Careful Term",... },\n{pk:9102, packageName:"Careful Savings"..},..]
+ebao --> front : HTTP 200 {docs:[{pk:9101, packageName:"Careful Term",... },\n{pk:9102, packageName:"Careful Savings"..},..],..}
 deactivate ebao
 front --> user : Render browse page with results \nshowing packages by Careful Insurer
 ```
@@ -216,7 +216,7 @@ deactivate ebao
 front --> user: Render details page for package product
 ```
 
-In this sequence diagram, the user selected the Careful Term Life package to explore further. The package will have information about the package main product as well as the package riders. When the user drills down on the main or riders in the package, it will get the additional textual write up about the product. This can include information about the underwriting rules, the benefits of the package products as well as the terms and conditions. All these provide information for the user to understand the products in the package.
+In this sequence diagram, the user selected the Careful Term Life package to explore further. The package will have information about the package main product as well as the package riders. When the user drills down on the main or riders in the package, it will get the additional textual write up about the product. This can include information about the underwriting rules, the benefits of the package products as well as the terms and conditions. All these provide information for the user to understand the products and features in the package.
 
 ##### 2.3 Favorite Package
 
@@ -238,11 +238,11 @@ deactivate ebao
 front --> user : Render "checked" icon to indicate favorite
 ```
 
-Removing a package from being a favourite can be done with the following end point. DELETE /pacakges/9101/favourite
+Removing a package from being a favourite can be done with the following end point. DELETE /packages/9101/favourite
 
 ##### 2.4 Policyholder & Life assured
 
-Let us continue with the user deciding to proceed and selects the Careful Term Life product. The front end application starts with retrieving the initial quote data for the selected package.
+Let us continue the scenario, where the user decides to proceed and selects the Careful Term Life product. The front end application starts with retrieving the initial quote data for the selected package.
 
 ```puml
 title **Policyholder & Life Assured**
@@ -251,38 +251,41 @@ participant "Front End" as front
 participant "eBao Cloud" as ebao
 autonumber
 
-user -> front : Select package to quote
+user -> front : Select Careful Term Life package to quote
 activate front
 front --> ebao : GET /packages/9101/quote
 activate ebao
 ebao --> front : HTTP 200 {packageId: 9101, insurer:{},productList:[],..}
 deactivate ebao
+front -> front : Store package initial quote data locally
 front --> user : Render the Policyholder and Life assured page
 user -> front : Tap on import
 front -> ebao: GET /prospects
 activate ebao
-ebao --> front : HTTP 200 [{pk:3000, prospectName: "Tang Meng",...},..]
+ebao --> front : HTTP 200 {docs:[{pk:3000, prospectName: "Tang Meng",...},..],..}
+deactivate ebao
 front --> user : Render Select Prospect page
 user -> front : Select prospect
 front -> ebao : GET /prospects/3000
 activate ebao
 ebao --> front : HTTP 200 {pk:3000, prospectName: "Tang Meng",..., family:[{...}]}
+deactivate ebao
 front --> user : Render Insurance Roles page
 user -> front : Select life assured
 front --> user : Copy values into Policyholder and Life assured page
 user -> front : Next
 
 ```
-In step 4 of our scenario, the front end application renders the Policyholder and Life assured UI. The user can enter the details about the policyholder and life assured. Alternatively, the user can import the information from the prospect database. This is the the path taken in the above sequence diagram.
+In step 5 of our scenario, the front end application renders the Policyholder and Life assured UI. The user can enter the details about the policyholder and life assured. Alternatively, the user can import the information from the prospect database. This is the the path taken in the above sequence diagram.
 
-In this scenario, the imported prospect has one family member. As such, the user is required to select who is the life assured for the quote via the Insurance Roles page. Here, the user chooses the prospect (Tang Meng) to be the policyholder and life assured. If there were no family members, front end navigation can be simplified to skip the Insurance Roles page. Please refer to the use case section for the sample mock up screens.
+In this scenario, the imported prospect has one family member, the spouse. This means that the prospect himself or the spouse can be the life assured. As such, the user is required to select who is the life assured for the quote via the Insurance Roles page. Here, the user chooses the prospect (Tang Meng) to be the policyholder and life assured. If there were no family members, front end navigation can be simplified to skip the Insurance Roles page. Please refer to the use case section for the sample mock up screens.
 
 
 ##### 2.5 Main Product Input
 
 Continuing with the scenario, we now have the selected package (and thus the main product) as well as the insurance roles. The next step, is to capture the proposed insurance details for the main product. Within the package's initial quote data, there is information about the main product, including the inputFields attribute. This is a list of input field names, whose values the front end application needs to capture and submit for the calculation of the premium (and illustration fields). This list of field names, can differ across products and is determined during definition of the product using the eBaoTech product factory.
 
-How are these field names useful? It helps the front end to dynamically decide on the input fields to display to the user. These dynamic fields can be a challenge when developing the front end application. A possible implementation is for the front end to allow for the data capture of the entire set of fields, for the supported products. The entire set of dynamic fields should be a manageable number(in the tens). At runtime, after getting the list of field names, the front end application can decide to show only the required fields or perhaps hide the unwanted fields.
+How are these field names useful? It helps the front end to dynamically decide on the input fields to display to the user. These dynamic fields can be difficult to handle when developing the front end application. A possible implementation is for the front end to allow for the data capture of the entire set of fields, for the supported products. The entire set of dynamic fields should be a manageable number(in the tens). At runtime, after getting the list of field names, the front end application can decide to show only the required fields or perhaps hide the unwanted fields.
 
 ```puml
 title **Main Product Input**
@@ -337,7 +340,7 @@ front --> user: Show the first year premium amount
 user -> front : Next
 front -> ebao: POST /products/5312/validators/validateMain \n{insuredList:[{...}], mainProduct:{pk:5312, sumAssured:50000, lifeAssured:0,.. }
 activate ebao
-ebao --> front: HTTP 400 \n[{validator:"validateMain": ["Sum Assured is less than the minimum defined for the product"]}]
+ebao --> front: HTTP 400 \n[ {validator:"validateMain", errors: ["Sum Assured is less than the minimum defined for the product"] ]}]
 deactivate ebao
 front --> user : Sum Assured is less than the minimum defined for the product
 ```
@@ -365,7 +368,7 @@ ebao --> front : HTTP 200 [{pk:6501, productName:"Careful Accidental Death",...}
 deactivate ebao
 front -->user : Render page with list of riders
 user -> front : Select a rider
-front -> front : Dynamically determine applicable fields
+front -> front : Retrieve required fields from package initial quote data
 front --> user : Render applicable fields for selected rider
 user -> front : Enter input fields e.g. sum assured, benefit plan, etc
 front -> ebao: POST /products/5312/calculators/premium \n{insuredList:[..], mainProduct:{productId:5312, }, riderList:[{productId:6501,..}]}
@@ -386,11 +389,11 @@ ebao --> front: HTTP 200 \n{message: 'ok'}
 deactivate ebao
 ```
 
-The first step in this sequence diagram is to get the list of applicable riders. There are a few options for using this information by the front end. As an example, it could display them as a list and pop-up a window for data entry when one of the riders is selected. Alternatively, the front end may require the user to add a new riders and then the rider list is used in a SELECT widget which allows the user to select from a dropdown list. In this example, we are assuming that the riders are displayed as list, and when selected, the required data input fields will be shown (i.e. the data input requirements are only shown when selected).
+The first step in this sequence diagram is to get the list of applicable riders. There are a few options for using this information by the front end. As an example, it could display them as a list and pop-up a window for data entry when one of the riders is selected. Alternatively, the front end may require the user to add a new rider where the rider list is used in a SELECT widget which allows the user to select from a dropdown. In this example, we are assuming that the riders are displayed as list, and when selected, the required data input fields will be shown (i.e. the data input requirements are only shown when selected).
 
-From the sequence diagram above, do note that the applicable input fields are dynamically determined, just like the main product. Also similar to the main product, a call is made to calculate the premium after completing the data capture for the selected rider.
+From the sequence diagram above, do note that the required input fields are determined at run-time, just like the main product. Also similar to the main product, a call is made to calculate the premium after completing the data capture for the selected rider.
 
-Apart from calculating the premium and displaying the results to the user, the front end also makes another call to get the "new" list of attachable (applicable) riders (step 11). In this example, the rider 6501 has been selected and thus no longer in the list of attachable riders. This is because we are assuming that the attachable rider can only be attached once. In the product factory, it is possible to have riders that can be attached more than once.The thing to note here is that the list of attachable riders depends on the main product **and** the riders that are already selected. As the list of selected riders has changed, there is a need to trigger another call to the product services to get the latest list of attachable riders.
+Apart from calculating the premium and displaying the results to the user, the front end also makes another call to get the "new" list of attachable (applicable) riders (step 11). In this example, the rider 6501 has been selected and thus no longer in the list of attachable riders. This is because we are assuming that the attachable rider can only be attached once. In the product factory, it is possible to have riders that can be attached more than once.The take away here is that the list of attachable riders depends on the main product **and** the riders that are already selected. As the list of selected riders has changed, there is a need to trigger another call to the product services to get the latest list of attachable riders.
 
 When the user is happy with the selected riders, validation is done to ensure that all the inputs for the selected riders are valid. Of course this validation can be done earlier, i.e. after the input for each of the selected rider is complete. The validation for each of the rider is similar to that of the main product, i.e. check that the sum assured is within range, the age limits are with range, and premiums are within range.
 
@@ -399,7 +402,7 @@ When the user is happy with the selected riders, validation is done to ensure th
 For the traditional products, when the riders are validated to be ok, the data capture is complete. The front-end can provide a summary page for the user to review the input (if input was done over a few pages) or if no review is required (a long page with all the data input), the front end application can allow the user to preview the table of benefits.
 
 ```puml
-title **Preview Table of Benefits**
+title **Table of Benefits & Illustration**
 actor "User" as user
 participant "Front End" as front
 participant "eBao Cloud" as ebao
@@ -410,7 +413,7 @@ activate front
 user -> front : Preview table of benefits
 front -> ebao: POST /products/5312/calculators/illustration \n{insuredList:[..], mainProduct:{productId:5312, }, riderList:[{productId:6501,..}]}
 activate ebao
-ebao --> front : HTTP 200 {insuredList:[..], \nmainProduct:{productId:5312, sumAssured:50000, lifeAssured:0, illustrationFields:{...},...}\nriderList[{productId:6501, sumAssured:500000, lifeAssured:0, illustrationFields:{...}}..]
+ebao --> front : HTTP 200 {proposedInsurance: {insuredList:[..], \nmainProduct:{productId:5312, illustrationFields:{...},...}\nriderList[{productId:6501, illustrationFields:{...}}..]}, tableOfBenefits:{columnTitles:[{columnNo:1, columnTitlte:"Year",..}], tableData:[{columnNo:0,value:1},..]} }
 deactivate ebao
 front -> front : Prepare illustration fields for display in tabular form
 front --> user : Present table of benefits
@@ -418,7 +421,11 @@ user -> front: Select Graph
 front -> front : Prepare graph to illustrate benefits
 front --> user: Present benefits in graphical form
 user -> front : Share
-front -> front : Prepare illustrationfor sharing
+front -> ebao : POST /products/5312/illustration \n{insuredList:[..], mainProduct:{productId:5312, }, riderList:[{productId:6501,..}]}
+activate ebao
+ebao --> front: HTTP 200 {proposedInsurance:{..}, tableOfBenefits:{..}, planInfo:{..}}
+deactivate ebao
+front -> front : Prepare illustration for sharing
 [<- front : share quote
 user -> front : Save quote
 front -> front : Persist quote
@@ -426,13 +433,13 @@ front -> front : Persist quote
 ```
 Using the table of benefits, the intermediary is then able to explain the values and discuss the results with the customer. The customer may choose to review his/her inputs and then re-generate the table of benefits. As discussed in the use case section of this document, the table of benefits (or chart) can show the amount of premium paid and the various benefits (survival benefit, bonus, death benefit, etc) based on the proposed insurance details.
 
-One of the possible outcomes is that the intermediary can choose to share the illustration (step 11), with the customer using social media (e.g. WhatsApp or WeChat). The illustration will contain information about the data captured, the table of benefits and also some static information about the features of the product i.e. textual data to explain the benefits in detail, the obligations, and the terms and conditions that are applicable.
+One of the possible outcomes is that the intermediary can choose to share the illustration (step 9), with the customer using social media (e.g. WhatsApp or WeChat). A call is triggered to obtain the illustration data and it contains information about the proposed insurance, the table of benefits and also some static information about the plan (package), i.e. features of the product, benefits, obligations, and the terms and conditions that are applicable.
 
-Optionally, the intermediary can choose to persist the quote. In this example, the front end chooses to use its own persistence mechanism. It should be noted that there are services in the  eBaoTech Cloud offering that can be used to persist quotes. Please refer to the document on the Quotation Services to explore these services further.
+Optionally, the intermediary can choose to persist the quote. In this example, the front end chooses to use its own persistence mechanism. It should be noted that there are services in the quotation domain that can be used to persist quotes. Please refer to the document on the [Quotation Services](https://github.com/yitchoong/cloudapi/wiki/Quotation) to explore these services further.
 
 ##### 2.8 Top-ups & Withdrawals
 
-Thus far, the discussion has been about the quotation process of traditional life insurance products. Next, we explore the investment linked products. For the investment products, the earlier sequence diagrams, before section 2.7, are basically the same. In the Main Product Input sequence diagram (section 2.5), the steps are the same, with the exception that the client application may choose to display the monthly cost of insurance instead of the premium amount. The calculation of the monthly cost of insurance can be triggered using the POST /products/5312/calculators/monthlyCostOfInsurance end point. The premium amount for investment linked products will be the basic (target) premium amount plus any recurrent single top up amount. Both of these amounts are determined by the customer and are input fields of the main product UI in the front end application.
+Thus far, the discussion has been about the quotation process of traditional life insurance products. Next, we explore the investment linked products. For the investment products, the earlier sequence diagrams are basically the same. In the Main Product Input sequence diagram (section 2.5), the steps are the same, with the exception that the client application may choose to display the monthly cost of insurance instead of the premium amount. The calculation of the monthly cost of insurance can be triggered using the POST /products/5312/calculators/monthlyCostOfInsurance end point. The premium amount for investment linked products will be the basic (target) premium amount plus any recurrent single top up amount. Both of these amounts are determined by the customer and are input fields of the main product UI in the front end application.
 
 Similarly, the Riders Input sequence diagram (section 2.6) will have the same flow except that the amount to calculate and display would be the monthly cost of insurance instead of the premium amount. This is assuming that we are dealing with unit deduction riders. For cash paying riders, it would be appropriate to calculate and display the premium amount.
 
@@ -484,7 +491,7 @@ In this sequence diagram, the calls to POST /products/5312/validators/validateTo
 
 The final step in the quotation process for investment linked products is the data capture of the premium allocation to the various funds. As a first step, the front end application will have to obtain the list of applicable funds. There are generally two factors to determine the available funds i.e. the main product and the currency of the main product.
 
-There is another consideration to note with respect to the fund allocation process i.e. there can be a need to differentiate the type of premium, i.e. the different types of premium may have a different allocation strategy. For an investment linked policy, there are three (3) possible types of premium i.e. (a) the regular premium (target premium / basic premium) (b) the recurrent single top-up premium, and (c) the ad-hoc top-up premium. This allows for maximum flexibility in terms of allocating premiums to the various funds. Of course the business may choose to simplify it and restrict the options for allocating the premiums to the various funds. A simplistic approach could be that all types of premiums have the same allocation percentages.
+There is another consideration to note with respect to the fund allocation process i.e. there can be a need to differentiate the type of premium, i.e. the different types of premium may have a different allocation strategy. For an investment linked policy, there are three (3) possible types of premium i.e. (a) the regular premium (target premium / basic premium) (b) the recurrent single top-up premium, and (c) the ad-hoc top-up premium. This allows for flexibility in terms of allocating premiums to the various funds. Please refer to the use case section for a mockup of the fund allocation UI.
 
 ```puml
 title Fund Allocations
@@ -504,6 +511,6 @@ deactivate ebao
 front --> user: Allocation successful
 
 ```
-The call to validateFunds will trigger checks on the minimum fund allocation percentage (e.g. 10%). Additionally rules could be that the allocation percentages must be a multiple of 5%. Finally, the allocation percentages across all the funds must add up to 100% for each premium type, i.e. 100% for regular premium, 100% for recurrent single top-up and 100% for ad-hoc top-ups. The recurrent single top-ups and ad-hoc top-ups allocation percentages are only applicable if such premiums are available (entered in the main product and the top-ups UI's).
+The call to validateFunds will trigger checks on the minimum fund allocation percentage (e.g. 10%). Additionally rules could be that the allocation percentages must be a multiple of 5%. Finally, the allocation percentages across all the funds must add up to 100% for each premium type, i.e. 100% for regular premium, 100% for recurrent single top-up and 100% for ad-hoc top-ups. The recurrent single top-ups and ad-hoc top-ups allocation percentages are only applicable if such premiums are requested by the customer (entered in the main product and the top-ups UI's).
 
 At this stage, we are back to the point where are able to generate the illustration. The flow is exactly the same, just that the content is different, i.e. the illustration fields to preview are different, and the display of the illustration (plan) will be different.

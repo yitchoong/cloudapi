@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Prospects)
   description: Sales API for the prospect domain on eBao Cloud
-  version: "0.0.4"
+  version: "0.0.5"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -42,9 +42,17 @@ paths:
         200:
           description: Returns a list of basic prospect records
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/ProspectBasic'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/ProspectBasic'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
+
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -99,9 +107,17 @@ paths:
         200:
           description: Returns a list of detailed prospect records
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Prospect'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/Prospect'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
+
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -303,14 +319,21 @@ paths:
 
       tags:
         - Prospect
-        - Assignment
       responses:
         200:
           description: Returns a list of assignment (of prospects) documents
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Assignment'
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/Assignment'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
+
         400:
           $ref: '#/responses/Standard400Response'
         401:
@@ -327,7 +350,6 @@ paths:
         - APISecurity: []
       tags:
         - Prospect
-        - Assignment
       parameters:
         - name: bodyParam
           in: body

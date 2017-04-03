@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Quotation)
   description: Sales API for the quotation domain on eBao Cloud
-  version: "0.0.3"
+  version: "0.0.5"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -14,272 +14,24 @@ basePath: /v1
 produces:
   - application/json
 
+# ---- Security Definitions -----------
+securityDefinitions:
+  APISecurity:
+    type: apiKey
+    in: header
+    name: Token
+
 paths:
-
-  '/insurers':
-    get:
-      summary: Fetch a list of insurers
-      description: |
-        This endpoint returns a list of insurers.There are a number of parameters to help with filtering and sorting of the required insurers.
-      parameters:
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/queryFilter'
-      tags:
-        - Insurer
-      responses:
-        200:
-          description: Response.ok should be true and value will be a list companies
-          schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/Insurer'
-        400:
-          $ref: '#/responses/Standard400Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/insurers/{insurerId}':
-    get:
-      summary: Fetch an insurer document
-      description: This end point is used to get the insurer for the requested insurer id.
-      parameters:
-        - name: insurerId
-          in: path
-          required: true
-          description: Unique id of the insurer
-          type: string
-      tags:
-        - Insurer
-      responses:
-        200:
-          description: ok will be true and value will hold the requested Insurer document
-          schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Insurer'
-        404:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/packages':
-    get:
-      summary: Fetch a list of packages (basic information).
-      description: This endpoint returns a list of packages with basic information about the package. There are a number of parameters to help with filtering and sorting of the required documents.
-      parameters:
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryFilter'
-      tags:
-        - Package
-      responses:
-        200:
-          description: Successful response to fetching a list of packages. ok will be true and value will hold the result i.e. a list of packages based on the filter and sort criteria (if any).
-          schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/PackageSummary'
-        400:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/packages/detailed':
-      post:
-        summary: Fetch a list of detailed packages (full information).
-        description: This endpoint returns a list of packages with complete information about the package. There are a number of parameters to help with filtering and sorting of the required prospects. A list of primary keys (pkList) can also be provided in the request body to fetch a specific list of packages. If the list of primary keys causes a conflict with the other parameters, it will prevail, e.g. list of primary keys has 10 items, but the limit is set as 5, then 10 packages will be returned. This endpoint differs from GET /packages in that it returns packages with full information instead of just basic information. A use case is when multiple packages are selected for further processing.
-        parameters:
-          - $ref : '#/parameters/queryOffset'
-          - $ref : '#/parameters/queryLimit'
-          - $ref : '#/parameters/queryPk'
-          - $ref : '#/parameters/querySort'
-          - $ref : '#/parameters/queryFilter'
-        tags:
-          - Package
-        responses:
-          200:
-            description: Successful response to fetching a list of packages (complete information). ok will be true and value will hold the result i.e. a list of packages.
-            schema:
-              type: object
-              required:
-                - ok
-              properties:
-                ok:
-                  type: boolean
-                value:
-                  type: array
-                  items:
-                    $ref: '#/definitions/Package'
-          400:
-            $ref: '#/responses/Standard400Response'
-          500:
-            $ref: '#/responses/Standard500Response'
-
-  '/packages/{packageId}':
-    get:
-      summary: Fetch a package document (complete information)
-      description: Use this end point to fetch a package document for a  package id.
-      tags:
-        - Package
-      parameters:
-        - $ref: '#/parameters/paramPackageId'
-      responses:
-        200:
-          description: Successful response to fetch a package.
-          schema:
-              type: object
-              required:
-                - ok
-              properties:
-                ok:
-                  type: boolean
-                value:
-                  $ref: '#/definitions/Package'
-        404:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/packages/{packageId}/products/{productId}':
-    get:
-      summary: Fetch a package product document
-      description: Packages will contain  main product and rider products. Use this end point when the client wants to fetch additional information about a package-product (main or rider product) document.
-      tags:
-        - Package
-        - Product
-      parameters:
-        - $ref: '#/parameters/paramPackageId'
-        - $ref: '#/parameters/paramProductId'
-
-      responses:
-        200:
-          description: Successful response where the package product document is returned.
-          schema:
-              type: object
-              required:
-                - ok
-              properties:
-                ok:
-                  type: boolean
-                value:
-                  type: array
-                  items:
-                    $ref: '#/definitions/PackageProduct'
-        404:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/packages/filters':
-    get:
-      summary: Predefined search fields and values for packages
-      description: To support the search function on mobile environments, it is easier to provide a list of pre-defined search values for the search fields. These can then be selected instead of using the keyboard to enter the search value. The predefined values are for insurers, product category, and benefit type fields.
-      tags:
-        - Package
-      responses:
-        200:
-          description: Successful response where the predefined search values are returned for each search field.
-          schema:
-              type: object
-              required:
-                - ok
-              properties:
-                ok:
-                  type: boolean
-                value:
-                  type: object
-                  properties:
-                    insurers:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                            insurerId:
-                              type: string
-                            insurerName:
-                              type: string
-                    productCategories:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          categoryId:
-                            type: string
-                          categoryName:
-                            type: string
-                          displayOrder:
-                            type: number
-                    benefitTypes:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          benefitId:
-                            type: string
-                          benefitName:
-                            type: string
-                          benefitDesc:
-                            type: string
-
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/packages/{packageId}/quote':
-    get:
-      summary: Fetch the initial quote data for a given package
-      description: After viewing the package information, the client application may require a quote based on the package. This endpoint will fetch the initial data for a new quote based on the selected package. Based on the package id, the package main product and riders plus additional available riders are included in the initial data. Additionally, the product parameters for all the products (main and riders) also be included in the initial quote data.
-      tags:
-        - Package
-        - Quote
-      parameters:
-        - $ref: '#/parameters/paramPackageId'
-      responses:
-        200:
-          description: Successful response to a request to fetch the initial data for a new quote. The productList is a list with all the products. The first item is always the main product. The product field isPackageProduct can be used to determine whether it is a package product or otherwise.
-          schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                  $ref: '#/definitions/NewQuote'
-        404:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
 
   '/quotes':
     get:
       summary: Fetch a list of quotes (basic information)
       description: |
         This endpoint returns a list of quotes with basic information only.There are a number of parameters to help with filtering and sorting of the required documents.
+      security:
+        - APISecurity: []
       parameters:
+        - $ref : '#/parameters/language'
         - $ref : '#/parameters/queryOffset'
         - $ref : '#/parameters/queryLimit'
         - $ref : '#/parameters/queryKeys'
@@ -292,24 +44,29 @@ paths:
           description: Successful response to the request to fetch a list of quotes
           schema:
             type: object
-            required:
-              - ok
             properties:
-              ok:
-                type: boolean
-              value:
+              docs:
                 type: array
                 items:
                   $ref: '#/definitions/QuoteSummary'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
     post:
       summary: Create a new quote.
       description: This endpoint is used to create a new quote. Supply the quote details via the request body.
+      security:
+        - APISecurity: []
       parameters:
+        - $ref : '#/parameters/language'
         - name: quote
           in: body
           description: The details for the quote to create
@@ -319,52 +76,51 @@ paths:
         - Quote
       responses:
         200:
-          description: Response when the quote is successfully created. ok wll be true and value will hold the newly created Quote document.
+          description: Response when the quote is successfully created.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Quote'
-
+            $ref: '#/definitions/Quote'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
   '/quotes/detailed':
-    post:
+    get:
       summary: Fetch a list of detailed quotes (complete information) using the supplied parameters.
       description: |
-        This endpoint returns a list of detailed quotes.There are a number of parameters to help with filtering and sorting of the required quotes. This end point is differs from the GET /quotes as returns a list of quotes with detailed information instead of summary information. Additionally,  it allows the client to specify a list of keys (pkList) in the body of the request. A possible use cases is when multiple rows are selected, we need to get full details of the selected rows for further processing. Note that when the pkList is provided, the other parameters may be in conflict e.g. pkList has 10 items whereas the limit states 5 rows. In such cases, 10 items will be returned.
+        This endpoint returns a list of detailed quotes.There are a number of parameters to help with filtering and sorting of the required quotes. This end point is differs from the GET /quotes as returns a list of quotes with detailed information instead of summary information. A possible use cases is when multiple rows are selected, we need to get full details of the selected rows for further processing. Note that when the keys are provided, the other parameters may be in conflict e.g. keys has 10 items whereas the limit states 5 rows. In such cases, 10 items will be returned.
+      security:
+        - APISecurity: []
       parameters:
+        - $ref : '#/parameters/language'
         - $ref : '#/parameters/queryOffset'
         - $ref : '#/parameters/queryLimit'
         - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryPk'
+        - $ref : '#/parameters/queryKeys'
         - $ref : '#/parameters/queryFilter'
       tags:
         - Quote
       responses:
         200:
-          description: Successful response to a request for fetching a list of detailed quotes. ok will be set to true and value will hold the list of Quote documents requested.
+          description: Successful response to a request for fetching a list of detailed quotes.
           schema:
             type: object
-            required:
-              - ok
             properties:
-              ok:
-                type: boolean
-              value:
+              docs:
                 type: array
                 items:
                   $ref: '#/definitions/Quote'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
         400:
           $ref: '#/responses/Standard400Response'
-        default:
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
           $ref: '#/responses/Standard500Response'
 
   '/quotes/{quoteId}':
@@ -373,20 +129,18 @@ paths:
       description: This endpoint is for fetching the detailed quote document with the quote id.  The result can be used to display, edit or for removal of the quote.
       tags:
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramQuoteId'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
       responses:
         200:
-          description: Successful response to fetch a quote. The quote document will be held in the value reference.
+          description: Successful response to fetch a quote. The quote document is returned
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Quote'
+            $ref: '#/definitions/Quote'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
@@ -398,26 +152,22 @@ paths:
 
       tags:
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramQuoteId'
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
+        - $ref: '#/parameters/quoteParam'
 
       responses:
         200:
           description: Successful response where the new (updated) quote is returned.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/Quote'
+            $ref: '#/definitions/Quote'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         409:
@@ -427,11 +177,14 @@ paths:
 
     delete:
       summary: Delete a quote
-      description: This end point allows for the deletion of a quote. Deletion may be disallowed when the quote is in certain statuses (e.g. SIGNED, COMPLETED). The version number is required to ensure that the quote has not been altered since it was fetched. Example request may look like /quotes/1233?version=202
+      description: This end point allows for the deletion of a quote. Deletion may be disallowed when the quote is in certain statuses (e.g. SIGNED, COMPLETED). The version number is required to ensure that the quote has not been altered since it was fetched. Example request may look like DELETE /quotes/1233?version=20
       tags:
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramQuoteId'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
         - name: version
           in: query
           required: true
@@ -440,6 +193,8 @@ paths:
       responses:
         200:
           $ref: '#/responses/SuccessResponse'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         409:
@@ -447,17 +202,81 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/quotes/draft/products/{productId}/riders':
+  '/quotes/draft/products':
     post:
-      summary: Fetch the attachable riders for the given product and the draft quote details.
-      description: The attachable riders depends on the current main product and also the riders that are already attached. Additionally, the age of the insureds will also be considered to determine if the rider is attachable. The draft quote details is to be included in the body of the request. The result (list of riders) is typically used to present a drop down list in the client application.
+      summary: Fetch a list of main products for the draft quote
+      description: Use this endpoint to get a list of available main products given the proposed insurance details in the draft quote.
+      tags:
+        - Product
+        - Quote
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/proposedInsuranceParam'
+
+      responses:
+        200:
+          description: Successful response to fetch a list of products
+          schema:
+            type: object
+            properties:
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/Product'
+              totalDocs:
+                type: integer
+              offset:
+                type: integer
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/quotes/draft/products/{productId}':
+    get:
+      summary: Fetch a product document (full information)
+      description: This endpoint is for fetching the detailed product document for one of the products in the draft quote.
       tags:
         - Quote
         - Product
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramProductId'
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/productId'
 
+      responses:
+        200:
+          description: Successful response to fetch a product document
+          schema:
+            $ref: '#/definitions/Product'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/quotes/draft/products/{productId}/riders':
+    post:
+      summary: Fetch the attachable riders for the given product and the draft quote details.
+      description: The attachable riders depends on the current main product and also the riders that are already attached. Additionally, the age of the insureds will also be considered to determine if the rider is attachable. The proposed insurance details is to be included in the body of the request. The result (list of riders) is typically used to present a drop down list in the client application.
+      tags:
+        - Quote
+        - Product
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/productId'
+        - $ref: '#/parameters/proposedInsuranceParam'
 
       responses:
         200:
@@ -466,6 +285,8 @@ paths:
             $ref: '#/definitions/ProductAttachableRidersResult'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
@@ -478,18 +299,45 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
 
       responses:
           200:
             description: Successful response. Contains the request input with the addition of the premium amount (firstYearPremium) for the main product and riders
             schema:
-              $ref: '#/definitions/CalculatorResult'
+              $ref: '#/definitions/ProposedInsurance'
           400:
             $ref: '#/responses/Standard400Response'
           500:
             $ref: '#/responses/Standard500Response'
+
+  '/quotes/draft/calculators/costOfInsurance':
+    post:
+      summary: Generate the results of the monthly cost of insurance calculator for the draft quote.
+      description: Typically, the cost of insurance for the investment products (main and riders) are displayed on the client application. Use this end point to trigger the calculation of the monthly cost of insurance for all the products in the draft quote. The draft quote should include details about the insured list, the main product and the attached riders.
+      tags:
+        - Product
+        - Quote
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
+
+      responses:
+          200:
+            description: Successful response. Contains the request input with the addition of the premium amount (firstYearPremium) for the main product and riders
+            schema:
+              $ref: '#/definitions/ProposedInsurance'
+          400:
+            $ref: '#/responses/Standard400Response'
+          500:
+            $ref: '#/responses/Standard500Response'
+
 
   '/quotes/draft/calculators/illustration':
     post:
@@ -498,13 +346,21 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
       responses:
         200:
           description: Successful response where the illustration fields are calculated. The value of the illustration fields can be found in the Product object under illustrationFields. The results can be used to preview the table of benefits.
           schema:
-            $ref: '#/definitions/CalculatorResult'
+            type: object
+            properties:
+              proposedInsurance:
+                $ref: '#/definitions/ProposedInsurance'
+              tableOfBenefits:
+                $ref: '#/definitions/TableOfBenefits'
         400:
           $ref: '#/responses/Standard400Response'
         500:
@@ -517,7 +373,10 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
+        - $ref : '#/parameters/language'
         - name: bodyParam
           in: body
           required: true
@@ -528,9 +387,11 @@ paths:
         200:
           description: Successful response where the illustration fields are calculated
           schema:
-            $ref: '#/definitions/CalculatorResult'
+            $ref: '#/definitions/ProposedInsurance'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -541,13 +402,19 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
+
       responses:
         200:
           $ref: '#/responses/Validator200Response'
         400:
           $ref: '#/responses/Validator400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -558,15 +425,19 @@ paths:
       tags:
         - Product
         - Quote
-
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
 
       responses:
         200:
           $ref: '#/responses/Validator200Response'
         400:
           $ref: '#/responses/Validator400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -577,14 +448,18 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
-
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
       responses:
         200:
           $ref: '#/responses/Validator200Response'
         400:
           $ref: '#/responses/Validator400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -595,14 +470,19 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
 
       responses:
         200:
           $ref: '#/responses/Validator200Response'
         400:
           $ref: '#/responses/Validator400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -613,14 +493,19 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposedInsuranceParam'
 
       responses:
         200:
           $ref: '#/responses/Validator200Response'
         400:
           $ref: '#/responses/Validator400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -631,7 +516,10 @@ paths:
       tags:
         - Product
         - Quote
+      security:
+        - APISecurity: []
       parameters:
+        - $ref : '#/parameters/language'
         - name: bodyParam
           in: body
           required: true
@@ -643,6 +531,8 @@ paths:
           $ref: '#/responses/Validator200Response'
         400:
           $ref: '#/responses/Validator400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -653,345 +543,193 @@ paths:
       tags:
         - Illustration
         - Quote
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramBodyQuote'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteParam'
       responses:
         200:
-          description: Successful response where all the illustration data is returned.
+          description: Successful response where the new quote and illustration data is returned
           schema:
-            $ref: '#/definitions/QuoteIllustrationResult'
+            $ref: '#/definitions/QuoteIllustration'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
   '/quotes/{quoteId}/illustration':
     get:
-      summary: Fetch the illustration for the specified quote id
+      summary: Fetch the quote and illustration for the specified quote id
       description: |
         This endpoint is used to fetch the illustration data that will be used to present the illustration. Note that the required key is the quoteId. In our model the quote includes the illustration object. This endpoint differs from the /quote/{quoteId} end point in that the illustration information is fetched in addition to the quote details.
       tags:
         - Quote
         - Illustration
+      security:
+        - APISecurity: []
       parameters:
-        - $ref: '#/parameters/paramQuoteId'
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
       responses:
         200:
           description: Successful response where the illustration details are returned.
           schema:
-            $ref: '#/definitions/QuoteIllustrationResult'
+            $ref: '#/definitions/QuoteIllustration'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
           $ref: '#/responses/Standard500Response'
 
+  '/quotes/{quoteId}/illustration/shares':
+    get:
+      summary: Fetch all the shares for the illustration belong the the quote
+      description: |
+        This endpoint fetch the shares for the illustration. The shares contain information about which channel the illustration was shared (e.g. WeChat) and the time of the share.
+      tags:
+        - Quote
+        - Illustration
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
+      responses:
+        200:
+          description: Successful response where the list of shares is returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Share'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+    post:
+      summary: Create a new share document for this illustration
+      description: Use this end point to create a new share document which will serve as a record of the user sharing the illustration with the customer.
+      tags:
+        - Quote
+        - Illustration
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
+        - name: bodyParam
+          in: body
+          required: true
+          description: Share details
+          schema:
+            $ref: '#/definitions/Share'
 
+      responses:
+        200:
+          description: Successful response the share record is saved
+          schema:
+            $ref: '#/definitions/Share'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/quotes/{quoteId}/illustration/shares/{shareId}':
+    delete:
+      summary: Delete a share record
+      description: This end point is used to delete the share. The version of the quote is required to ensure there are no changes since the quote document was fetched. e.g. DELETE /quotes/1234/illustration/shares/1?version=12
+      tags:
+        - Quote
+        - Illustration
+
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/quoteId'
+        - name: shareId
+          in: path
+          required: true
+          type: string
+          description: Unique id for the share within the quote
+        - name: version
+          in: query
+          required: true
+          description: The version of the record
+          type: number
+      responses:
+        200:
+          $ref: '#/responses/SuccessResponse'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        409:
+          $ref: '#/responses/ConflictResponse'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/quotes/templates':
+    get:
+      summary: Fetch the illustration template for a product
+      description: |
+        This end point should be used at design time to provide a sample of how the illustration plan should look like.
+      tags:
+        - Quote
+        - Illustration
+      security:
+        - APISecurity: []
+      parameters:
+        - $ref : '#/parameters/language'
+        - name: productId
+          in: query
+          required: true
+          type: string
+          description: Unique id of product
+      responses:
+        200:
+          description: Successful response where the payload is a html string containing the template for the illustration.
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+              startDate:
+                type: string
+                format: date
+              endDate:
+                type: string
+                format: date
+              template:
+                type: string
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
 # ******************************  definitions  ***************************
 definitions:
-
-  Insurer:
-    type: object
-    properties:
-      insurerId:
-        type: string
-        description: Unique id for the insurer
-      insurerName:
-        type: string
-        description: Name of the insurer
-      shortName:
-        type: string
-        description: Insurer short Name
-      logo:
-        type: string
-        description: Reference to the image to use for the insurer logo (e.g. zurich.png)
-      telephone:
-        type: string
-        description: Phone number for the insurer
-      url:
-        type: string
-        description: Url for the insurer website
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  # summary information about a package product
-
-  PackageProductSummary:
-    type: object
-    properties:
-      productId:
-        type: string
-        description: Unique id to identify the product
-      productName:
-        type: string
-        description: Name of the product
-      insType:
-        type: string
-        description: To indicate if main or rider 1=Main, 2=Rider
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  PackageProduct:
-    allOf:
-      - $ref: '#/definitions/PackageProductSummary'
-      - properties:
-          underwritingRule:
-            type: object
-            properties:
-              insurerRule:
-                type: string
-                description: Description of the insurer underwriting rules
-              productRule:
-                type: string
-                description: Description of the product unerwriting rule
-          liabilities:
-            type: array
-            items:
-              type: object
-              properties:
-                liabDesc:
-                  type: string
-                  description: Description about the liability
-          caseStudies:
-            type: array
-            items:
-              type: object
-              properties:
-                caseStudyFileRef:
-                  type: string
-                  description: Reference to a pdf to describe the case study
-                displayOrder:
-                  type: number
-                  description: For the ordering of the case studies
-
-          remark:
-            type: string
-            description: Additional remarks about this product
-
-          diseaseInfo:
-            type: string
-            description: Information about diseases covered for the product
-
-          termAndConditions:
-            type: string
-            description: Writeup about the detailed terms and conditions of the insurance contract
-
-  PackageLiability:
-    type: object
-    properties:
-      liabId:
-        type: string
-        description: Unique id for the liability
-      liabType:
-        type: string
-        description: Type of liability (category)
-      liabDesc:
-        type: string
-        description: The description for the liability
-      displayOrder:
-        type: number
-        description: Controls the ordering when displaying the liability information.
-
-  PackageBenefit:
-    type: object
-    properties:
-      benefitId:
-        type: string
-        description: Unique id of the benefit
-      benefitName:
-        type: string
-        description: Name of the benefit
-      benefitDesc:
-        type: string
-        description: Description about the benefit
-      displayOrder:
-        type: number
-        description: Controls the ordering when displaying the benefit
-
-  PackageCoveragePeriod:
-    type: object
-    properties:
-      coverageType:
-        type: string
-        description: Coverage type is usually in duration (e.g. 10 years) or the end age (e.g. until age 65)
-      coverageValue:
-        type: number
-        description: Depending on the coverageType, the meaning of this field is either the number of years to cover OR the coverage end age.
-
-  PackagePremiumPaymentTerm:
-    type: object
-    properties:
-      termType:
-        type: string
-        description: Either duration or end age i.e. pay premium for 20 years (duration) or pay premium premium until age 55 (end age)
-      termValue:
-        type: number
-        description: Number representing the duration or end age depending on termType
-
-  PackageProductFeature:
-    type: object
-    properties:
-      featureId:
-        type: string
-        description: Unique id for the feature
-      featurePic:
-        type: string
-        description: Reference to the image to highlight the feature
-      displayOrder:
-        type: number
-        description: Ordering information when displaying the feature
-
-  PackageAttachableRider:
-    type: object
-    properties:
-      productId:
-        type: string
-        description: Either the main product or a rider (in the case of dependent riders) i.e. the primary product
-      attachId:
-        type: string
-        description: The attachable rider i.e. the secondary product.
-      compulsory:
-        type: string
-        description: Flag to indicate if this relationship is mandatory. Can be used to represent mandatory riders that must be attached to the main product
-      attachedProductName:
-        type: string
-        description: Name of the attachable rider
-
-  PackageSummary:
-    type: object
-    properties:
-      packageId:
-        type: string
-        description: Unique id for the package
-      packageName:
-        type: string
-        description: Name of the package
-      examplePremium:
-        type: number
-        format: currency
-        description: Typical premium
-      favourite:
-        type: boolean
-        description: Flag to mark the package as a favourite of the user
-      isNew:
-        type: boolean
-        description: New package or otherwise
-      productCategory:
-        type: string
-        description: Product category e.g. Whole Life, Endowment, Health, Accident
-      minAge:
-        type: number
-        description: Minimum age of life assured
-      minAgeUnit:
-        type: string
-        description: The unit for the mininum age (e.g. years, days)
-      maxAge:
-        type: number
-        description: Max age of the life assured
-      maxAgeUnit:
-        type: string
-        description: The unit for the maximum age
-      visitNumber:
-        type: number
-        description: Count of the number of times the user has viewed this package
-      tagList:
-        type: array
-        items:
-          type: object
-          properties:
-            tagId:
-              type: string
-              description: Unique id for the tag
-            tagName:
-              type: string
-              description: Name for the tag
-            tagPic:
-              type: string
-              description: The reference for the picture to load
-      coveragePeriods:
-        type: array
-        items:
-          $ref: "#/definitions/PackageCoveragePeriod"
-      benefits:
-        type: array
-        items:
-          $ref: "#/definitions/PackageBenefit"
-      liabilities:
-        type: array
-        items:
-          $ref: "#/definitions/PackageLiability"
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
-
-  Package:
-    allOf:
-      - $ref: '#/definitions/PackageSummary'
-      - properties:
-          insurer:
-            $ref: '#/definitions/Insurer'
-          premiumPaymentTerms:
-            type: array
-            items:
-              $ref: '#/definitions/PackagePremiumPaymentTerm'
-          features:
-            type: array
-            items:
-              $ref: '#/definitions/PackageProductFeature'
-          mainProduct:
-            $ref: "#/definitions/PackageProductSummary"
-          attachableRiders:
-            type: array
-            items:
-              $ref: '#/definitions/PackageAttachableRider'
-
-          ageLimit:
-            type: object
-            properties:
-              minAge:
-                type: number
-                description: Minimum age of life assured
-              minAgeUnit:
-                type: string
-                description: The unit for the mininum age (e.g. years, months)
-              maxAge:
-                type: number
-                description: Max age of the life assured
-              maxAgeUnit:
-                type: string
-                description: The unit for the maximum age
-          premiumLimit:
-            type: object
-            properties:
-              minAmount:
-                type: number
-                description: Mininum premium amount
-              maxAmount:
-                type: number
-                description: Maximum premium amount
-              currency:
-                type: string
-                description: Currency of the limit
-
-  # **** The following definitions will be used for the quote operations
-
-  # Note the the full definition of Product is in the product domain products.yaml
 
   ProductSummary:
     type: object
     properties:
-      productId:
+      pk:
         type: string
         description: Unique id for the productId
+      doctype:
+        type: string
+        default: "Product"
+      productCode:
+        type: string
+        description: Code for the product  i.e. internal_id
       productName:
         type: string
       insType:
@@ -1085,7 +823,7 @@ definitions:
               type: string
             displayOrder:
               type: number
-            ifDisplayInQuoteIllus:
+            ifDisplayInIllustration:
               type: string
       ageRange:
         type: object
@@ -1100,50 +838,141 @@ definitions:
             type: string
       pointToPh:
         type: string
+        description: Flag to indicate if product applies to policholder
       pointToSecInsured:
         type: string
+        description: Flag to indicate if product applies to second insured
       smokingIndi:
         type: string
+        description: Flag to indicate if smoking status is a risk attribute
       jobIndi:
         type: string
+        description: Flag to indicate if occupation is a risk attribute
       socialInsureIndi:
         type: string
       isWaiver:
         type: string
+        description: Flag to indicate if this is a waiver product
       isAnnuityProduct:
         type: string
+        description: Flag to indicate if this is an annuity product
       isPackageProduct:
         type: string
+        description: Flag to indicate if this is a package product
       saEqual:
         type: string
         description: Rider SA to be equal to main SA
       attachCompulsory:
         type: string
-      insuredNumber:
-        type: number
-        description: Used to identified the insured in the insured list
-      firstYearPremium:
-        type: number
-        readOnly: true
-        description: This should normally be a calculated field from the backend
       displayPremiumIndi:
         type: string
         description: value should be "Y" or "N"
-      monthlyCoi:
-        type: number
-        description: the monthly cost of insurance for ILP products - calculated by the back end
       displayMonthlyCoi:
         type: string
         description: value should be "Y" or "N"
-      illustrationFields:
-        $ref: '#/definitions/IllustrationMap'
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+      pointToSpouse:
+        type: string
+        description: Flag to indicate if product applies to spouse
+      inputFields:
+        type: array
+        items:
+          $ref: '#/definitions/ProductInputFields'
+
+
+  ProductCoveragePeriod:
+    type: object
+    properties:
+      coverageType:
+        type: string
+        description: Coverage type is usually in duration (e.g. 10 years) or the end age (e.g. until age 65)
+      coverageValue:
+        type: number
+        description: Depending on the coverageType, the meaning of this field is either the number of years to cover OR the coverage end age.
+
+  ProductPremiumPaymentPeriod:
+    type: object
+    properties:
+      premiumPaymentType:
+        type: string
+        description: Premium payment type can be duration (e.g. 10 years) or the end age (e.g. until age 65)
+      premiumPaymentValue:
+        type: number
+        description: Depending on the premiumPaymentType, the meaning of this field is either the number of years to pay OR to pay premium until age.
+
+  ProductCurrency:
+    type: object
+    properties:
+      currencyId:
+        type: string
+      currencyName:
+        type: string
+
+  ProductFund:
+    type: object
+    properties:
+      fundCode:
+        type: string
+      fundName:
+        type: string
+
+  ProductPaymentMode:
+    type: object
+    properties:
+      paymentMode:
+        type: string
+        description: The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly, 4=Monthly, 5=Single
+      paymentModeDesc:
+        type: string
+
+  ProductPaymentMethod:
+    type: object
+    properties:
+      paymentMode:
+        type: string
+      paymentMethod:
+        type: string
+      paymentMethodDesc:
+        type: string
+
+  ProductInputFields:
+    type: object
+    properties:
+      fieldName:
+        type: string
+      dataType:
+        type: string
+        description: The data type of the input field i.e. String, Date or Number or Enum (for cases where the drop down list obtained from the response from the end point /products/{productId} e.g. coveragePeriods, currency)
+
+  Product:
+    allOf:
+      - $ref: '#/definitions/ProductSummary'
+      - properties:
+          coveragePeriods:
+            type: array
+            items:
+              $ref: '#/definitions/ProductCoveragePeriod'
+          premiumPaymentPeriods:
+            type: array
+            items:
+              $ref: '#/definitions/ProductPremiumPaymentPeriod'
+          currencies:
+            type: array
+            items:
+              $ref: '#/definitions/ProductCurrency'
+          funds:
+            type: array
+            items:
+              $ref: '#/definitions/ProductFund'
+          paymentModes:
+            type: array
+            items:
+              $ref: '#/definitions/ProductPaymentMode'
+          paymentMethods:
+            type: array
+            items:
+              $ref: '#/definitions/ProductPaymentMethod'
+
+  # define objects for use in ProductInput object
 
   Insured:
     type: object
@@ -1184,7 +1013,7 @@ definitions:
       targetPremiumPercent:
         type: number
         description: The percentage allocation for target (basic) premium
-      adhocTopupPercent:
+      adhocPercent:
         type: number
         description: The percentage allocation for ad-hoc topups
       regularTopupPercent:
@@ -1208,11 +1037,71 @@ definitions:
       amount:
         type: number
 
-  QuoteSummary:
+  # Values for the product risk attributes that are required
+  ProductInput:
     type: object
     properties:
+      productId:
+        type: string
+      productCode:
+        type: string
+      productName:
+        type: string
+      lifeAssuredNumber:
+        type: integer
+        description: index into the insured list i.e. identify person playing role of insured for this product
+      sumAssured:
+        type: number
+      coverageTermType:
+        type: string
+      coverageTermValue:
+        type: number
+      premiumPaymentTermType:
+        type: string
+      premiumPaymentTermValue:
+        type: number
+      targetPremium:
+        type: number
+      regularTopup:
+        type: number
+      commencementDate:
+        type: string
+        format: date
       packageId:
         type: string
+      currency:
+        type: string
+      benefitLevel:
+        type: string
+      benefitPlan:
+        type: string
+      coverageEndAge:
+        type: number
+      premiumTermEndAge:
+        type: number
+      saUnit:
+        type: number
+      firstYearPremium:
+        type: number
+        description: Annual premium for first year
+      monthlyCostOfInsurance:
+        type: number
+      premiumAmount:
+        type: number
+        description: Premium amount taking into account the payment frequency (mode)
+      paymentMode:
+        type: string
+        description: The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly, 4=Monthly, 5=Single
+      illustrationFields:
+        $ref: '#/definitions/IllustrationMap'
+      extensionFields:
+        type: object
+        description: extensionFields is an object to hold local customized fields
+        additionalProperties:
+          type: string
+
+  ProposedInsurance:
+    properties:
       insuredList:
         type: array
         items:
@@ -1222,7 +1111,7 @@ definitions:
         format: date
       status:
         type: string
-        description: Valid values are NEW, PENDING, SIGNED, GENERATED, COMPLETED
+        description: valid values are "NEW","PENDING","SIGNED","GENERATED","COMPLETED"
       lastModified:
         type: string
         format: date
@@ -1233,7 +1122,206 @@ definitions:
         type: string
         description: The user that created this quotation
       mainProduct:
-        $ref: '#/definitions/ProductSummary'
+        $ref: '#/definitions/ProductInput'
+      riderList:
+        type: array
+        items:
+          $ref: '#/definitions/ProductInput'
+      fundList:
+        type: array
+        items:
+          $ref: '#/definitions/Fund'
+      topupList:
+        type: array
+        items:
+          $ref: '#/definitions/Topup'
+      withdrawalList:
+        type: array
+        items:
+          $ref: '#/definitions/Withdrawal'
+
+  IllustrationField:
+    additionalProperties:
+      type: number
+
+  IllustrationMap:
+    type: object
+    readOnly: true
+    description: |
+      These are a list of dynamic fields that are calculated by the product factory. The result is a nested object. The first level keys represent the year. Against each year is an object will all the illustrations fields and their value e.g. { 1 : {annualPremium: 12000, ....}, 2 : {annualPremium:12000,....}, ..., 99: {} }. Year 0 means it is not a multivalued field, i.e. a single valued field (only 1 value).
+    properties:
+      0:
+        $ref : '#/definitions/IllustrationField'
+      1:
+        $ref : '#/definitions/IllustrationField'
+      2:
+        $ref : '#/definitions/IllustrationField'
+      99:
+        $ref : '#/definitions/IllustrationField'
+
+  TableOfBenefits:
+    type: object
+    properties:
+      columnTitles:
+        type: array
+        items:
+          type: object
+          properties:
+            columnNo:
+              type: integer
+            columnTitle:
+              type: string
+      tableData:
+        type: array
+        items:
+          type: object
+          properties:
+            columnNo:
+              type: integer
+            value:
+              type: number
+
+  PlanHighlight:
+    type: object
+    properties:
+      highLightId:
+        type: string
+        description: Unique id for the hightlight
+      description:
+        type: string
+        description: Description of the package hightligh
+      displayOrder:
+        type: number
+        description: Ordering information
+
+  PlanFeature:
+    type: object
+    properties:
+      featureId:
+        type: string
+        description: Unique id for the feature
+      featurePic:
+        type: string
+        description: Reference to the image to highlight the feature
+      displayOrder:
+        type: number
+        description: Ordering information when displaying the feature
+
+  PlanValueAdd:
+    type: object
+    properties:
+      valueAddedId:
+        type: string
+      valueAddedName:
+        type: string
+      valueAddedDesc:
+        type: string
+      valueAddedCode:
+        type: string
+      valueAddedPic:
+        type: string
+      displayOrder:
+        type: number
+
+  PlanInfo:
+    type: object
+    properties:
+      planLiability:
+        type: object
+        properties:
+          multiProduct:
+            type: boolean
+          liabCategoryList:
+            type: array
+            items:
+              type: object
+              properties:
+                categoryId:
+                  type: string
+                categoryName:
+                  type: string
+                simpleLiabList:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      packageId:
+                        type: string
+                      productid:
+                        type: string
+                      liabId:
+                        type: string
+                      liabName:
+                        type: string
+                      liabDisplayName:
+                        type: string
+                      libDescQuote:
+                        type: string
+                      libCalcType:
+                        type: string
+                      libCalcMethod:
+                        type: string
+                      liabAmount:
+                        type: number
+                      needDiseaseIndi:
+                        type: string
+                      totalAmount:
+                        type: number
+                      libDesc:
+                        type: string
+                      liabList:
+                        type: string
+                      categoryName:
+                        type: string
+      planHighlights:
+        type: array
+        items:
+          $ref: '#/definitions/PlanHighlight'
+      planFeatures:
+        type: array
+        items:
+          $ref: '#/definitions/PlanFeature'
+      planValueAddedList:
+        type: array
+        items:
+          $ref: '#/definitions/PlanValueAdd'
+
+  QuoteSummary:
+    type: object
+    properties:
+      pk:
+        type: string
+        readOnly: true
+      doctype:
+        type: string
+        default: "Quote"
+        readOnly: true
+      status:
+        type: string
+      lastModified:
+        type: string
+        format: date
+        readOnly: true
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+        readOnly: true
+      userName:
+        type: string
+        description: The user that created this quotation
+      planName:
+        type: string
+        description: Usually similar to the product name
+      prospectId:
+        type: string
+        description: Unique id of the prospect
+      proposerName:
+        type: string
+      proposerBirthDate:
+        type: string
+        format: date
+      proposerGender:
+        type: string
       extensionFields:
         type: object
         description: Use this object to hold the aditional fields due to local customizations
@@ -1245,99 +1333,35 @@ definitions:
   Quote:
     allOf:
       - $ref: '#/definitions/QuoteSummary'
+      - $ref: '#/definitions/ProposedInsurance'
+
+  QuoteIllustration:
+    allOf:
+      - $ref: '#/definitions/QuoteSummary'
+      - $ref: '#/definitions/ProposedInsurance'
       - properties:
-          riderList:
-            type: array
-            items:
-              $ref: '#/definitions/ProductSummary'
-          fundList:
-            type: array
-            items:
-              $ref: '#/definitions/Fund'
-          topupList:
-            type: array
-            items:
-              $ref: '#/definitions/Topup'
-          withdrawalList:
-            type: array
-            items:
-              $ref: '#/definitions/Withdrawal'
-          valueAddedList:
-            type: array
-            items:
-              type: object
-              properties:
-                valueAddedId:
-                  type: string
-                valueAddedName:
-                  type: string
-                valueAddedDesc:
-                  type: string
-                valueAddedCode:
-                  type: string
-                valueAddedPic:
-                  type: string
-                displayOrder:
-                  type: number
+          tableOfBenefits:
+            $ref: '#/definitions/TableOfBenefits'
+          planInfo:
+            $ref: '#/definitions/PlanInfo'
 
-  # Definition of the model for a new quote for a given package
-
-  NewQuote:
+  Share:
     type: object
     properties:
-      packageId:
+      shareId:
         type: string
-      packageName:
+      shareType:
         type: string
-      insurer:
-        $ref: '#/definitions/Insurer'
-      productList:
-        type: array
-        items:
-          $ref: '#/definitions/ProductSummary'
-      valueAddedList:
-        type: array
-        items:
-          type: object
-          properties:
-            valueAddedId:
-              type: string
-            valueAddedName:
-              type: string
-            valueAddedDesc:
-              type: string
-            valueAddedCode:
-              type: string
-            valueAddedPic:
-              type: string
-            displayOrder:
-              type: number
-      insuranceSpiritList:
-        type: array
-        items:
-          type: object
-          properties:
-            spiritId:
-              type: string
-            spiritName:
-              type: string
-            defaultSpirit:
-              type: string
-      suggestedReason:
+        description: Channel that illustration was shared e.g WeChat WhatsApp
+      timeStamp:
         type: string
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: object
-          additionalProperties:
-            type: string
+        format: datetime
 
-  #  *** The following are the definitions for a number of body parameters
+  # structure used in parameters
 
   ValidatorParameter:
     allOf:
-      - $ref: '#/definitions/Quote'
+      - $ref: '#/definitions/ProposedInsurance'
       - properties:
           valdatorList:
             type: array
@@ -1345,26 +1369,9 @@ definitions:
             items:
               type: string
 
-  QuoteParameter:
-    allOf:
-      - $ref: '#/definitions/Quote'
-      - properties:
-          showValueAdded:
-            type: string
-          valueAddedList:
-            type: array
-            items:
-              type: string
-          insuranceSpirit:
-            type: number
-          showAdvice:
-            type: string
-          advice:
-            type: string
-
   CalculatorParameter:
     allOf:
-      - $ref: '#/definitions/Quote'
+      - $ref: '#/definitions/ProposedInsurance'
       - properties:
           showValueAdded:
             type: string
@@ -1384,166 +1391,25 @@ definitions:
             items:
               type: string
 
-  # -------- The following are definitions of objects used in results
-
-  IllustrationField:
-    additionalProperties:
-      type: number
-
-  # -- an alternate definition of the model for the illustration fields
-  # QuoteIllustration:
-  #   type: object
-  #   properties:
-  #     illusMap:
-  #       description: This is a nested object. The first level key represents the performance level i.e. 1=low, 2=mid, 3=high and the 2nd level key represents the year. The result is an object which holds the name of the calculated field and its value
-  #       type: object
-  #       properties:
-  #         2:
-  #           type: object
-  #           properties:
-  #             1:
-  #               $ref: '#/definitions/IllustrationField'
-  #             2:
-  #               $ref: '#/definitions/IllustrationField'
-  #             99:
-  #               $ref: '#/definitions/IllustrationField'
-
-  IllustrationMap:
-    type: object
-    readOnly: true
-    description: |
-      These are a list of dynamic fields that are calculated by the product factory. The result is a nested object. The first level keys represent the year. Against each year is an object with all the illustrations fields and their value e.g. { 1 : {annualPremium: 12000, ....}, 2 : {annualPremium:12000,....}, ..., 99: {} }. Year 0 means it is a single-valued field. For multi-valued fields, it will be stored under year 1 - 99.
-    properties:
-      0:
-        $ref : '#/definitions/IllustrationField'
-      1:
-        $ref : '#/definitions/IllustrationField'
-      2:
-        $ref : '#/definitions/IllustrationField'
-      99:
-        $ref : '#/definitions/IllustrationField'
-
-      # type: object
-      # additionalProperties:
-      #   type: number
-
-  QuoteIllustration:
-    allOf:
-      - $ref: '#/definitions/Quote'
-      - $ref: '#/definitions/Package'
-      # - $ref: '#/definitions/IllustrationMap' # embedded in Quote.illustrationFields
-      - properties:
-          planLiabilityList:
-            type: object
-            properties:
-              multiProduct:
-                type: boolean
-              liabCategoryList:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    categoryId:
-                      type: string
-                    categoryName:
-                      type: string
-                    simpleLiabList:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          packageId:
-                            type: string
-                          productid:
-                            type: string
-                          liabId:
-                            type: string
-                          liabName:
-                            type: string
-                          liabDisplayName:
-                            type: string
-                          libDescQuote:
-                            type: string
-                          libCalcType:
-                            type: string
-                          libCalcMethod:
-                            type: string
-                          liabAmount:
-                            type: number
-                          needDiseaseIndi:
-                            type: string
-                          totalAmount:
-                            type: number
-                          libDesc:
-                            type: string
-                          liabList:
-                            type: string
-                          categoryName:
-                            type: string
-
-          extensionFields:
-            type: object
-            description: Use this object to hold the aditional fields due to local customizations
-            additionalProperties:
-              type: object
-              additionalProperties:
-                type: string
-
-  # ----- definitions of various results that will be used in responses ----
-
-  QuoteIllustrationResult:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        $ref: '#/definitions/QuoteIllustration'
-
   ProductAttachableRidersResult:
     type: object
-    required:
-      - ok
     properties:
-      ok:
-        type: boolean
-      value:
-        type: object
-        properties:
-          riderList:
-            type: array
-            items:
-              $ref: '#/definitions/ProductSummary'
-
-  CalculatorResult:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        $ref: '#/definitions/Quote'
+      riderList:
+        type: array
+        items:
+          $ref: '#/definitions/ProductSummary'
 
   ValidatorSuccessResult:
     type: object
-    required:
-      - ok
     properties:
-      ok:
-        type: boolean
-      value:
+      message:
+        description: Simple message to indicate no validation errors e.g. ok
         type: string
-        description: Simple message do advise that there are no validation errors
+        default: "ok"
 
   ValidatorErrorResult:
     type: object
-    required:
-      - ok
     properties:
-      ok:
-        type: boolean
       errorList:
         type: array
         items:
@@ -1557,19 +1423,6 @@ definitions:
               type: array
               items:
                 type: string
-
-  # ----- definitions of the Error object
-
-  Error:
-    type: object
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
-      fields:
-        type: string
 
 
 # ********************* parameters *************************
@@ -1611,19 +1464,6 @@ parameters:
     items:
       type: string
 
-  queryPk:
-    name: pkList
-    in: body
-    description: Specify multiple rows to fetch {pkList:[12,13,1555]}
-    required: false
-    schema:
-      type: object
-      properties:
-        pkList:
-          type: array
-          items:
-            type: number
-
   queryFilter:
     name: filter
     in: query
@@ -1635,105 +1475,110 @@ parameters:
     items:
       type: string
 
-  paramPackageId:
-    name: packageId
-    in: path
-    required: true
-    description: Unique id for the package
-    type: string
 
-  paramProductId:
+  language:
+    name: lang
+    in: header
+    description: Language to be used in case the response has text data (e.g. error messages)
+    type: string
+    required: false
+
+  productId:
     name: productId
     in: path
+    type: string
     required: true
     description: Unique id for the product
-    type: string
 
-  paramQuoteId:
+  quoteId:
     name: quoteId
     in: path
     required: true
     description: Unique id for the quote
     type: string
 
-  paramBodyQuote:
+  quoteParam:
     name: bodyParam
     in: body
     required: true
-    description: Quote details
+    description: Quote object
     schema:
-      $ref : '#/definitions/QuoteParameter'
+      $ref: '#/definitions/Quote'
+
+  proposedInsuranceParam:
+    name: bodyParam
+    in: body
+    required: true
+    description: Proposed Insurance Details
+    schema:
+      $ref: '#/definitions/ProposedInsurance'
 
 # ************************ responses ****************************
 
 responses:
 
   Standard400Response:
-    description: The request cannot be process due to a client error (submitted data has errors). ok will be set to false.
+    description: Response to indicate that the request cannot be processed due to a client error (submitted data has errors).
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+  Standard401Response:
+    description: Response when the client is not authorized for this operation.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "Authentication credentials were missing or incorrect"
 
   Standard404Response:
-    description: Response when the document is not found. ok will be set to false.
+    description: Response when the document is not found.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "The item does not exist"
 
   Standard500Response:
-    description: An unexpected error occured. ok will be set to false.
+    description: Response when there is an unexpected server error.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "An unexpected error has occurred. Please try again later"
 
   SuccessResponse:
-    description: Request was successfully processed
+    description: Response for request successfully processed
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          type: object
-          required:
-            - ok
-          properties:
-            ok:
-              type: boolean
-            value:
-              type: string
+        message:
+          type: string
+          description: "The request was successfully processed"
 
   ConflictResponse:
-    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched, i.e. the version does not match the version supplied.
+    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched. The current document version does not match the version supplied.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
+        message:
           type: string
+          description: "The document has changed since it was last fetched. Please fetch the document again to get the latest version of the document"
+
 
   Validator200Response:
     description: Response when the validation has no errors
