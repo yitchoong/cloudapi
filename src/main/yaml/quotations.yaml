@@ -177,7 +177,7 @@ paths:
 
     delete:
       summary: Delete a quote
-      description: This end point allows for the deletion of a quote. Deletion may be disallowed when the quote is in certain statuses (e.g. SIGNED, COMPLETED). The version number is required to ensure that the quote has not been altered since it was fetched. Example request may look like DELETE /quotes/1233?version=20
+      description: This end point allows for the deletion of a quote. Deletion may be disallowed when the quote is in certain statuses (e.g. SIGNED). The version number is required to ensure that the quote has not been altered since it was fetched. Example request may look like DELETE /quotes/1233?version=20
       tags:
         - Quote
       security:
@@ -1115,9 +1115,9 @@ definitions:
       startDate:
         type: string
         format: date
-      status:
-        type: string
-        description: valid values are "NEW","PENDING","SIGNED","GENERATED","COMPLETED"
+      # status:
+      #   type: string
+      #   description: valid values are "PENDING", "GENERATED", "SIGNED","PROPOSED"
       lastModified:
         type: string
         format: date
@@ -1304,6 +1304,7 @@ definitions:
         readOnly: true
       status:
         type: string
+        description: valid values are 'PENDING', 'GENERATED', 'SIGNED','PROPOSED'
       lastModified:
         type: string
         format: date
@@ -1399,9 +1400,9 @@ definitions:
 
   # -------- The following are definitions of objects used in results
 
-  IllustrationField:
-    additionalProperties:
-      type: number
+  # IllustrationField:
+  #   additionalProperties:
+  #     type: number
 
   # -- an alternate definition of the model for the illustration fields
   # QuoteIllustration:
@@ -1421,99 +1422,98 @@ definitions:
   #             99:
   #               $ref: '#/definitions/IllustrationField'
 
-  IllustrationMap:
-    type: object
-    description: |
-      These are a list of dynamic fields that are calculated by the product factory. The result is a nested object. The first level keys represent the year. Against each year is an object with all the illustrations fields and their value e.g. { 1 : {annualPremium: 12000, ....}, 2 : {annualPremium:12000,....}, ..., 99: {} }. Year 0 means it is a single-valued field. For multi-valued fields, it will be stored under year 1 - 99.
-    properties:
-      0:
-        $ref : '#/definitions/IllustrationField'
-      1:
-        $ref : '#/definitions/IllustrationField'
-      2:
-        $ref : '#/definitions/IllustrationField'
-      99:
-        $ref : '#/definitions/IllustrationField'
+  # IllustrationMap:
+  #   type: object
+  #   description: |
+  #     These are a list of dynamic fields that are calculated by the product factory. The result is a nested object. The first level keys represent the year. Against each year is an object with all the illustrations fields and their value e.g. { 1 : {annualPremium: 12000, ....}, 2 : {annualPremium:12000,....}, ..., 99: {} }. Year 0 means it is a single-valued field. For multi-valued fields, it will be stored under year 1 - 99.
+  #   properties:
+  #     0:
+  #       $ref : '#/definitions/IllustrationField'
+  #     1:
+  #       $ref : '#/definitions/IllustrationField'
+  #     2:
+  #       $ref : '#/definitions/IllustrationField'
+  #     99:
+  #       $ref : '#/definitions/IllustrationField'
 
       # type: object
       # additionalProperties:
       #   type: number
 
-  QuoteIllustration:
-    allOf:
-      - $ref: '#/definitions/Quote'
-      - $ref: '#/definitions/Package'
-      # - $ref: '#/definitions/IllustrationMap' # embedded in Quote.illustrationFields
-      - properties:
-          planLiabilityList:
-            type: object
-            properties:
-              multiProduct:
-                type: boolean
-              liabCategoryList:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    categoryId:
-                      type: string
-                    categoryName:
-                      type: string
-                    simpleLiabList:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          packageId:
-                            type: string
-                          productid:
-                            type: string
-                          liabId:
-                            type: string
-                          liabName:
-                            type: string
-                          liabDisplayName:
-                            type: string
-                          libDescQuote:
-                            type: string
-                          libCalcType:
-                            type: string
-                          libCalcMethod:
-                            type: string
-                          liabAmount:
-                            type: number
-                          needDiseaseIndi:
-                            type: string
-                          totalAmount:
-                            type: number
-                          libDesc:
-                            type: string
-                          liabList:
-                            type: string
-                          categoryName:
-                            type: string
+  # QuoteIllustration:
+  #   allOf:
+  #     - $ref: '#/definitions/Quote'
+  #     - $ref: '#/definitions/Package'
+  #     # - $ref: '#/definitions/IllustrationMap' # embedded in Quote.illustrationFields
+  #     - properties:
+  #         planLiabilityList:
+  #           type: object
+  #           properties:
+  #             multiProduct:
+  #               type: boolean
+  #             liabCategoryList:
+  #               type: array
+  #               items:
+  #                 type: object
+  #                 properties:
+  #                   categoryId:
+  #                     type: string
+  #                   categoryName:
+  #                     type: string
+  #                   simpleLiabList:
+  #                     type: array
+  #                     items:
+  #                       type: object
+  #                       properties:
+  #                         packageId:
+  #                           type: string
+  #                         productid:
+  #                           type: string
+  #                         liabId:
+  #                           type: string
+  #                         liabName:
+  #                           type: string
+  #                         liabDisplayName:
+  #                           type: string
+  #                         libDescQuote:
+  #                           type: string
+  #                         libCalcType:
+  #                           type: string
+  #                         libCalcMethod:
+  #                           type: string
+  #                         liabAmount:
+  #                           type: number
+  #                         needDiseaseIndi:
+  #                           type: string
+  #                         totalAmount:
+  #                           type: number
+  #                         libDesc:
+  #                           type: string
+  #                         liabList:
+  #                           type: string
+  #                         categoryName:
+  #                           type: string
 
-          extensionFields:
-            type: object
-            description: Use this object to hold the aditional fields due to local customizations
-            additionalProperties:
-              type: object
-              additionalProperties:
-                type: string
+  #         extensionFields:
+  #           type: object
+  #           description: Use this object to hold the aditional fields due to local customizations
+  #           additionalProperties:
+  #             type: object
+  #             additionalProperties:
+  #               type: string
 
   # ----- definitions of various results that will be used in responses ----
 
-  QuoteIllustrationResult:
-    type: object
-    required:
-      - ok
-    properties:
-      ok:
-        type: boolean
-      value:
-        $ref: '#/definitions/QuoteIllustration'
+  # QuoteIllustrationResult:
+  #   type: object
+  #   required:
+  #     - ok
+  #   properties:
+  #     ok:
+  #       type: boolean
+  #     value:
+  #       $ref: '#/definitions/QuoteIllustration'
 
->>>>>>> 8d09c4d3254d7f262d93d1b456285c5a9aee9823
   ProductAttachableRidersResult:
     type: object
     properties:
