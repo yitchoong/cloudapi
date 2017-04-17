@@ -222,11 +222,23 @@ paths:
   '/proposals/{proposalId}':
     $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}'
 
-  # '/proposals/template/codes/{codeType}':
-  #   $ref : './proposals.yaml#/paths/~1proposals~1template~1codes~1{codeType}'
+  '/proposals/templates/codeTables':
+    $ref : './proposals.yaml#/paths/~1proposals~1templates~1/codeTables'
 
-  '/proposals/template/sections':
-    $ref : './proposals.yaml#/paths/~1proposals~1template~1sections'
+  '/proposals/templates/codeTables/{codeTableId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1templates~1/codeTables~1{codeTableId}'
+
+  '/proposals/template/forms':
+    $ref : './proposals.yaml#/paths/~1proposals~1template~1forms'
+
+  '/proposals/templates/forms/{formId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1template~1forms~1{formId}'
+
+  '/proposals/draft/quotes':
+    $ref : './proposals.yaml#/paths/~1proposals~1draft~1quotes'
+
+  '/proposals/draft/quotes/{quoteId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1draft~1quotes~1{quoteId}'
 
   '/proposals/draft/sections':
     $ref : './proposals.yaml#/paths/~1proposals~1draft~1sections'
@@ -234,17 +246,20 @@ paths:
   '/proposals/draft/sections/{sectionName}/status':
     $ref : './proposals.yaml#/paths/~1proposals~1draft~1sections~1{sectionName}~1status'
 
-  '/proposals/draft/status':
-    $ref : './proposals.yaml#/paths/~1proposals~1draft~1status'
+  '/proposals/submissions':
+    $ref : './proposals.yaml#/paths/~1proposals~1submissions'
 
   '/proposals/{proposalId}/submissions':
     $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}~1submissions'
 
-  '/proposals/{proposalId}/submissions/{submissionId}/addendums':
-    $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}~1submissions~1{submissionId}~1addendums'
+  '/proposals/submissions/{submissionId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1submissions~1{submissionId}'
 
-  '/proposals/{proposalId}/submissions/{submissionId}/addendums/{addendumId}':
-    $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}~1submissions~1{submissionId}~1addendums~1{addendumId}'
+  '/proposals/submissions/{submissionId}/addendums':
+    $ref : './proposals.yaml#/paths/~1proposals~1submissions~1{submissionId}~1addendums'
+
+  '/proposals/submissions/{submissionId}/addendums/{addendumId}':
+    $ref : './proposals.yaml#/paths/~1proposals~1submissions~1{submissionId}~1addendums~1{addendumId}'
 
 
 

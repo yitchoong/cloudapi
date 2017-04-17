@@ -517,7 +517,7 @@ paths:
           $ref: '#/responses/Standard500Response'
 
     post:
-      summary: Create a new proposal submission document
+      summary: Create a new proposal submission document (includes proposal details)
       description: This end point is used for the submission of a proposal . The service will check that the proposal is in the correct status i.e.  PENDING-SUBMISSION status. It does not assume that the proposal is persisted using the propsoal services, as it will derive the status based on the submitted data. This end point is to
       tags:
         - Proposal
@@ -934,23 +934,75 @@ definitions:
           type: string
 
   Submission:
-    allOf:
-      - $ref: '#/definitions/SubmissionSummary'
-      - properties:
-          submissionData:
-            $ref: '#/definitions/Proposal'
-          messages:
-            type: array
-            description: messages can be used to provide more information on the status of the submission
-            items:
-              type: object
-              properties:
-                messageDate:
-                  type: string
-                message:
-                  type: string
-                status:
-                  type: string
+    type: object
+    properties:
+      submissionId:
+        type: string
+        description: Unique id for the submission
+      submissionDate:
+        type: string
+        format: date
+      submissionType:
+        type: string
+        description: submission type e.g. proposal
+      submissionReference:
+        type: string
+        description: Unique id identifying the submission type e.g. the proposalId
+      status:
+        type: string
+        description: Status of the submission. Valid values should be SUBMITTED, ACKNOWLEDGED, UNDERWRITING, QUERY, CONDITIONAL, ACCEPTED, DECLINED
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+      submissionData:
+        $ref: '#/definitions/Proposal'
+      messages:
+        type: array
+        description: messages can be used to provide more information on the status of the submission
+        items:
+          type: object
+          properties:
+            messageDate:
+              type: string
+            message:
+              type: string
+            status:
+              type: string
+
+
+    # allOf:
+    #   - $ref: '#/definitions/SubmissionSummary'
+    #   - required:
+    #       - submissionData
+    #     properties:
+
+    #       submissionData:
+    #         $ref: '#/definitions/Proposal'
+    #       messages:
+    #         type: array
+    #         description: messages can be used to provide more information on the status of the submission
+    #         items:
+    #           type: object
+    #           properties:
+    #             messageDate:
+    #               type: string
+    #             message:
+    #               type: string
+    #             status:
+    #               type: string
 
   AddendumSummary:
     type: object
