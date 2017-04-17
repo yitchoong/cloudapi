@@ -222,8 +222,8 @@ paths:
   '/proposals/{proposalId}':
     $ref : './proposals.yaml#/paths/~1proposals~1{proposalId}'
 
-  '/proposals/template/codes/{codeType}':
-    $ref : './proposals.yaml#/paths/~1proposals~1template~1codes~1{codeType}'
+  # '/proposals/template/codes/{codeType}':
+  #   $ref : './proposals.yaml#/paths/~1proposals~1template~1codes~1{codeType}'
 
   '/proposals/template/sections':
     $ref : './proposals.yaml#/paths/~1proposals~1template~1sections'
