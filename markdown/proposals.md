@@ -117,6 +117,10 @@ Next the user selects the submission to get more details and is presented with t
 
 In this case, the insurer has asked for a blood test. When the intermediary gets a copy of the latest blood test results from the customer, it can be submitted by creating a new addendum which is linked to the submission. The screen is similar to the document attachment screen.
 
+![](../assets/screens/proposal-addendum-add.png)
+
+Multiple images are allowed for each addendum, and addendums need to be signed before being submitted.
+
 In this scenario, we did not show all the possible form sections as this is a simple proposal form. In a more detailed form, there can be other sections like the beneficial owner, the use of personal data, FATCA, that have not been included in this example. These sections are similar to the sections already shown and thus does not add much to the discussion.
 
 #### 2.0 Sequence Diagrams
@@ -615,12 +619,12 @@ participant "eBao Cloud" as ebao
 autonumber
 
 activate front
-user -> front :
+user -> front : Search pending submissions
 front -> ebao: GET /proposals/submissions?filter=status*EQ*IN-PROGRESS|status*EQ*QUERY
 activate ebao
 ebao --> front: HTTP 200 [{pk:6200, submissionType:"proposal", submissionRef: 7800, status:"QUERY",..},{...}]
 deactivate ebao
-front --> user : Render list of submissions
+front --> user : Render list of pending submissions
 user -> front : Select submission
 front -> ebao : GET /proposals/7800/submissions/6200
 activate ebao
@@ -647,20 +651,25 @@ participant "eBao Cloud" as ebao
 autonumber
 
 activate front
-user -> front : New Addendum
+user -> front  : New Addendum
 front --> user : Render addendum form
-user -> front : Take photo
+user -> front  : Take photo
 front -> front : Trigger camera with low resolution
 front --> user : Show camera view
-user -> front : Focus and take picture
+user -> front  : Focus and take picture
 front -> front : Prepare thumbnail of photo. Remove temp file (if any)
 front --> user : Render thumbnail of picture
-user -> front : Enter remarks. Done
+user -> front  : Enter remarks. Tap to sign
+front -> front : Check mandatory fields
+front -> front :Prepare signature canvas for policyholder
+front --> user : Render signature canvas for policyholder
+user -> front  : Policyholder signs. Accept.
+front -> front : Convert signature to image with watermark. Clean temp file (if any)
+front --> user : Render watermarked image of signature
 front -> front : Check all the mandatory fields are filled
-
-front -> ebao: POST /proposals/submissions/6200/addendums {remarks:"Blood test results", addendum:"...."}
+front -> ebao  : POST /proposals/submissions/6200/addendums {submissionRef: 6200, ...,policyholderSignature:"...",imageList:[{remark: "Blood test result", image:'...'}] }
 activate ebao
-ebao --> front : HTTP 200 {pk:3900, version:1, addendum:"...", submissionId: 6200, remarks:"Blood test results",..}
+ebao --> front : HTTP 200 {pk:3900, version:1, submissionId: 6200, ..., policyholderSignature:"...", imageList: [{remark: "Blood test result", image:'...'}] }
 deactivate ebao
 front --> user : Addendum submitted
 

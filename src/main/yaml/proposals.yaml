@@ -966,7 +966,7 @@ definitions:
         description: Use this object to hold the aditional fields due to local customizations
         additionalProperties:
           type: string
-
+      # above are fields from submission summary - allOf seems to cause issues with swagger ui
       submissionData:
         $ref: '#/definitions/Proposal'
       messages:
@@ -1034,9 +1034,8 @@ definitions:
         description: E.g. the proposal id
       addendumDate:
         type: string
-      remarks:
-        type: string
-        description: Some notes to go with the addendum.
+      policyholderSignature:
+        $ref: '#/definitions/Signature'
       status:
         type: string
         description: the addendum status
@@ -1047,13 +1046,69 @@ definitions:
           type: string
 
   Addendum:
-    allOf:
-      - $ref: '#/definitions/AddendumSummary'
-      - properties:
-          addendum:
-            type: string
-            description: Base64 representation of the photo
-
+    type: object
+    properties:
+      pk:
+        type: string
+        description: Unique id for the addendum
+      doctype:
+        type: string
+        default: "Addendum"
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      submissionId:
+        type: string
+        description: Reference to the submission
+      submissionType:
+        type: string
+        description: Type of submission e.g. proposal
+      submissionReference:
+        type: string
+        description: E.g. the proposal id
+      addendumDate:
+        type: string
+      policyholderSignature:
+        $ref: '#/definitions/Signature'
+      status:
+        type: string
+        description: the addendum status
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+      imageList:
+        type: array
+        items:
+          type: object
+          properties:
+            remark:
+              type: string
+            image:
+              type: string
+              description: Base64 representation of the image
+    # allOf:
+    #   - $ref: '#/definitions/AddendumSummary'
+    #   - properties:
+    #       imageList:
+    #         type: array
+    #         items:
+    #           type: object
+    #           properties:
+    #             remark:
+    #               type: string
+    #             image:
+    #               type: string
+    #               description: Base64 representation of the image
+    #
 
   # ------ Definitions for the various sections of a proposal ----
 
