@@ -2,12 +2,13 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Proposals)
   description: Sales API for proposal domain in eBao cloud
-  version: "0.0.3"
+  version: "0.0.4"
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
 schemes:
   - http
+  - https
 # will be prefixed to all paths
 basePath: /v1
 produces:
@@ -19,6 +20,7 @@ paths:
       description: |
         This end point returns a list of proposals (with basic information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required proposals.
       parameters:
+        - $ref: '#/parameters/language'
         - $ref: '#/parameters/queryOffset'
         - $ref: '#/parameters/queryLimit'
         - $ref: '#/parameters/queryKeys'
@@ -30,18 +32,13 @@ paths:
         200:
           description: Successful response which returns a list of proposal documents with basic information
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/ProposalSummary'
+            type: array
+            items:
+              $ref: '#/definitions/ProposalSummary'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
     post:
@@ -51,6 +48,7 @@ paths:
       tags:
         - Proposal
       parameters:
+        - $ref: '#/parameters/language'
         - name: bodyParam
           in: body
           required: true
@@ -59,31 +57,27 @@ paths:
             $ref: '#/definitions/Proposal'
       responses:
         200:
-          description: Response when the proposal is successfully created. Returns the newly created proposal document (value=new proposal)
+          description: Response when the proposal is successfully created. Returns the newly created proposal document (value=new proposal). The status of the sections and the proposal is updated by the proposal service.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Proposal'
+            $ref: '#/definitions/Proposal'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
   '/proposals/detailed':
-    post:
+    get:
       summary: Fetch a list of detailed proposal documents (complete information)
       description: |
-        This endpoint returns a list of proposal documents (with complete information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required proposals. Compared to the end point GET /proposals,  this end point allows for fetching a list of proposals with full information instead of just summary information. A list of keys can also be provided in the request body. When the list of keys is provided in the request, the other parameters may no longer apply (if there is a conflict in the request e.g. limit is set to 5 , but pkList has 10 items)
+        This endpoint returns a list of proposal documents (with complete information) for the current authenticated user. There are a number of parameters to help with filtering and sorting of the required proposals. Compared to the end point GET /proposals,  this end point allows for fetching a list of proposals with full information instead of just summary information. A list of keys can also be provided in the request body. When the list of keys is provided in the request, the other parameters may no longer apply (if there is a conflict in the request e.g. limit is set to 5 , but keys has 10 items)
       parameters:
+        - $ref: '#/parameters/language'
         - $ref: '#/parameters/queryOffset'
         - $ref: '#/parameters/queryLimit'
         - $ref: '#/parameters/querySort'
-        - $ref: '#/parameters/queryPk'
+        - $ref: '#/parameters/queryKeys'
         - $ref: '#/parameters/queryFilter'
       tags:
         - Proposal
@@ -91,45 +85,32 @@ paths:
         200:
           description: Successful response which returns a list of detailed proposal documents.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/Proposal'
+            type: array
+            items:
+              $ref: '#/definitions/Proposal'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
   '/proposals/{proposalId}':
     get:
-      summary: Fetch a proposal document
+      summary: Fetch a proposal document (complete information)
       description: Use this end point to fetch a proposal document given the proposal id.
       tags:
         - Proposal
       parameters:
-        - name: proposalId
-          in: path
-          required: true
-          description: Unique id for the proposal
-          type: string
+        - $ref: '#/parameters/language'
+        - $ref: '#/parameters/proposalId'
       responses:
         200:
           description: Successful response where the request is succesfully processed. ok will be true and value is a full proposal document
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Proposal'
+            $ref: '#/definitions/Proposal'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
@@ -141,11 +122,8 @@ paths:
       tags:
         - Proposal
       parameters:
-        - name: proposalId
-          in: path
-          required: true
-          description: Unique id for the proposal
-          type: string
+        - $ref: '#/parameters/language'
+        - $ref: '#/parameters/proposalId'
         - name: version
           in: query
           required: true
@@ -154,8 +132,8 @@ paths:
       responses:
         200:
           $ref: '#/responses/SuccessResponse'
-        400:
-          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         409:
@@ -169,38 +147,23 @@ paths:
       tags:
         - Proposal
       parameters:
-        - name: proposalId
-          in: path
-          required: true
-          description: Unique id for the proposal
-          type: string
+        - $ref: '#/parameters/language'
+        - $ref: '#/parameters/proposalId'
         - name: bodyParam
           in: body
-          description: Submitted details for the proposal document
+          description: Updated proposal document
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Proposal'
+            $ref: '#/definitions/Proposal'
 
       responses:
         200:
-          description: Response when the request is succesfully processed. ok will be true and value will hold the new / updated proposal document
+          description: Response when the request is succesfully processed.  document. The status of the sections and the proposal will be updated.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Proposal'
+            $ref: '#/definitions/Proposal'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         409:
@@ -208,66 +171,95 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/template/codes/{codeType}':
+
+  '/proposals/template/codeTables':
     get:
-      summary: Fetch a list of proposal code values for a given code type.
+      summary: Fetch a list of codeTables.
+      description: This end point should be used at design time to get the list of codeTables for can be used for the fields with drop down values.
+      tags:
+        - Proposal
+        - Design-time
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+      responses:
+        200:
+          description: Successful response which contains the names of the code tables
+          schema:
+            type: object
+            properties:
+              pk:
+                type: string
+              codeTableName:
+                type: string
+              codeTableDescription:
+                type: string
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+  '/proposals/template/codeTables/{codeTableId}':
+    get:
+      summary: Fetch a list of proposal code and values for a codeTable.
       description: This end-point should be used at design time, to get the valid static codes and their values. These codes and values will be used in the select (list) controls in the client application. For example, to get the list of nationalties use /proposals/template/codes/nationality.
       tags:
         - Proposal
         - Design-time
       parameters:
-        - name: codeType
+        - name: codeTableId
           in: path
           required: true
-          description: The type of code required
+          description: The id of the code table
           type: string
       responses:
         200:
           description: Successful response which returns a list of codes and values
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: object
-                properties:
-                  code:
-                    type: string
-                  textValue:
-                    type: string
-                  textValue2:
-                    type: string
-                  numberValue:
-                    type: number
-                  dateValue:
-                    type: string
-                    format: date
+            type: array
+            items:
+              type: object
+              properties:
+                code:
+                  type: string
+                textValue:
+                  type: string
+                textValue2:
+                  type: string
+                numberValue:
+                  type: number
+                dateValue:
+                  type: string
+                  format: date
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/template/sections':
+  '/proposals/template/forms':
     get:
-      summary: Fetch all the possible sections (with its questions) from the template proposal
-      description: This end-point is to be used at design time. It provides all the possible sections and questions for a given company and language setting. The intent is to obtain all the valid sections and questions that will be used when developing the client application.
+      summary: Fetch all the possible forms for an insurer
+      description: Use this end point to get the list of forms for an insurer. As an example, there might be a Unit Linked form and another form for Traditional products. Note  that the insurer is a required query parameter e.g. GET /proposals/template/forms?insurer=101
       tags:
         - Proposal
         - Design-time
       parameters:
-        - name: companyId
+        - $ref: '#/parameters/language'
+        - name: insurerId
           in: query
           required: true
           type: string
-          description: The unique id for the company. To get the list of companies, the the /companies end-point.
-        - name: language
-          in: query
-          required: false
-          type: string
-          description: The language for questions titles and labels. If not specified, the the default language = en
+          description: The unique id for the insurer. To get the list of insurers, use the /insurers end point.
+
       responses:
         200:
           description: Successful response, i.e. the all the possible sections and possible questions are returned. In a sense, this is like the question bank for the specified company's proposal form.
@@ -280,16 +272,122 @@ paths:
                 type: boolean
               value:
                 $ref: '#/definitions/ProposalTemplate'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/draft/sections':
-    post:
-      summary: Generate the applicable sections (and applicable questions) of the draft proposal based on the supplied quote details.
-      description: This end point has a subtle difference compared to the GET/proposals/template/sections end point. This end point is to be used at run-time to get the list of applicable sections and questions instead of all the possible sections and questions. The applicable sections and questions will be a subset of the sections and questions in the template proposal. To determine the applicable sections and questions, factors like company, product, first party (vs third party), gender, age of the insured, etc, are considered. All these factors are available in the quote document.
+  '/proposals/template/forms/{formId}':
+    get:
+      summary: Fetch all the possible sections (with its questions) from the template proposal
+      description: This end-point is to be used at design time. It provides all the possible sections and questions for a given company and language setting. The intent is to obtain all the valid sections and questions that will be used when developing the client application.
+      tags:
+        - Proposal
+        - Design-time
+      parameters:
+        - $ref: '#/parameters/language'
+        - name: formId
+          in: path
+          required: true
+          type: string
+          description: The unique id for the form.
+
+      responses:
+        200:
+          description: Successful response, i.e. the all the possible sections and possible questions are returned. In a sense, this is like the question bank for the specified company's proposal form.
+          schema:
+            $ref: '#/definitions/ProposalTemplate'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/draft/quotes':
+    get:
+      summary: Fetch quotes that are eligible for the proposal
+      description: This end point is used to get a list of quotes that are ready for the application of the life insurance policy
       tags:
         - Proposal
       parameters:
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+      responses:
+        200:
+          description: Successful response where a list of eligible quotes are returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quote'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/draft/quotes/{quoteId}':
+    get:
+      summary: Fetch a quote document
+      description: This end point is used to get a complete quote document that will be linked to the draft proposal
+      tags:
+        - Proposal
+      parameters:
+        - $ref : '#/parameters/language'
+        - name: quoteId
+          in: path
+          type: string
+          required: true
+          description: Unique id of the quote
+      responses:
+        200:
+          description: Successful response where the quote document is retrieved
+          schema:
+            $ref: '#/definitions/Quote'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  # '/proposals/draft/prospects/{prospectId}':
+  #   get:
+  #     summary: Fetch a prospect document
+  #     description: This end point is used to get a complete prospect record who will be the proposer of the proposal.
+  #     tags:
+  #       - Proposal
+  #     parameters:
+  #       - $ref : '#/parameters/language'
+  #       - name: prospectId
+  #         in: path
+  #         type: string
+  #         required: true
+  #         description: Unique id of the prospect
+  #     responses:
+  #       200:
+  #         description: Successful response where the prospect record is retrieved
+  #         schema:
+  #           $ref: '#/definitions/Prospect'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       404:
+  #         $ref: '#/responses/Standard404Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
+
+
+
+  '/proposals/draft/sections':
+    post:
+      summary: Generate the applicable sections (and applicable questions) of the draft proposal based on the supplied proposed insurance details.
+      description: This end point has a subtle difference compared to the GET/proposals/template/forms/{formId} end point. This end point is to be used at run-time to get the list of applicable sections and questions instead of all the possible sections and questions. The applicable sections and questions will be a subset of the sections and questions in the template proposal form. To determine the applicable sections and questions, factors like company, product, first party (vs third party), gender, age of the insured, etc, are considered. All these factors are available in the proposed insurance details of the quote document.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
         - name: bodyParam
           in: body
           required: true
@@ -300,26 +398,22 @@ paths:
         200:
           description: Successful response where value holds the list of applicable sections and applicable questions.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/ApplicableProposalSections'
+            $ref: '#/definitions/ApplicableProposalSections'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
   '/proposals/draft/sections/{sectionName}/status':
     post:
-      summary: Generate the status for the section based on the submitted draft proposal.
+      summary: Get the status for the section based on the submitted draft proposal.
       description: Use this end point to check if all the captured data for the section is complete. In the client application, this can be manifested visually as a tick (checked-ok) against the section(page) to indicate that the section information is complete.
       tags:
         - Proposal
       parameters:
+        - $ref: '#/parameters/language'
         - name: sectionName
           in: path
           required: true
@@ -334,69 +428,77 @@ paths:
 
       responses:
         200:
-          description: Successful response where ok is true or false. In the case where ok=false (i.e. incomplete, questionList holds the list of question ids (qid) that are still required)
+          description: Successful response where the status of the section is returned
           schema:
             type: object
             required:
-              - ok
+              - status
             properties:
-              ok:
-                type: boolean
+              status:
+                type: string
+                description: Values include PENDING, COMPLETE
               questionList:
+                description: when status is PENDING, indicates the oustanding questions
                 type: array
                 items:
                   type: number
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/draft/status':
-    post:
-      summary: Generate the status of the draft proposal (submitted)
-      description: Use this end-point to check on the status of proposal based on all the submitted data. The possible statuses are PENDING, PENDING-SIGNATURE, PENDING-AGENT-DECLARATION, PENDING-SUBMISSION,SUBMITTED, COMPLETED. If the status returned is PENDING, it means that one of more sections has incomplete data. When all the sections are complete, then the draft proposal is PENDING-SIGNATURE from the customer. The next status is PENDING-AGENT-DECLARATION, then PENDING-SUBMISSION, then SUBMITTED and finally COMPLETED.
-      tags:
-        - Proposal
-      parameters:
-        - name: bodyParam
-          in: body
-          required: true
-          description: The draft proposal with all the applicable sections
-          schema:
-            $ref: '#/definitions/Proposal'
-      responses:
-        200:
-          description: Successful response. ok will be set to true, and value.status is the status of the proposal based on the submitted data. If the status = PENDING, then pendingSections will be a list of the sections which are incomplete.
-          schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  pendingSections:
-                    type: array
-                    items:
-                      type: string
-        400:
-          $ref: '#/responses/Standard400Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  # '/proposals/draft/status':
+  #   post:
+  #     summary: Generate the status of the draft proposal (submitted)
+  #     description: Use this end-point to check on the status of proposal based on all the submitted data. The possible statuses are PENDING, PENDING-SIGNATURE, PENDING-AGENT-REPORT, PENDING-SUBMISSION, SUBMITTED, COMPLETED. If the status returned is PENDING, it means that one of more sections has incomplete data. When all the sections are complete, then the draft proposal is PENDING-SIGNATURE from the customer. The next status is PENDING-AGENT-DECLARATION, then PENDING-SUBMISSION, then SUBMITTED.
+  #     tags:
+  #       - Proposal
+  #     parameters:
+  #       - name: bodyParam
+  #         in: body
+  #         required: true
+  #         description: The draft proposal with all the applicable sections
+  #         schema:
+  #           $ref: '#/definitions/Proposal'
+  #     responses:
+  #       200:
+  #         description: Successful response. ok will be set to true, and value.status is the status of the proposal based on the submitted data. If the status = PENDING, then pendingSections will be a list of the sections which are incomplete.
+  #         schema:
+  #           type: object
+  #           required:
+  #             - ok
+  #           properties:
+  #             ok:
+  #               type: boolean
+  #             value:
+  #               type: object
+  #               properties:
+  #                 status:
+  #                   type: string
+  #                 pendingSections:
+  #                   type: array
+  #                   items:
+  #                     type: string
+  #       400:
+  #         $ref: '#/responses/Standard400Response'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
-  '/proposals/{proposalId}/submissions':
+  '/proposals/submissions':
     get:
-      summary: Fetch all the submissions for the requested proposal
-      description: Use this end-point to fetch all the submissions belonging to the proposal. At the moment, there is only one submission allowed per proposal.
+      summary: Fetch a list of proposal submissions
+      description: Use this end point to fetch all the proposal submissions.
       parameters:
-        - name: proposalId
-          in: path
-          required: true
-          type: string
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
       tags:
         - Proposal
         - Submission
@@ -404,94 +506,128 @@ paths:
         200:
           description: Successful response which returns a list of proposal submissions.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/Submission'
-        404:
-          $ref: '#/responses/Standard404Response'
+            type: array
+            items:
+              $ref: '#/definitions/SubmissionSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
     post:
-      summary: Create a new submission document for the given proposal
-      description: This end point is used to submit a proposal. The proposal must be in the PENDING-SUBMISSION status. THe proposal must have been previously saved (since we require the proposal id)
+      summary: Create a new proposal submission document (includes proposal details)
+      description: This end point is used for the submission of a proposal . The service will check that the proposal is in the correct status i.e.  PENDING-SUBMISSION status. It does not assume that the proposal is persisted using the propsoal services, as it will derive the status based on the submitted data. This end point is to
       tags:
         - Proposal
         - Submission
       parameters:
-        - name: proposalId
-          in: path
+        - $ref: '#/parameters/language'
+        - name: bodyParam
+          in : body
           required: true
-          type: string
+          description: The submission document containing the proposal
+          schema:
+            $ref: '#/definitions/Submission'
       responses:
         200:
           description: Successful response to create a new proposal submission. Returns the new submission document.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Submission'
+            $ref: '#/definitions/Submission'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/{proposalId}/submissions/{submissionId}/addendums':
-    get:
-      summary: Fetch all the addendums for the given submission belonging to requested proposalId
-      description: Addendums are additional information to the submission. Addendums may be requested if there are additional details required to process the submission. E.g. addedums can be additional information about certain illness, doctor reports etc.
+
+  '/proposals/{proposalId}/submissions':
+    post:
+      summary: Create a new submission document for the specified proposal
+      description: This end point is used to submit a proposal where the proposal is persisted using the proposal services. The proposal must be in the PENDING-SUBMISSION status. This end point differs from the POST /proposals/submissions end point, in that it assumes the proposal has been persisted using the proposal services. As such, only the proposalId is required instead of the full details of the proposal.
       tags:
         - Proposal
         - Submission
       parameters:
-        - name: proposalId
+        - $ref : '#/parameters/language'
+        - $ref: '#/parameters/proposalId'
+      responses:
+        200:
+          description: Successful response to create a new proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/SubmissionSummary'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/submissions/{submissionId}':
+    get:
+      summary: Fetch a proposal submission document
+      description: Use this end-point to fetch a proposal submissions. This will fetch the full document including the proposal data.
+      parameters:
+        - $ref : '#/parameters/language'
+        - name : submissionId
           in: path
           required: true
           type: string
+          description: Unique id for the submission
+      tags:
+        - Proposal
+        - Submission
+      responses:
+        200:
+          description: Successful response which returns the submission document
+          schema:
+            $ref: '#/definitions/Submission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+
+  '/proposals/submissions/{submissionId}/addendums':
+    get:
+      summary: Fetch all the addendums for the given proposal submission.
+      description: Use this end point to fetch the proposal submission addendums. Addendums are additional information to the submission. Addendums may be requested if there are additional details required to process the submission. E.g. addedums can be results of a blood test, doctors report etc
+      tags:
+        - Proposal
+        - Submission
+      parameters:
+        - $ref : '#/parameters/language'
         - name: submissionId
           in: path
           required: true
           type: string
       responses:
         200:
-          description: Successful response which returns a list of submission addendums
+          description: Successful response which returns a list of addendums
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                type: array
-                items:
-                  $ref: '#/definitions/Addendum'
+            type: array
+            items:
+              $ref: '#/definitions/AddendumSummary'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
           $ref: '#/responses/Standard500Response'
+
     post:
-      summary: Submit (create) a new addendum for the given proposal submission.
-      description: This end point is used to submit a new addendum for the already submitted proposal. The addendum is used to augment information already submitted to assist in the processing of the submission.
+      summary: Submit (create) a new addendum for the specified proposal submission.
+      description: This end point is used to submit a new addendum for the proposal submission. The addendum is used to augment information already submitted to assist in the processing of the submission.
       tags:
         - Proposal
         - Submission
       parameters:
-        - name: proposalId
-          in: path
-          required: true
-          type: string
+        - $ref : '#/parameters/language'
         - name: submissionId
           in: path
           required: true
@@ -506,33 +642,24 @@ paths:
         200:
           description: Successful response where the newly created addendum document is returned.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Addendum'
+            $ref: '#/definitions/Addendum'
         400:
           $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/{proposalId}/submissions/{submissionId}/addendums/{addendumId}':
+  '/proposals/submissions/{submissionId}/addendums/{addendumId}':
     get:
       summary: Fetch the addendum for the specified proposal submission.
-      description: The end point is used to retrieve the details of an addendum belonging to the given proposal submission.
+      description: The end point is used to retrieve all the details of an addendum belonging to the given proposal submission.
       tags:
         - Proposal
         - Submission
       parameters:
-        - name: proposalId
-          in: path
-          required: true
-          type: string
         - name: submissionId
           in: path
           required: true
@@ -545,14 +672,9 @@ paths:
         200:
           description: Successful response where the requested addendum is returned.
           schema:
-            type: object
-            required:
-              - ok
-            properties:
-              ok:
-                type: boolean
-              value:
-                $ref: '#/definitions/Addendum'
+            $ref: '#/definitions/Addendum'
+        401:
+          $ref: '#/responses/Standard401Response'
         404:
           $ref: '#/responses/Standard404Response'
         500:
@@ -568,9 +690,66 @@ definitions:
       - $ref: '#/definitions/ProposedInsuranceSection'
       - $ref: '#/definitions/PremiumPaymentSection'
       - properties:
-          proposalId:
+          pk:
             type: string
             description: Unique id for the proposal
+          doctype:
+            type: string
+            default: Proposal
+          policyNumber:
+            type: string
+            description: Policy number assigned to this proposal
+          proposerName:
+            type: string
+          planName:
+            type: string
+          status:
+            type: string
+            description: status of the proposal
+          userName:
+            type: string
+            description: The user that created this proposal
+          lastModified:
+            type: string
+            format: date
+            description: The last time this proposal document has been modified
+          version:
+            type: number
+            description: The revision number used for optimistic locking
+
+  Proposal:
+    # allOf:
+      # - $ref: '#/definitions/ProposedInsuranceSection'
+      # - $ref: '#/definitions/PolicyholderSection'
+      # - $ref: '#/definitions/PolicyholderDisclosureSection'
+      # - $ref: '#/definitions/LifeAssuredSection'
+      # - $ref: '#/definitions/LifeAssuredDisclosureSection'
+      # - $ref: '#/definitions/FamilyHistorySection'
+      # - $ref: '#/definitions/PremiumPaymentSection'
+      # - $ref: '#/definitions/BeneficialOwnerSection'
+      # - $ref: '#/definitions/BeneficiarySection'
+      # - $ref: '#/definitions/DocumentAttachmentSection'
+      # - $ref: '#/definitions/SpecialRequestSection'
+      # - $ref: '#/definitions/InformationAuthorisationSection'
+      # - $ref: '#/definitions/DeclarationAndAuthoritySection'
+      # - $ref: '#/definitions/AgentReportSection'
+      # - $ref: '#/definitions/AgentDeclarationSection'
+      # - properties:
+      type: object
+      properties:
+          pk:
+            type: string
+            description: Unique id for the proposal
+          doctype:
+            type: string
+            default: Proposal
+          policyNumber:
+            type: string
+            description: Policy number assigned to this proposal
+          proposerName:
+            type: string
+          planName:
+            type: string
           status:
             type: string
             description: Status of the proposal
@@ -584,32 +763,37 @@ definitions:
           version:
             type: number
             description: The revision number used for optimistic locking
-
-
-  Proposal:
-    allOf:
-      - $ref: '#/definitions/ProposedInsuranceSection'
-      - $ref: '#/definitions/PolicyholderSection'
-      - $ref: '#/definitions/PolicyholderDisclosureSection'
-      - $ref: '#/definitions/LifeAssuredSection'
-      - $ref: '#/definitions/LifeAssuredDisclosureSection'
-      - $ref: '#/definitions/FamilyHistorySection'
-      - $ref: '#/definitions/PremiumPaymentSection'
-      - $ref: '#/definitions/BeneficialOwnerSection'
-      - $ref: '#/definitions/BeneficiarySection'
-      - $ref: '#/definitions/DocumentAttachmentSection'
-      - $ref: '#/definitions/SpecialRequestSection'
-      - $ref: '#/definitions/InformationAuthorisationSection'
-      - $ref: '#/definitions/DeclarationAndAuthoritySection'
-      - $ref: '#/definitions/AgentReportSection'
-      - $ref: '#/definitions/AgentDeclarationSection'
-      - properties:
-          proposalId:
+          hash:
             type: string
-            description: Unique id for the proposal
-          status:
-            type: string
-            description: Status of the proposal
+            description: has of the proposal content
+          proposedInsuranceData:
+            $ref: '#/definitions/ProposedInsuranceSection'
+          policyholderData:
+            $ref: '#/definitions/PolicyholderSection'
+          policyholderDisclosureData:
+            $ref: '#/definitions/PolicyholderDisclosureSection'
+          lifeAssuredData:
+            $ref: '#/definitions/LifeAssuredSection'
+          lifeAssuredDisclosureData:
+            $ref: '#/definitions/LifeAssuredDisclosureSection'
+          familyHistoryData:
+            $ref: '#/definitions/FamilyHistorySection'
+          paymentData:
+            $ref: '#/definitions/PremiumPaymentSection'
+          beneficialOwnerData:
+            $ref: '#/definitions/BeneficialOwnerSection'
+          beneficiaryData:
+            $ref: '#/definitions/BeneficiarySection'
+          attachmentData:
+            $ref: '#/definitions/DocumentAttachmentSection'
+          specialRequestData:
+            $ref: '#/definitions/SpecialRequestSection'
+          personalData:
+            $ref: '#/definitions/InformationAuthorisationSection'
+          declarationData:
+            $ref: '#/definitions/DeclarationAndAuthoritySection'
+          agentReportData:
+            $ref: '#/definitions/AgentReportSection'
           extensionSections:
             type: object
             description: Additional sections to be added due to customizations
@@ -617,17 +801,6 @@ definitions:
               type: object
               additionalProperties:
                 type: string
-          userName:
-            type: string
-            description: The user that created this proposal
-          lastModified:
-            type: string
-            format: date
-            description: The last time this proposal document has been modified
-          version:
-            type: number
-            description: The revision number used for optimistic locking
-
 
   # ------ Definitions to support the proposal template -----------
   BasicQuestion:
@@ -726,6 +899,40 @@ definitions:
 
   # ------ Definitions for the submissions and addendums -------------
 
+  SubmissionSummary:
+    type: object
+    properties:
+      submissionId:
+        type: string
+        description: Unique id for the submission
+      submissionDate:
+        type: string
+        format: date
+      submissionType:
+        type: string
+        description: submission type e.g. proposal
+      submissionReference:
+        type: string
+        description: Unique id identifying the submission type e.g. the proposalId
+      status:
+        type: string
+        description: Status of the submission. Valid values should be SUBMITTED, ACKNOWLEDGED, UNDERWRITING, QUERY, CONDITIONAL, ACCEPTED, DECLINED
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
   Submission:
     type: object
     properties:
@@ -743,7 +950,25 @@ definitions:
         description: Unique id identifying the submission type e.g. the proposalId
       status:
         type: string
-        description: Status of the submission
+        description: Status of the submission. Valid values should be SUBMITTED, ACKNOWLEDGED, UNDERWRITING, QUERY, CONDITIONAL, ACCEPTED, DECLINED
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+      # above are fields from submission summary - allOf seems to cause issues with swagger ui
+      submissionData:
+        $ref: '#/definitions/Proposal'
       messages:
         type: array
         description: messages can be used to provide more information on the status of the submission
@@ -756,30 +981,38 @@ definitions:
               type: string
             status:
               type: string
-      userName:
-        type: string
-        description: The user that created this submission
-      lastModified:
-        type: string
-        format: date
-        description: The last time this submission document has been modified
-      version:
-        type: number
-        description: The revision number used for optimistic locking
-      addendums:
-        type: array
-        description: Holds a list of id for the related addendums
-        items:
-          type: string
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
 
-  Addendum:
+
+    # allOf:
+    #   - $ref: '#/definitions/SubmissionSummary'
+    #   - required:
+    #       - submissionData
+    #     properties:
+
+    #       submissionData:
+    #         $ref: '#/definitions/Proposal'
+    #       messages:
+    #         type: array
+    #         description: messages can be used to provide more information on the status of the submission
+    #         items:
+    #           type: object
+    #           properties:
+    #             messageDate:
+    #               type: string
+    #             message:
+    #               type: string
+    #             status:
+    #               type: string
+
+  AddendumSummary:
     type: object
     properties:
+      pk:
+        type: string
+        description: Unique id for the addendum
+      doctype:
+        type: string
+        default: "Addendum"
       userName:
         type: string
         description: The user that created this submission
@@ -790,9 +1023,6 @@ definitions:
       version:
         type: number
         description: The revision number used for optimistic locking
-      addendumId:
-        type: string
-        description: Unique id for the addendum
       submissionId:
         type: string
         description: Reference to the submission
@@ -802,16 +1032,10 @@ definitions:
       submissionReference:
         type: string
         description: E.g. the proposal id
-      submittedDate:
+      addendumDate:
         type: string
-      addendumType:
-        type: string
-      addendum:
-        type: string
-        description: Base64 to hold the uploaded document
-      remarks:
-        type: string
-        description: Some notes to go with the addendum.
+      policyholderSignature:
+        $ref: '#/definitions/Signature'
       status:
         type: string
         description: the addendum status
@@ -821,11 +1045,80 @@ definitions:
         additionalProperties:
           type: string
 
+  Addendum:
+    type: object
+    properties:
+      pk:
+        type: string
+        description: Unique id for the addendum
+      doctype:
+        type: string
+        default: "Addendum"
+      userName:
+        type: string
+        description: The user that created this submission
+      lastModified:
+        type: string
+        format: date
+        description: The last time this submission document has been modified
+      version:
+        type: number
+        description: The revision number used for optimistic locking
+      submissionId:
+        type: string
+        description: Reference to the submission
+      submissionType:
+        type: string
+        description: Type of submission e.g. proposal
+      submissionReference:
+        type: string
+        description: E.g. the proposal id
+      addendumDate:
+        type: string
+      policyholderSignature:
+        $ref: '#/definitions/Signature'
+      status:
+        type: string
+        description: the addendum status
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+      imageList:
+        type: array
+        items:
+          type: object
+          properties:
+            remark:
+              type: string
+            image:
+              type: string
+              description: Base64 representation of the image
+    # allOf:
+    #   - $ref: '#/definitions/AddendumSummary'
+    #   - properties:
+    #       imageList:
+    #         type: array
+    #         items:
+    #           type: object
+    #           properties:
+    #             remark:
+    #               type: string
+    #             image:
+    #               type: string
+    #               description: Base64 representation of the image
+    #
+
   # ------ Definitions for the various sections of a proposal ----
 
   PolicyholderSection:
     type: object
     properties:
+      status:
+        type: string
+      hash:
+        type: string
       fullName:
         type: string
       birthPlace:
@@ -975,6 +1268,10 @@ definitions:
   LifeAssuredSection:
     type: object
     properties:
+      status:
+        type: string
+      hash:
+        type: string
       fullName:
         type: string
       birthPlace:
@@ -1102,124 +1399,12 @@ definitions:
           type: string
 
   BeneficialOwnerSection:
-    allOf:
-      - $ref: '#/definitions/BeneficialOwner'
-
-  BeneficiarySection:
-    type: array
-    items:
-      $ref: '#/definitions/Beneficiary'
-
-  PremiumPaymentSection:
-    allOf:
-      - $ref: '#/definitions/PremiumPayment'
-
-  ProposedInsuranceSection:
-    allOf:
-      - $ref: '#/definitions/ProposedInsurance'
-
-  DocumentAttachmentSection:
-    type: array
-    items:
-      $ref: '#/definitions/DocumentAttachment'
-
-  DeclarationAndAuthoritySection:
     type: object
     properties:
-      policyholderSignature:
-        $ref: '#/definitions/Signature'
-      lifeAssuredSignature:
-        $ref: '#/definitions/Signature'
-      guardianSignature:
-        $ref: '#/definitions/Signature'
-      agentSignature:
-        $ref: '#/definitions/Signature'
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  AgentReportSection:
-    type: object
-    properties:
-      policyholderReport:
-        $ref: '#/definitions/AgentReportData'
-      lifeAssuredReport:
-        $ref: '#/definitions/AgentReportData'
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  AgentDeclarationSection:
-    type: object
-    properties:
-      agentSignature:
-        $ref: '#/definitions/Signature'
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  SpecialRequestSection:
-    type: object
-    properties:
-      backDate:
+      status:
         type: string
-        format: date
-      otherSpecialRequest:
+      hash:
         type: string
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  InformationAuthorisationSection:
-    type: object
-    properties:
-      pdpaConsent:
-        type: boolean
-        description: Consent to contact policyholder for servicing and marketing purposes.
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
-
-  FamilyHistorySection:
-    type: object
-    properties:
-      policyholderFamilyHasGeneticDisease:
-        type: boolean
-      policyholderFamilyDetails:
-        type: array
-        items:
-          $ref: '#/definitions/FamilyHistoryData'
-
-      lifeAssuredFamilyHasGeneticDisease:
-        type: boolean
-      lifeAssuredFamilyDetails:
-        type: array
-        items:
-          $ref: '#/definitions/FamilyHistoryData'
-
-  PolicyholderDisclosureSection:
-    allOf:
-      - $ref: '#/definitions/DisclosureData'
-
-  LifeAssuredDisclosureSection:
-    allOf:
-      - $ref: '#/definitions/DisclosureData'
-
-  # ------ End of proposal sections definitions -------------
-
-  BeneficialOwner:
-    type: object
-    properties:
       hasBeneficialOwner:
         type: boolean
       beneOwnerName:
@@ -1239,34 +1424,52 @@ definitions:
         additionalProperties:
           type: string
 
-  Beneficiary:
-    type: object
-    properties:
-      itemNo:
-        type: number
-      beneficiaryName:
-        type: string
-      birthDate:
-        type: string
-        format: date
-      gender:
-        type: string
-        description: Male or Female
-      relationshipWithInsured:
-        type: string
-        description: Coded list of relationships
-      percentage:
-        type: number
-        format: percentage
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
+    # allOf:
+    #   - $ref: '#/definitions/BeneficialOwner'
 
-  PremiumPayment:
+  BeneficiarySection:
     type: object
     properties:
+      status:
+        type: string
+      hash:
+        type: string
+      docs:
+        type: array
+        items:
+          type: object
+          properties:
+            itemNo:
+              type: number
+            beneficiaryName:
+              type: string
+            birthDate:
+              type: string
+              format: date
+            gender:
+              type: string
+              description: Male or Female
+            relationshipWithInsured:
+              type: string
+              description: Coded list of relationships
+            percentage:
+              type: number
+              format: percentage
+            extensionFields:
+              type: object
+              description: Use this object to hold the aditional fields due to local customizations
+              additionalProperties:
+                type: string
+
+          # $ref: '#/definitions/Beneficiary'
+
+  PremiumPaymentSection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
       billingAccountNo:
         type: string
       billingAccountOwner:
@@ -1304,13 +1507,247 @@ definitions:
         additionalProperties:
           type: string
 
+    # allOf:
+    #   - $ref: '#/definitions/PremiumPayment'
+
+  ProposedInsuranceSection:
+    allOf:
+      - properties:
+          status:
+            type: string
+          hash:
+            type: string
+
+      - $ref : './products.yaml#/definitions/ProposedInsurance'
+    # allOf:
+    #   - $ref: '#/definitions/ProposedInsurance'
+
+  DocumentAttachmentSection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
+      docs:
+        type: array
+        items:
+          $ref: '#/definitions/DocumentAttachment'
+
+  DeclarationAndAuthoritySection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
+      policyholderSignature:
+        $ref: '#/definitions/Signature'
+      lifeAssuredSignature:
+        $ref: '#/definitions/Signature'
+      guardianSignature:
+        $ref: '#/definitions/Signature'
+      agentSignature:
+        $ref: '#/definitions/Signature'
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  AgentReportSection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
+      policyholderReport:
+        $ref: '#/definitions/AgentReportData'
+      lifeAssuredReport:
+        $ref: '#/definitions/AgentReportData'
+      location:
+        type: string
+      agentSignature:
+        $ref: '#/definitions/Signature'
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  # AgentDeclarationSection:
+  #   type: object
+  #   properties:
+  #     extensionFields:
+  #       type: object
+  #       description: Use this object to hold the aditional fields due to local customizations
+  #       additionalProperties:
+  #         type: string
+
+  SpecialRequestSection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
+      backDate:
+        type: string
+        format: date
+      otherSpecialRequest:
+        type: string
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  InformationAuthorisationSection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
+      pdpaConsent:
+        type: boolean
+        description: Consent to contact policyholder for servicing and marketing purposes.
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+
+  FamilyHistorySection:
+    type: object
+    properties:
+      status:
+        type: string
+      hash:
+        type: string
+      policyholderFamilyHasGeneticDisease:
+        type: boolean
+      policyholderFamilyDetails:
+        type: array
+        items:
+          $ref: '#/definitions/FamilyHistoryData'
+
+      lifeAssuredFamilyHasGeneticDisease:
+        type: boolean
+      lifeAssuredFamilyDetails:
+        type: array
+        items:
+          $ref: '#/definitions/FamilyHistoryData'
+
+  PolicyholderDisclosureSection:
+    allOf:
+      - $ref: '#/definitions/DisclosureData'
+
+  LifeAssuredDisclosureSection:
+    allOf:
+      - $ref: '#/definitions/DisclosureData'
+
+  # ------ End of proposal sections definitions -------------
+
+  # BeneficialOwner:
+  #   type: object
+  #   properties:
+  #     hasBeneficialOwner:
+  #       type: boolean
+  #     beneOwnerName:
+  #       type: string
+  #     beneOwnerRelationshipPh:
+  #       type: string
+  #       description: Relationship to policyholder. Coded list
+  #     beneOwnerContactNumber:
+  #       type: string
+  #     beneOwnerIdType:
+  #       type: string
+  #     beneOwnerIdNumber:
+  #       type: string
+  #     extensionFields:
+  #       type: object
+  #       description: Use this object to hold the aditional fields due to local customizations
+  #       additionalProperties:
+  #         type: string
+
+  # Beneficiary:
+  #   type: object
+  #   properties:
+  #     itemNo:
+  #       type: number
+  #     beneficiaryName:
+  #       type: string
+  #     birthDate:
+  #       type: string
+  #       format: date
+  #     gender:
+  #       type: string
+  #       description: Male or Female
+  #     relationshipWithInsured:
+  #       type: string
+  #       description: Coded list of relationships
+  #     percentage:
+  #       type: number
+  #       format: percentage
+  #     extensionFields:
+  #       type: object
+  #       description: Use this object to hold the aditional fields due to local customizations
+  #       additionalProperties:
+  #         type: string
+
+  # PremiumPayment:
+  #   type: object
+  #   properties:
+  #     billingAccountNo:
+  #       type: string
+  #     billingAccountOwner:
+  #       type: string
+  #     billingBank:
+  #       type: string
+  #     billingBranch:
+  #       type: string
+  #     refundAccountNo:
+  #       type: string
+  #     refundAccountOwner:
+  #       type: string
+  #     refundBank:
+  #       type: string
+  #     refundBranch:
+  #       type: string
+  #     premiumPaymentFreq:
+  #       type: string
+  #       description: Coded list MONTHLY, QUARTERLY, HALF-YEARLY, YEARLY
+  #     renewalPaymentMethod:
+  #       type: string
+  #       description: How renewal premiums will be paid, Credit Card, Direct Debit
+  #     renewalPayee:
+  #       type: string
+  #       description: Default should be policyholder, other options could be life assured
+  #     renewalSourceOfFunds:
+  #       type: string
+  #       description: Source of funds for the renewal premiums
+  #     billingCurrency:
+  #       type: string
+  #       description: Coded list of applicable currencies e.g. "4" for USD
+  #     extensionFields:
+  #       type: object
+  #       description: Use this object to hold the aditional fields due to local customizations
+  #       additionalProperties:
+  #         type: string
+
   Quote:
     allOf:
       - $ref: './quotations.yaml#/definitions/Quote'
 
-  ProposedInsurance:
-    allOf:
-      - $ref: './quotations.yaml#/definitions/Quote'
+  # ProposedInsurance:
+  #   type: object
+  #   properties:
+  #     test:
+  #       type: string
+    # allOf:
+    #   - $ref: './quotations.yaml#/definitions/Quote'
 
   DocumentAttachment:
     type: object
@@ -1877,6 +2314,10 @@ definitions:
     - $ref : '#/definitions/DoctorData'
     - $ref : '#/definitions/FamilyHistoryData'
     - properties:
+        status:
+          type: string
+        hash:
+          type: string
         isReplacementOfPolicy:
           type: string
           description: YES or NO
@@ -1905,20 +2346,27 @@ definitions:
           type: string
           description: Place for additional clarifications to any of the questions
 
-  Error:
-    type: object
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
-      fields:
-        type: string
+  # Error:
+  #   type: object
+  #   properties:
+  #     code:
+  #       type: integer
+  #       format: int32
+  #     message:
+  #       type: string
+  #     fields:
+  #       type: string
 
 # ***************** parameters **************
 
 parameters:
+
+  language:
+    name: lang
+    in: header
+    description: Language to be used in case the response has text data (e.g. error messages)
+    type: string
+    required: false
 
   queryOffset:
     name: offset
@@ -1956,97 +2404,85 @@ parameters:
     items:
       type: string
 
-  queryPk:
-    name: pkList
-    in: body
-    description: Specify multiple rows to fetch {pkList:[12,13,1555]}
-    required: false
-    schema:
-      type: object
-      properties:
-        pkList:
-          type: array
-          items:
-            type: number
-
   queryFilter:
     name: filter
     in: query
-    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find rows where name startsWith A and age greater than 30, specify as filter=name\*startsWith\*A;age\*GT\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find rows where name starts with 'A' OR name starts with B, then it can be specified as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
-
+    description: Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\*{operator}\*{value) e.g. filter=name\*startsWith\*A. The \* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\*startsWith\*A .  When there are multiple criterias in the condition, e.g. find documents where name startsWith A AND age greater than 30, specify as filter=name\*startsWith\*A;age\*gt\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find documents where name starts with 'A' OR name starts with B, then specify as filter=name\*startsWith\*A|name\*startsWith\*B . Use the | to separate OR conditions.
     required: false
     type: array
     collectionFormat: pipes
     items:
       type: string
 
+  proposalId:
+    name: proposalId
+    in: path
+    required: true
+    description: Unique id for the proposal
+    type: string
+
 # *************** responses *******************
 
 responses:
 
   Standard400Response:
-    description: The request cannot be process due to a client error (submitted data has errors). ok will be set to false.
+    description: Response to indicate that the request cannot be processed due to a client error (submitted data has errors).
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+
+  Standard401Response:
+    description: Response when the client is not authorized for this operation.
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "Authentication credentials were missing or incorrect"
 
   Standard404Response:
-    description: Response when the document is not found. ok will be set to false.
+    description: Response when the document is not found.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "The item does not exist"
 
   Standard500Response:
-    description: An unexpected error occured. ok will be set to false.
+    description: Response when there is an unexpected server error.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          $ref: "#/definitions/Error"
+        message:
+          type: string
+          description: "An unexpected error has occurred. Please try again later"
 
   SuccessResponse:
-    description: Request was successfully processed
+    description: Response for request successfully processed
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
-          type: object
-          required:
-            - ok
-          properties:
-            ok:
-              type: boolean
-            value:
-              type: string
+        message:
+          type: string
+          description: "The request was successfully processed"
 
   ConflictResponse:
-    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched, i.e. the version does not match the version supplied.
+    description: Response when there is a conflict, i.e. the document has been changed since it was last fetched. The current document version does not match the version supplied.
     schema:
       type: object
-      required:
-        - ok
       properties:
-        ok:
-          type: boolean
-        value:
+        message:
           type: string
+          description: "The document has changed since it was last fetched. Please fetch the document again to get the latest version of the document"

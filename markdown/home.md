@@ -5,8 +5,9 @@
 | Mar 22 2017 | eBao - PBU Life  | 0.0.2     | Separate wiki pages
 | Mar 27 2017 | eBao - PBU Life  | 0.0.3     | Include Insurer, Proposer in
 | Apr 03 2017 | eBao - PBU Life  | 0.0.4     | Add Quotation, update to Product, Prospect
+| Apr 17 2017 | eBao - PBU Life  | 0.0.5     | Add proposal documentation
 
-Product domain
+
 
 ### <a name="intro">1.0 Introduction   </a>
 
