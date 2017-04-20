@@ -7,12 +7,18 @@
     * [PaaS和SaaS层分离](#paas和saas层分离)
     * [云架构和微服务](#云架构和微服务)
 * [建立基于公有云的微服务架构](#建立基于公有云的微服务架构)
-  * [业务资源域](#业务资源域)
-    * [产品域（product）](#产品域product)
-  * [API](#api)
+  * [API分层](#api分层)
+  * [API设计](#api设计)
     * [API设计目的](#api设计目的)
-    * [API设计原则](#api设计原则)
+    * [API命名规则](#api命名规则)
+    * [GET|POST|PUT|DELELE 服务](#getpostputdelele-服务)
+    * [幂等](#幂等)
+    * [对象模型](#对象模型)
     * [需要特别注意的问题](#需要特别注意的问题)
+  * [业务域](#业务域)
+    * [产品域（product）](#产品域product)
+    * [准客户域](#准客户域)
+    * [销售域（TBD）](#销售域tbd)
   * [用户使用](#用户使用)
   * [参考](#参考)
 
@@ -59,49 +65,68 @@ API ==> 微服务
 ```
 其中API和微服务化是关键步骤，也是否系统平稳的运行在云上，为大规模客户提供服务的基础。
 
-### 业务资源域
-目前易保系统已经基本定义了明确的业务域，也在有效的运作，需要做的事情就是在现有的域基础上，按照微服务的架构思想进行不断的改造。总体上，我们现在的域还是太大，独立性和耦合性还无法满足微服务的要求，有必要进一步分割。
-目标是要建成独立的，TODO: 域目标
+### API分层
+BFF(backend for frontend)是API分层的核心，BFF层会承担多重任务
+1. 针对不同前端实现和应用的定制化API和API裁剪
+2. 对象模型的裁剪
+3. API调用组合
+4. TBD...
 
-
-- #### 产品域（product）
-  - 产品域是核心功能，围绕保险产品，提供了相关能力：产品信息获取，产品计算，产品基础校验
-  - 产品域的特点是，几乎所有功能都可以通过GET方法提供，同时产品域需要提供“无限”的动态水平扩展能力
-  - 产品域要求能够做到自动化测试、独立部署，高可用和高性能
-  - 现在的产品域依然很大，建议再做逐步的拆分
-``` mermaid
+```mermaid
 graph BT
-F["产品导入导出"] --> P((产品数据))
-E["产品配置 - UX"] --> P((产品数据))
-P((产品数据)) --> A["产品信息获取（基本信息，Limits...）- Cache"]
-P((产品数据)) --> B["产品计算 - Cache + CPU"]
-P((产品数据)) --> C["Validation -  Cache + CPU"]
+    BFF--transfer for mobile-->Mobile(Mobile Apps);
+    BFF-->Mobile;
+    BFF-->Mobile;
+    BFF-->Mobile;
+    BFF--transfer for web-->Web(Web Apps);
+    BFF-->Web;
+    BFF-->Web;
+    BFF-->Web;
+    BFF-->Web;
+    BFF-->F;
+    BFF-->F;
+    BFF-->F;
+    BFF-->F;
+    BFF-->F;
+    BFF-->F(eCommerce);
+    BFF-->a((APIs));
+    BFF[BFF, backend for frontend]
+    Core[Core services from Domains] ==> BFF
+    Core ==> BFF
+    Core ==> BFF
+    Core ==> BFF
+
+    style BFF fill:#f9f,stroke:#333,stroke-width:4px;
+    style Core fill:#4C71B5,stroke:#333,stroke-width:4px;
+
 ```
-  - 现在的产品域依然很大，建议再做逐步的拆分
-  -
-
-
-### API
+核心层API需要做到非常的通用以及和UI无关，有足够的灵活性。
+### API设计
 - #### API设计目的
 
-API是平台对外提供服务能力的载体，
+API是平台对外提供服务能力的载体，ebaocloud以 Restful 的形式设计所有的对外API，体现ebaocloud作为一个公共资源所能够对外提供的服务能力。支持GET, PUT, POST 和 DEL四种操作。
 
-- #### API设计原则
-  - 以 Restful 的形式设计所有的对外API，体现ebaocloud作为一个公共资源所能够对外提供的服务能力。支持GET, PUT, POST 和 DEL四种操作。API设计的时候，不应该加入任何动词，而只应该有资源名称和层级。
-  - GET: 获取资源，如果把ebaocloud当成一个公共资源，所有GET操作都是资源获取。GET操作就是获取信息：产品信息，客户信息，建议书信息 ...，
+- #### API命名规则
+  - URL采用如下结构（请参考后面的例子）： `[GET|POST|PUT|DELELE] http(s)://domainURL/version/tenantId/domain/resources/resources`
+    - version 目前是v1
+    - tenantId 用来区分租户
+    - domain 需要严格按照确定的域名称
+    - resource部分原则上不应该加入任何动词，而只应该有资源名称和层级。
+- #### GET|POST|PUT|DELELE 服务
+  - **GET**: 获取资源，如果把ebaocloud当成一个公共资源，所有GET操作都是资源获取。GET操作就是获取信息：产品信息，客户信息，建议书信息 ...，
     - ` GET /products/ ` ：获取产品列表
     - ` GET /products/hot;  GET /products/recent ` ：获取热门、最新产品列表
     - ` GET /products/productId ` ：获取某一个产品信息
     - ` GET /prospects/prospectId` ：获取某一个prospect
-    - ` GET /prospects/id/proposals`：获取某一个prospect下的所有proposal
-    - ` GET /proposals/proposalId` ：获取某一个proposal，尽可能采用最短路径，而不是 `GET /prospects/id/proposal/id`
-  - POST：创建资源
+    - ` GET /prospects/prospectId/proposals`：获取某一个prospect下的所有proposal
+    - ` GET /proposals/proposalId` ：获取某一个proposal，尽可能采用最短路径，而不是 `GET /prospects/prospectId/proposals/proposalId`
+  - **POST**：创建资源
     - ` POST /prospects`：创建一个新的prospect，一般需要返回prospect的id信息
     - ` POST /proposals`：创建一个新的proposal
-  - PUT：创建或者更新资源，和POST不同的是，PUT必须是幂等的，因此在使用PUT前，必须确定资源的id
+  - **PUT**：创建或者更新资源，和POST不同的是，PUT必须是幂等的，因此在使用PUT前，必须确定资源的id
     - ` PUT /prospects/prospectId` 创建或者修改某prospect
     - ` PUT /proposals/proposalId` 创建或者修改某proposal
-  - DELETE：删除资源，DELETE必须是幂等的
+  - **DELETE**：删除资源，DELETE必须是幂等的
     - ` DELETE /prospects/prospectId` 删除某prospect
     - ` DELETE /proposals/proposalId` 删除某proposal
   - 复杂查询和保费（包括其他费）计算，严格讲都是GET操作，但因为都需要传如大量参数，可以用POST。
@@ -110,9 +135,81 @@ API是平台对外提供服务能力的载体，
     - ` POST /products/calculator/validation `
   - Request (TBD)，需要加入auth信息，租户信息
   - Response (TBD)
+- #### 幂等
+  - 所有服务都要确保幂等
+  - POST 请求需要考虑技术层面的幂等处理，接口中要包括租户Id + requestId作为幂等控制项。
+  - TBD后续持续补充
+- #### 对象模型
+  - 
 - #### 需要特别注意的问题
   - 如果从用户角度看，用户是需要获取ebaocloud的计算、连接能力，当然也包括数据（产品库，规则库），因此用户并不关心后台的具体实现，而只关心最后的结果。API设计上要尽可能考虑用户的使用。
   - 用户可以选择部分或者全部使用ebaocloud，或者换而言之，我们并不需要提供所有的功能，满足所有的需求，而是可以逐步渐进的提供。ebaocloud还没有提供的服务，需要客户在本地实现，或者有其他第三方供应商实现。
+
+
+### 业务域
+目前易保系统已经基本定义了明确的业务域，也在有效的运作，需要做的事情就是在现有的域基础上，按照微服务的架构思想进行不断的改造。在一个域内，可以考虑继续做分割。
+目标是要建成独立的，边际清晰的子系统，系统对外部的依赖降到最低，并且不感知上游系统个性化请求。
+
+核心业务域，暂定为4个：用户，产品，人员（party）和销售，其中用户域会逐步和外部框架（From Frank Xing）融合并且剥离。
+非核心业务域：待定。
+
+```mermaid
+%% 业务领域
+ graph TD
+   subgraph 销售
+     A["询价，利益展示"]
+     B["建议书"]
+     C["投保单(订单)"]
+     D["保单"]
+   end
+   subgraph 人员
+   潜在客户
+   客户
+   end
+   subgraph 产品
+   产品信息
+   产品计算
+   产品验证
+   end
+   subgraph 用户
+   认证
+   权限管理
+   用户管理
+   end
+
+
+```
+
+- #### 产品域（product）
+  - 产品域是核心功能，围绕保险产品，提供了相关能力：产品信息获取，产品计算，产品基础校验
+  - 产品域的特点是，几乎所有功能都可以通过GET方法提供，同时产品域需要提供“无限”的动态水平扩展能力
+  - 产品域要求能够做到自动化测试、独立部署，高可用和高性能
+  - 现在的产品域依然很大，建议再做逐步的拆分
+
+  ``` mermaid
+  graph BT
+  F["产品导入导出 (Deployment)"] --> P(("产品数据 - File"))
+  E["产品配置 - UI (Design Time)"] --> P(("产品数据 - File"))
+  P(("产品数据 - File")) --> A["产品信息获取（基本信息，Limits...）- Cache"]
+  P(("产品数据 - File")) --> B["产品计算 - Cache + CPU"]
+  P(("产品数据 - File")) --> C["Validation -  Cache + CPU"]
+
+  A["产品信息获取（基本信息，Limits...）- Cache"] --> A1[个性化产品信息获取]
+  B["产品计算 - Cache + CPU"] --> B1[个性化产品计算]
+  C["Validation -  Cache + CPU"] --> C1[个性化validation]
+
+
+  classDef BFF fill:#f9f,stroke:#333,stroke-width:4px;
+  class A1,B1,C1 BFF;
+  classDef core fill:#4C71B5,stroke:#333,stroke-width:4px;
+  class A,B,C core;
+  ```
+
+
+- #### 准客户域
+  准客户域的功能比较简单，独立的准客户域即可。
+
+- #### 销售域（TBD）
 
 
 ### 用户使用
@@ -120,3 +217,4 @@ API是平台对外提供服务能力的载体，
 ### 参考
 [我所认为的RESTful API最佳实践](http://www.scienjus.com/my-restful-api-best-practices/)
 [理解RESTful架构](http://www.ruanyifeng.com/blog/2011/09/restful.html)
+[微服务本身也是架构演化的结果](http://www.open-open.com/lib/view/open1460209702222.html)
