@@ -1502,6 +1502,8 @@ definitions:
       unitFlag:
         type: string
         description: Premium formula calculation type
+      insurerId:
+        type: string
       sumAssuredLimitList:
         type: array
         items:
