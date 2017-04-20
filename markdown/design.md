@@ -14,13 +14,14 @@
     * [GET|POST|PUT|DELELE 服务](#getpostputdelele-服务)
     * [幂等](#幂等)
     * [对象模型](#对象模型)
+    * [验签和权限控制（租户）](#验签和权限控制租户)
     * [需要特别注意的问题](#需要特别注意的问题)
   * [业务域](#业务域)
     * [产品域（product）](#产品域product)
     * [准客户域](#准客户域)
     * [销售域（TBD）](#销售域tbd)
-  * [用户使用](#用户使用)
-  * [参考](#参考)
+* [用户使用手册](#用户使用手册)
+* [参考](#参考)
 
 <!-- tocstop -->
 
@@ -45,9 +46,11 @@ ebaocloud LI 架构和设计规范
 
 ### ebaocloud架构总体设计
 - #### PaaS和SaaS层分离
-如下图所示，eBaoCloud会严格按照PaaS和SaaS隔离的架构模式构建，基础服务和组件，都会在PaaS层提供，并且是完全基于API的方式提供。该层是eBaoCloud的核心功能，原则上所有功能都会由eBao提供。PaaS层，也会按照功能分成基础服务和应用服务，应用服务层会提供更加广泛和灵活的API，以满足SaaS层的需求。
-SaaS上面更加多的体现多样性，各种类型的应用，以及各种应用的组合可以形成一定的行业的解决方案。SaaS的远期目标是，大部分应用都是有第三方ISV提供，并且持续为客户提供后续的维护和服务。
-![architecture](../assets/ebaocloud-architeture.png)
+如下图所示，eBaoCloud会严格按照**PaaS**和**SaaS**隔离的架构模式构建，基础服务和组件，都会在PaaS层提供，并且是完全基于API的方式提供。该层是eBaoCloud的核心功能，原则上所有功能都会由eBao提供。PaaS层，也会按照功能分成基础服务和应用服务，应用服务层会提供更加广泛和灵活的API，以满足SaaS层的需求。
+**SaaS**上面更加多的体现多样性，各种类型的应用，以及各种应用的组合可以形成一定的行业的解决方案。SaaS的远期目标是，大部分应用都是有第三方ISV提供，并且持续为客户提供后续的维护和服务。
+**注意**：SaaS层不是UI层，而是完整的应用，这些应用会全部或者部分（绝大多数都是部分）使用ebaocloud所提供的服务。
+![architecture](assets/eBaoCloud-Architecture.png)
+assets/eBaoCloud-Architecture.png)
 云平台作为一个整体也会对外输出API，供外部应用直接使用，这些应用既可以安装在公有云上，也可以安装在企业的私有云上，他们通过接口使用eBaoCloud所提供的能力。eBaoCloud对外提供的API将会少于内部所使用的API。
 
 - #### 云架构和微服务
@@ -110,8 +113,14 @@ API是平台对外提供服务能力的载体，ebaocloud以 Restful 的形式�
   - URL采用如下结构（请参考后面的例子）： `[GET|POST|PUT|DELELE] http(s)://domainURL/version/tenantId/domain/resources/resources`
     - version 目前是v1
     - tenantId 用来区分租户
-    - domain 需要严格按照确定的域名称
+    - domain 需要严格按照确定的域名
     - resource部分原则上不应该加入任何动词，而只应该有资源名称和层级。
+  - 举例如下：
+    - `https://ebaocloud.com.cn/v1/t123456/products/calculator/premium`
+    - `https://ebaocloud.com.cn/v1/t123456/products/hot`
+    - `https://ebaocloud.com.cn/v1/t123456/prospects/1234`
+    - `https://ebaocloud.com.cn/v1/t123456/proposals/322`
+
 - #### GET|POST|PUT|DELELE 服务
   - **GET**: 获取资源，如果把ebaocloud当成一个公共资源，所有GET操作都是资源获取。GET操作就是获取信息：产品信息，客户信息，建议书信息 ...，
     - ` GET /products/ ` ：获取产品列表
@@ -140,10 +149,12 @@ API是平台对外提供服务能力的载体，ebaocloud以 Restful 的形式�
   - POST 请求需要考虑技术层面的幂等处理，接口中要包括租户Id + requestId作为幂等控制项。
   - TBD后续持续补充
 - #### 对象模型
-  - 
+
+- #### 验签和权限控制（租户）
+
 - #### 需要特别注意的问题
   - 如果从用户角度看，用户是需要获取ebaocloud的计算、连接能力，当然也包括数据（产品库，规则库），因此用户并不关心后台的具体实现，而只关心最后的结果。API设计上要尽可能考虑用户的使用。
-  - 用户可以选择部分或者全部使用ebaocloud，或者换而言之，我们并不需要提供所有的功能，满足所有的需求，而是可以逐步渐进的提供。ebaocloud还没有提供的服务，需要客户在本地实现，或者有其他第三方供应商实现。
+  - 用户可以选择部分或者全部使用ebaocloud，或者换而言之，我们并不需要提供所有的功能，满足所有的需求，而是可以逐步渐进的提供。ebaocloud还没有提供的服务，需要调用方在本地实现，或者由其他第三方供应商实现。
 
 
 ### 业务域
@@ -212,9 +223,10 @@ API是平台对外提供服务能力的载体，ebaocloud以 Restful 的形式�
 - #### 销售域（TBD）
 
 
-### 用户使用
+## 用户使用手册
 
-### 参考
+## 参考
 [我所认为的RESTful API最佳实践](http://www.scienjus.com/my-restful-api-best-practices/)
 [理解RESTful架构](http://www.ruanyifeng.com/blog/2011/09/restful.html)
 [微服务本身也是架构演化的结果](http://www.open-open.com/lib/view/open1460209702222.html)
+[PayPal的openAPI](https://developer.paypal.com/docs/api/payments/)
