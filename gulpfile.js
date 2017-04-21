@@ -93,11 +93,13 @@ function _dist() {
     .pipe(header(banner, { pkg: pkg }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('./dist'))
+    .pipe(gulp.dest('./dist/i'))
     .pipe(uglify())
     .on('error', log)
     .pipe(rename({extname: '.min.js'}))
     .on('error', log)
     .pipe(gulp.dest('./dist'))
+    .pipe(gulp.dest('./dist/i'))
     .pipe(connect.reload());
 }
 gulp.task('dev-dist', ['lint', 'dev-copy'], _dist);
@@ -132,18 +134,21 @@ function _copy() {
         './node_modules/es5-shim/es5-shim.js'
     ])
     .pipe(gulp.dest('./dist/lib'))
+    .pipe(gulp.dest('./dist/i/lib'))
     .on('error', log);
 
   // copy `lang` for translations
   gulp
     .src(['./lang/**/*.js'])
     .pipe(gulp.dest('./dist/lang'))
+    .pipe(gulp.dest('./dist/i/lang'))
     .on('error', log);
 
   // copy all files inside html folder
   gulp
     .src(['./src/main/html/**/*'])
     .pipe(gulp.dest('./dist'))
+    .pipe(gulp.dest('./dist/i'))
     .on('error', log);
   // copy all files inside yaml folder
   gulp
@@ -151,6 +156,24 @@ function _copy() {
     .pipe(gulp.dest('./dist/yaml'))
     .on('error', log);
 }
+
+gulp.task('rename-index', function(){
+  //clean index.html
+  gulp
+    .src('./dist/internal.html', {read: false})
+    .pipe(clean())
+    .on('error', log);
+  gulp
+    .src('./dist/i/internal.html')
+    .pipe(rename('i/index.html'))
+    .pipe(gulp.dest('./dist'))
+    .on('error', log);
+  //clean internal.html
+  gulp
+    .src('./dist/i/internal.html', {read: false})
+    .pipe(clean())
+    .on('error', log);
+})
 gulp.task('dev-copy', ['dev-less', 'copy-local-specs'], _copy);
 
 gulp.task('copy-local-specs', function () {
@@ -217,7 +240,7 @@ gulp.task('handlebars', function () {
 });
 
 gulp.task('default', function(callback) {
-    runSequence(['dist', 'copy'],['bootprint-openapi'],
+    runSequence([ 'dist', 'copy'], ['rename-index'], ['bootprint-openapi'],
                 ['uglify-libs', 'minify-css'],
                 callback);
 });
