@@ -461,6 +461,9 @@ definitions:
       version:
         type: number
         description: The revision number used for optimistic locking
+      assignmentId:
+        type: string
+        description: Unique id of assignment - optional
       extensionFields:
         type: object
         description: extensionFields is an object to hold customized fields
