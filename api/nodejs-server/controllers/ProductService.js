@@ -340,7 +340,7 @@ exports.calculateProductPremium = function(args, res, next) {
    let result = api.validate(json, fields );
    let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
    if (errCount === 0) {
-     result = api.calc(json, ['premium', 'firstYearPremium']);
+     result = api.calc(json, ['premiumAmount', 'firstYearPremium']);
      res.end(JSON.stringify(result));
    } else {
      res.statusCode = 400;
