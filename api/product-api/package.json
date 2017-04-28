@@ -1,0 +1,15 @@
+{
+  "name": "product-api",
+  "version": "0.0.1",
+  "description": "APIs for product domain",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "eBao PBU LI",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1"
+  }
+}
