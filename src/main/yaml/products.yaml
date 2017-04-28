@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Product)
   description: Sales API for the product domain on eBao Cloud
-  version: "0.0.5"
+  version: "0.0.6"
   # version 0.0.5 include insurer and package resources here
 
 # the domain of the service
@@ -30,6 +30,7 @@ paths:
       summary: Fetch a list of insurer documents
       description: |
         This endpoint returns a list of insurers.There are a number of parameters to help with filtering and sorting of the required insurer documents.
+      operationId: "getInsurerList"
       security:
         - APISecurity: []
       parameters:
@@ -67,6 +68,7 @@ paths:
     get:
       summary: Fetch an insurer document
       description: This end point is used to get the insurer for the requested insurer id.
+      operationId: "getInsurer"
       security:
         - APISecurity: []
       parameters:
@@ -94,6 +96,7 @@ paths:
     get:
       summary: Fetch a list of packages (basic information).
       description: This endpoint returns a list of packages with basic information about the package. There are a number of parameters to help with filtering and sorting of the required documents.
+      operationId: "getPackageList"
       security:
         - APISecurity: []
       parameters:
@@ -136,6 +139,7 @@ paths:
     get:
       summary: Fetch a list of detailed packages (full information).
       description: This endpoint returns a list of packages with complete information about the package. There are a number of parameters to help with filtering and sorting of the required prospects. This endpoint differs from GET /packages in that it returns packages with full information instead of just basic information. A use case is when multiple packages are selected for further processing.
+      operationId: "getDetailedPackageList"
       security:
         - APISecurity: []
       parameters:
@@ -180,6 +184,7 @@ paths:
       description: Use this end point to fetch a complete package document
       tags:
         - Package
+      operationId: "getPackage"
       security:
         - APISecurity: []
       parameters:
@@ -204,6 +209,7 @@ paths:
       tags:
         - Package
         - Product
+      operationId: "getPackageProduct"
       security:
         - APISecurity: []
       parameters:
@@ -229,6 +235,7 @@ paths:
       description: To support the search function on mobile environments, it is easier to provide a list of pre-defined search values for the search fields. These can then be selected instead of using the keyboard to enter the search value. The predefined values are for insurers, product category, and benefit type fields.
       tags:
         - Package
+      operationId: "getPackageFilterList"
       security:
         - APISecurity: []
       parameters:
@@ -283,6 +290,7 @@ paths:
       description: This end point is used to mark a package as a favourite package. It is linked to the currently authenticated user.
       tags:
         - Package
+      operationId: "setPackageFavourite"
       security:
         - APISecurity: []
       parameters:
@@ -309,6 +317,7 @@ paths:
       description: This end point is used to unmark a package as a favourite package. It is linked to the currently authenticated user.
       tags:
         - Package
+      operationId: "removePackageFavourite"
       security:
         - APISecurity: []
       parameters:
@@ -336,6 +345,7 @@ paths:
       description: After viewing the package information, the client application proceeds with the quote based on the package. This endpoint will fetch the initial data for a new quote based on the selected package. Based on the package id, the package main product and riders plus additional available riders are included in the initial data. Additionally, the product parameters for all the products (main and riders) also be included in the initial quote data.
       tags:
         - Package
+      operationId: "initialQuoteData"
       security:
         - APISecurity: []
       parameters:
@@ -360,6 +370,7 @@ paths:
       description: Use this endpoint to get a list of available main products given company id and birth date of the insured. The company id and birth date can optionally be supplied to filter the list of available main products. The authenticated user will be used to determine the channel that the intermediary belongs to. The channel is then used to filter the list of available products as well. The company id and the insured's birth date is optional as some client applications allow the user to select the product before determining the client.
       tags:
         - Product
+      operationId: "getProductList"
       security:
         - APISecurity: []
       parameters:
@@ -411,6 +422,7 @@ paths:
       description: Use this endpoint to get a list of products with their complete information. This end point is similar to GET /products with the exception that the complete product information is returned.
       tags:
         - Product
+      operationId: "getDetailedProductList"
       security:
         - APISecurity: []
       parameters:
@@ -468,6 +480,7 @@ paths:
       description: This end point can be used to fetch the detailed product information. It will include all the product parameters, including the limits. Additionally, the available values for coverage terms, premium payment terms, payment methods are also be included in the product document.
       tags:
         - Product
+      operationId: "getProduct"
       security:
         - APISecurity: []
       parameters:
@@ -491,6 +504,7 @@ paths:
       description: This end point is typically used to generate a list of attachable riders that will be presented as a drop down list in the client application UI. Apart from the main product id, the list of riders that are already attached is also a factor in determining the remaining attachable riders. These can be mutually exclusive riders e.g. "Waiver Plus" rider can no longer be attached if the "Waiver Premium" rider is already attached.
       tags:
         - Product
+      operationId: "getAttachableRiders"
       security:
         - APISecurity: []
       parameters:
@@ -526,6 +540,7 @@ paths:
       tags:
         - Product
         - Illustration
+      operationId: "generateProductIllustration"
       security:
         - APISecurity: []
       parameters:
@@ -565,6 +580,7 @@ paths:
       description: Use this end point to calculate the age. The product id is used to determine the age method which will affect the calculation of the age. Pass in the birth date (YYYY-MM-DD) as a query parameter e.g. GET /products/5212/calculators/age?birthDate=1978-06-22
       tags:
         - Product
+      operationId: "calculateAge"
       security:
         - APISecurity: []
       parameters:
@@ -596,6 +612,7 @@ paths:
     post:
       summary: Compute the results of the product premium calculator using the details of the proposed insurance.
       description: Use this end point to trigger the calculation of the premium for all the products (main and riders) in the proposed insurance. The proposed insurance details must include the proposed life assured.
+      operationId: "calculateProductPremium"
       tags:
         - Product
       security:
@@ -629,6 +646,7 @@ paths:
       description: Use this end point to trigger the calculation of the monthly cost of insurance for all the products in the proposed insurance parameter. The proposed insurance details must include the proposed life assured. The monthly cost of insurance is applicable only to investment products.
       tags:
         - Product
+      operationId: "calculateProductCostOnInsurance"
       security:
         - APISecurity: []
       parameters:
@@ -660,6 +678,7 @@ paths:
       description: Use this end point to trigger the calculation of the fields required for the illustration. The illustrations field are configured when setting up the product in the eBaoTech product factory. The table of benefits is also available in the response.
       tags:
         - Product
+      operationId: "calculateIllustrationFields"
       security:
         - APISecurity: []
       parameters:
@@ -696,6 +715,7 @@ paths:
     post:
       summary: Compute the results for the requested list of illustration fields using the product adhoc calculator and the details of the proposed insurance.
       description: Use this end point when the client applications needs fine grain control over which of the illustration fields to trigger the calculation for. The requested list of illustration fields is passed in via the request body parameter. The illustrations field are configured when setting up the product in the eBaoTech product factory.
+      operationId: "calculateAdhocFields"
       tags:
         - Product
       security:
@@ -736,6 +756,7 @@ paths:
       description: This end point is used in certain scenarios, where the product is selected and then followed by the selection of the life assured. Where the life assured is selected first, the available list of products will have been filter for their age and gender requirements. The validateInsured validator will check that the age and gender requirements for the product are met.
       tags:
         - Product
+      operationId: "validateProductInsured"
       security:
         - APISecurity: []
       parameters:
@@ -784,6 +805,7 @@ paths:
       description: Use this end point to validate the main product details. Typically in the front end client application, the main product details are captured in its own page (section). This end point can be called to validate the input of the main product when the client application navigates away from the page (section).
       tags:
         - Product
+      operationId: "validateMainProduct"
       security:
         - APISecurity: []
       parameters:
@@ -815,6 +837,7 @@ paths:
       description: Use this end point to validate all the riders attached to the main product for the proposed insurance details supplied in the request body. Checks typically include the minimum and maximum coverage amounts, the age limits of the insured, etc. Typically used when navigating away from the page (section) which captures the riders input.
       tags:
         - Product
+      operationId: "validateProductRiders"
       security:
         - APISecurity: []
       parameters:
@@ -846,6 +869,7 @@ paths:
       description: Use this end point to validate all the topups in the proposed insurance details supplied in the request body. Input of topups are only required for investment policies.
       tags:
         - Product
+      operationId: "validateProductTopups"
       security:
         - APISecurity: []
       parameters:
@@ -877,6 +901,7 @@ paths:
       description: Use this end point to validate all the withdrawals using the proposed insurance details supplied in the request body. Input of withdrawals are only required for investment policies. Validation include minimum withdrawal amounts and whether the year of the withdrawals are allowed (e.g. withdrawals may not be allowed in the initial 5 years)
       tags:
         - Product
+      operationId: "validateProductWithdrawals"
       security:
         - APISecurity: []
       parameters:
@@ -908,6 +933,7 @@ paths:
       description: Use this end point to validate all the fund allocations using the proposed insurance details supplied in the request body. Input of fund allocations are required for investment proposals. Validation include minimum allocation (e.g. min of 10%) and allowed quantums (e.g. allocations must be multiples of 5%)
       tags:
         - Product
+      operationId: "validateProductFunds"
       security:
         - APISecurity: []
       parameters:
@@ -939,6 +965,7 @@ paths:
       description: Use this end point to trigger specific validators when the client application requires fine grain control over the validation. The list of validators to trigger must be in the request details as part of the body parameter. An an example, this endpoint can be used to validate the topups and withdrawals, which may be on the same page of the client application e.g. validatorList= ["validateTopups", "validateWithdrawals"]
       tags:
         - Product
+      operationId: "validateAdhocProductValidators"
       security:
         - APISecurity: []
       parameters:
@@ -977,6 +1004,7 @@ paths:
       description: This end point should be used at design time as it provides an html template on the illustration for the given product. It typically would contain static and dynamic elements. It is meant to provide a sample of how the illustration output should look like and also where the dynamic elements (fields) are on the template. The data for dynamic elements can be fullfilled by the /products/{productId}/illustration end point. The actual output of the illustration can be implemented in any format and it is the decision of the front end application.
       tags:
         - Product
+      operationId: "getProductIllustrationTemplate"
       security:
         - APISecurity: []
       parameters:
@@ -1005,6 +1033,7 @@ paths:
       description: This end point should be used at design time to obtain a list of the illustration fields that have been configured for the product. This list can be useful when the client wants to have fine-grain control over which of the illustration fields calculation should be triggered (POST /products/{productId}/calculators/adhoc)
       tags:
         - Product
+      operationId: "getIllustrationCalculatorFields"
       security:
         - APISecurity: []
       parameters:
@@ -1036,6 +1065,7 @@ paths:
       description: This end point is expected to be used at design time. It can be used to get a listing of the available validators for the product. This is useful when the client application requires fine grain control over the triggering of the various validators. Triggering of the specific validators can be done using the /products/{productId}/validators/adhoc end point.
       tags:
         - Product
+      operationId: "getProductValidators"
       security:
         - APISecurity: []
       parameters:
@@ -1246,10 +1276,10 @@ definitions:
     type: object
     properties:
       productId:
-        type: string
+        type: integer
         description: Either the main product or a rider (in the case of dependent riders) i.e. the primary product
       attachId:
-        type: string
+        type: integer
         description: The attachable rider i.e. the secondary product.
       compulsory:
         type: string
@@ -1262,7 +1292,7 @@ definitions:
     type: object
     properties:
       packageId:
-        type: string
+        type: integer
         description: Unique id for the package
       packageName:
         type: string
@@ -1397,7 +1427,7 @@ definitions:
     type: object
     properties:
       packageId:
-        type: string
+        type: integer
       packageName:
         type: string
       insurer:
@@ -1761,6 +1791,9 @@ definitions:
         description: Typically provided to determine the risk class of this person.
       socialInsuranceIndi:
         type: string
+      gender:
+        type: string
+        description: MALE or FEMALE
       smoking:
         type: string
         description: Generally SMOKER or NON-SMOKER and used as a factor to determine the risk premium
@@ -1770,7 +1803,7 @@ definitions:
     type: object
     properties:
       productId:
-        type: string
+        type: integer
       productCode:
         type: string
       productName:
@@ -1782,6 +1815,7 @@ definitions:
         type: number
       coverageTermType:
         type: string
+        description: Valid values 0=NA, 1=Cover Whole Life, 2=Cover for certain years, 3=Cover up to certain age, 4=Cover for certain months
       coverageTermValue:
         type: number
       premiumPaymentTermType:
@@ -1796,7 +1830,7 @@ definitions:
         type: string
         format: date
       packageId:
-        type: string
+        type: integer
       currency:
         type: string
       benefitLevel:
@@ -1885,10 +1919,12 @@ definitions:
       userName:
         type: string
         description: The user that created this quotation
-      mainProduct:
-        $ref: '#/definitions/ProductInput'
-      riderList:
+      # mainProduct:
+      #   $ref: '#/definitions/ProductInput'
+      # riderList:
+      productList:
         type: array
+        description: First item in the array will be the main product
         items:
           $ref: '#/definitions/ProductInput'
       fundList:
@@ -1995,9 +2031,9 @@ definitions:
                     type: object
                     properties:
                       packageId:
-                        type: string
+                        type: integer
                       productid:
-                        type: string
+                        type: integer
                       liabId:
                         type: string
                       liabName:
@@ -2118,7 +2154,7 @@ parameters:
   productId:
     name: productId
     in: path
-    type: string
+    type: integer
     required: true
     description: Unique id for the product
 
@@ -2127,7 +2163,7 @@ parameters:
     in: path
     required: true
     description: Unique id for the package
-    type: string
+    type: integer
 
 
 # ************************ responses ****************************
