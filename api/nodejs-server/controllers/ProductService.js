@@ -312,7 +312,7 @@ exports.calculateProductPremium = function(args, res, next) {
    // get the parameters
   //  let insurance = args.bodyParam.value;
   //  let pid = args.productid.value;
-   console.log("args", args.productId.value, args.bodyParam.value);
+   //console.log("args", args.productId.value, args.bodyParam.value);
    res.setHeader('Content-Type', 'application/json');
   //  res.end(JSON.stringify({result:'ok'}))
   //  return
@@ -344,7 +344,6 @@ exports.calculateProductPremium = function(args, res, next) {
      res.end(JSON.stringify(result));
    } else {
      res.statusCode = 400;
-     console.log("****result", result)
      Object.keys(result).forEach((errkey) => {
        result[errkey].forEach((msg) => {
          let parts = errkey.split(".");
