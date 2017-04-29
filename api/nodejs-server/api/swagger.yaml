@@ -4,7 +4,7 @@ info:
   description: "Sales API for the product domain on eBao Cloud"
   version: "0.0.6"
   title: "eBao Cloud API (Product)"
-host: "ebaocloud.life"
+host: "api.ebaocloud.life"
 basePath: "/v1"
 schemes:
 - "http"
