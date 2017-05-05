@@ -131,6 +131,7 @@ function toKey( tableName, meta, factors, stopOnError=true) {
                         if (deflt)  { keyList.push( '*' ); }
                     }
                     if ( _.isUndefined(deflt) ) {
+                         //console.log("Stop on error ", stopOnError)
                          if (stopOnError) {
                             console.log("*** utils.js toKey--> unable to set the key value for ", tableName, "key=", key, "factors" , factors);
                             // throw Error("utils.js toKey -->Unable to set key value " + tableName, key , factors);

@@ -45,8 +45,8 @@ exp.jobUnderwrite =  function jobUnderwrite( ctx, pol, ppl, pdt, fund, t='0',fac
     let commonData = ctx.get("commonData");
     let data = commonData.getValue({productId:0});
     if (tname in data) {
-        let table = data[tname];
-        let key = utils.toKey(tname, table._meta, opts);
+        let table = data[tname];        
+        let key = utils.toKey(tname, table._meta, opts,false);
         if ( key in table) {
             let row = utils.toRow(table._meta._cols, table[key]);
             return row ;
@@ -525,19 +525,52 @@ exp.availableFunds  =  function availableFunds( ctx, pol, ppl, pdt, fund, t='*',
 }
 // export function product_currency( ctx, pol, ppl, pdt, fund, t='*', factors={} ) {
 exp.availableCurrencies = function availableCurrencies( ctx, pol, ppl, pdt, fund, t='*', factors={} ) {
-    let data = pdt.val("productData");
-    let table = data["productCurrency"];
-    if (!table) { return [] }
 
-    let cols = table._meta._cols;
+    let commonData = ctx.get("commonData");
+    let data = commonData.getValue({productId:0});
+    let table, currencies = {};
     let rows = [];
-    _.forOwn(table,(data,k)=> {
-       if (k !== '_meta') {
-            let row = utils.toRow(cols,data);
-            row['moneyId'] = parseInt( k.split(':')[2] ) ; //_.parseInt(k); // include back the productId
-            rows.push(row)
-       }
-    });
+    const currencyTable = 'money'
+    if (currencyTable in data) {
+        table = data[currencyTable];
+        Object.keys(table).forEach( key => {
+            let row = utils.toRow(table._meta._cols, table[key])
+            currencies[row.moneyId] = [key, row.moneyName]
+        })
+        // let key = utils.toKey(tname, table._meta, opts);
+        // if ( key in table) {
+        //     let row = utils.toRow(table._meta._cols, table[key]);
+        //     return row ;
+        // }
+
+        data = pdt.val('productData');
+        table = data["productCurrency"];
+        if (!table) return [];
+        let cols = table._meta._cols;
+        _.forOwn(table,(doc,k)=> {
+           if (k !== '_meta') {
+                let id = k.split(':')[2]
+                let curr = currencies[id] || {};
+                let row = {code: curr[0], name: curr[1], currencyId: id}
+                rows.push(row)
+           }
+        });
+
+
+    }
+
+    // let data = pdt.val("productData");
+    // let table = data["productCurrency"];
+    // if (!table) { return [] }
+    // let cols = table._meta._cols;
+    // let rows = [];
+    // _.forOwn(table,(data,k)=> {
+    //    if (k !== '_meta') {
+    //         let row = utils.toRow(cols,data);
+    //         row['moneyId'] = parseInt( k.split(':')[2] ) ; //_.parseInt(k); // include back the productId
+    //         rows.push(row)
+    //    }
+    // });
     return rows;
 }
 

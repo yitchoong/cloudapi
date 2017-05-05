@@ -1,8 +1,8 @@
 module.exports = {
-                "startDate" : "01-05-2016",
+                "startDate" : "2017-05-01",
                 "insuredList" : [
                     {   "name":"Policyholder",
-                        "birthDate":"07-07-1998",
+                        "birthDate":"1998-07-07",
                         "gender":"MALE" ,
                         "smoking" : "NON-SMOKER"
                     },
@@ -16,7 +16,9 @@ module.exports = {
                         "lifeAssuredNumber" : 0,
                         "coverageTermType" : "2",
                         "coverageTermValue" : 20,
-                        "paymentMode" : "1"
+                        "currency" : "SGD",
+                        "paymentMode" : "4"
+
                     },
                     {
                         "productId": 6202,

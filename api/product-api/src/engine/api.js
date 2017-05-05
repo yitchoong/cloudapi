@@ -112,28 +112,41 @@ function availableFunds(productId) {
 }
 
 function availableCurrencies(productId) {
-  // need to go to 2 separate tables , fund & product fund
+
   let ctx = new models.Context({});
-  let pdt = new models.Entity( ctx, 'product', 0, {} ); // note _product0
-  ctx.set("product",pdt);
-  let field = new models.Field( ctx, "currencies", { parentType : "product", parent : pdt } );
-  let currencies = field.getValue({productId:0});
-  let ccyMap = {};
-
-  _.forEach(currencies, (ccy) => ccyMap[ccy.moneyId] = ccy.moneyName  );
-  let pdt2 = new models.Entity( ctx, 'product', _.parseInt(productId), {} ); // note product id - our required product id
-  let field2 = new models.Field( ctx, "availableCurrencies", { parentType : "product", parent : pdt2 } );
-  let wantedRows = field2.getValue({productId:productId});
-
-  let result = {},row;
-  wantedRows.forEach(ccy => result[ccy.moneyId] = ccyMap[ parseInt(ccy.moneyId)] );
-//  _.forEach(wantedRows, (item) => {
-//      row={};
-//      row['moneyId'] = parseInt(item.moneyId)
-//      row['moneyName'] = ccyMap[ parseInt(item.moneyId ) ] ;
-//      result.push(row);
-//  })
-  return result;
+  let common = new models.Entity( ctx, 'product', 0, {} );
+  let productData = new models.Field(ctx, 'productData', {parentType:'product',parent:common, dbField:true});
+  ctx.set("commonData", productData)
+  let pdt = new models.Entity( ctx, 'product', _.parseInt(productId), {} );
+  let field = new models.Field( ctx, "availableCurrencies", { parentType : "product", parent : pdt } );
+  let rows = field.getValue({productId:productId});
+  return rows;
+//
+//
+//
+//   // need to go to 2 separate tables , fund & product fund
+//   let ctx = new models.Context({});
+//   let pdt = new models.Entity( ctx, 'product', 0, {} ); // note _product0
+//
+//   ctx.set("product",pdt);
+//   let field = new models.Field( ctx, "currencies", { parentType : "product", parent : pdt } );
+//   let currencies = field.getValue({productId:0});
+//   let ccyMap = {};
+//
+//   _.forEach(currencies, (ccy) => ccyMap[ccy.moneyId] = ccy.moneyName  );
+//   let pdt2 = new models.Entity( ctx, 'product', _.parseInt(productId), {} ); // note product id - our required product id
+//   let field2 = new models.Field( ctx, "availableCurrencies", { parentType : "product", parent : pdt2 } );
+//   let wantedRows = field2.getValue({productId:productId});
+//
+//   let result = {},row;
+//   wantedRows.forEach(ccy => result[ccy.moneyId] = ccyMap[ parseInt(ccy.moneyId)] );
+// //  _.forEach(wantedRows, (item) => {
+// //      row={};
+// //      row['moneyId'] = parseInt(item.moneyId)
+// //      row['moneyName'] = ccyMap[ parseInt(item.moneyId ) ] ;
+// //      result.push(row);
+// //  })
+//   return result;
 }
 
 
@@ -425,14 +438,22 @@ function validate(inputjson, validatorList) {
       //return { (validatorList[0]) : ["There are no people specified in the input json "] };
   }
   if ( inputjson.productList && inputjson.productList.length > 0 ) {
-      // let mainProductId = inputjson.mainProduct.productId;
-      let mainProductId = inputjson.productList[0].productId;
-      if ( ! _.has(models.CONFIGS, mainProductId ) ) {
-          let err = {};
-          err[validatorList[0]] = ["The main product requested is not configured in the system"];
-          return err;
-          //return { (validatorList[0]) : ["The product requested is not configured in the system"]}
+      let res = inputjson.productList.map((prd) => {
+        return (Object.keys(models.CONFIGS).indexOf(prd.productId+'') < 0 ) ? prd.productId : undefined;
+      }).filter(r => r !== undefined);
+      if (res.length > 0){
+        let err = {};
+        err[validatorList[0]] = [`The product is not configured in the system (${res})`];
+        return err;
       }
+      // let mainProductId = inputjson.mainProduct.productId;
+      // let mainProductId = inputjson.productList[0].productId;
+      // if ( ! _.has(models.CONFIGS, mainProductId ) ) {
+      //     let err = {};
+      //     err[validatorList[0]] = [`The main product requested is not configured in the system (${mainProductId})`];
+      //     return err;
+      //     //return { (validatorList[0]) : ["The product requested is not configured in the system"]}
+      // }
   } else {
       let err = {};
       err[validatorList[0]] = ["There are no main product specified in the input json"];

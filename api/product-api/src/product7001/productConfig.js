@@ -141,7 +141,7 @@ module.exports = {
         coverageTermType     : "str",
         coverageTermValue    : "num",
         paymentMode          : "str",
-        // currency             : "str",
+        currency             : "str",
     },
     personFields : {
       name : "str",
