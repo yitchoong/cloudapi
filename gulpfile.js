@@ -155,6 +155,7 @@ function _copy() {
   gulp
     .src(['./src/main/yaml/**/*'])
     .pipe(gulp.dest('./dist/yaml'))
+    .pipe(gulp.dest('./dist/api-docs'))
     .on('error', log);
 }
 
@@ -179,12 +180,12 @@ gulp.task('rename-index', function(){
 
 
 gulp.task('replace-swagger-ui', function(){
-  //clean index.html
+  //clean
   gulp
     .src('./api/nodejs-server/node_modules/swagger-tools/middleware/swagger-ui', {read: false})
     .pipe(clean())
     .on('error', log);
-  // copy html to middleware layer
+  // copy html to middleware layer, for the api
   gulp
     .src(['./dist/**/*'])
     .pipe(gulp.dest('./api/nodejs-server/node_modules/swagger-tools/middleware/swagger-ui'))
