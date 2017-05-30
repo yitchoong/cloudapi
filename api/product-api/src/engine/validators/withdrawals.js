@@ -7,10 +7,14 @@ let exp = {};
 
 exp.validateAllWithdrawals__01 = function validateAllWithdrawals__01(ctx, parent, opts) {
     let errs = [], tot = 0,
-        withdrawals = ctx.get("policy").val("withdrawals");
+        withdrawals = ctx.get("policy").val("withdrawalList");
     try {
-        withdrawals.forEach((fund,index) => {
-           errs.push(fund.validate("validateMinMaxWithdrawal") );
+        withdrawals.forEach((row,index) => {
+
+          let res = validateWithdrawalInput(row, ctx, parent, opts)
+          if (!res) res = row.validate("validateMinMaxWithdrawal")
+          errs.push( res && res.length > 0 ? __("Withdrawal no ") + (index+1) + " : " +  res.join('\n')  : undefined )
+          //  errs.push(row.validate("validateMinMaxWithdrawal") );
         });
     } catch (exc) {
         errs.push(exc.message)
@@ -18,6 +22,21 @@ exp.validateAllWithdrawals__01 = function validateAllWithdrawals__01(ctx, parent
 
     return _.uniq(errs);
 }
+let validateWithdrawalInput = function (row, ctx, parent, opts) {
+    // check that we have all the fields
+    // console.log("coverageTerm", parent.val("coverageTerm"))
+    let coverageTerm = parent.val("coverageTerm") || 999,
+        year = row.val("year"),
+        amount = row.val("amount");
+
+    let errs =[]
+    if (!year) errs.push(__("Withdrawal does not have year"))
+    if (!amount) errs.push(__("Withdrawam does not have amount"))
+    if (year && year > coverageTerm) errs.push(__(`Withdrawal year is beyond the coverage term (${coverageTerm})`))
+
+    return errs.length > 0 ? errs : undefined
+}
+
 exp.validateMinMaxWithdrawal__01 = function validateMinMaxWithdrawal__01(ctx, parent, opts) {
 
     let amount = parent.val("amount"),
@@ -26,7 +45,7 @@ exp.validateMinMaxWithdrawal__01 = function validateMinMaxWithdrawal__01(ctx, pa
 
     let minSurVal = productLife.minSurValue || 0;
     let maxSurVal = productLife.maxSurValue || 99999999999999;
-    console.info("validateMinMax", minSurVal, maxSurVal);
+    // console.info("validateMinMax", minSurVal, maxSurVal);
 
     if ( amount < minSurVal  ) {
         return __(`The withdrawal amount is less than the allowed minimum (${minSurVal}) for the product`) ;

@@ -7,5 +7,8 @@ require('./src/product0')
 //require('./src/product5742')
 require('./src/product7001')
 require('./src/product6202')
+require('./src/product1010893')
+require('./src/product10001001')
+require('./src/product6500')
 var api = require('./src/engine');
 module.exports = api

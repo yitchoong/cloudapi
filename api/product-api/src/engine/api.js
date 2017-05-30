@@ -4,6 +4,7 @@
 // import * as models from "./models.js";
 // import * as roundings from "./roundings.js";
 // import * as validators from "./validators";
+const fieldMappings = require('./fieldMappings');
 
 'use strict'
 
@@ -16,7 +17,9 @@ let roundings = require('./roundings')
 
 function calcAge( dob, ageMethod="ALAB") {
     //  default to ALAB if not provided. Can happen when we are only entering the person info and no product is selected
-    return utils.calcAge(ageMethod, dob);
+    return moment(dob,['YYYY-MM-DD','YYYY/MM/DD'],true).isValid() ? utils.calcAge(ageMethod, dob) : undefined
+    //
+    // return utils.calcAge(ageMethod, dob);
 }
 
 function calcAge4Product(dob, productId) {
@@ -28,7 +31,9 @@ function calcAge4Product(dob, productId) {
     ctx.set("product",pdt);
     let field = new models.Field( ctx, "ageMethod", { parentType : "product", parent : pdt } );
     let ageMethod = field.getValue('*',{productId:productId});
-   console.log("calcAge4Method, ageMethod", ageMethod);
+    console.log("calcAge4Method, ageMethod", ageMethod);
+    // check the format of the dob
+
     return calcAge(dob, ageMethod);
 }
 function ageMethod(productId) {
@@ -39,6 +44,17 @@ function ageMethod(productId) {
     let ageMethod = field.getValue('*',{productId:productId});
     return ageMethod;
 }
+
+/* function to get the productMap -- product.internalId -> productId */
+function getProductCodeMap() {
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', 0, {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "productCodeMap", { parentType : "policy", parent : null } );
+  let productCodeMap = field.getValue({productId:0});
+  return productCodeMap
+}
+
 /*
 from chrome console, call api.availablePlans() , returns a list of products objects
 */
@@ -52,6 +68,172 @@ function availablePlans() {
     let availablePlans = _.filter(plans, (p) => { return _.includes(configured, p.productId) });
     return availablePlans;
 }
+function availableProducts() {
+    let ctx = new models.Context({});
+    let pdt = new models.Entity( ctx, 'product', 0, {} );
+    ctx.set("product",pdt);
+    let field = new models.Field( ctx, "availableProducts", { parentType : "policy", parent : null } );
+    let products = field.getValue({productId:0});
+    let configured = _.keys(models.CONFIGS).map(function(item) { return parseInt(item); });
+    let availableProducts = _.filter(products, (p) => { return _.includes(configured, p.productId) });
+
+    // augment the data further - saLimitList, premiumLimitList, ageLimitList, benefitLevelList, and inputFields
+    let newp = {}, productList=[], doc;
+    availableProducts.forEach(prd => {
+      productList.push( prdData(ctx,prd))
+    })
+
+    return productList
+    // return availableProducts;
+}
+function getLifePackageProduct(productId) {
+  if ( ! _.has(models.CONFIGS,productId ) ) {
+      return {} ; // empty object if not configured
+  }
+  return lifePackageProduct(productId)
+}
+function getLifeProduct(productId) {
+  if ( ! _.has(models.CONFIGS,productId ) ) {
+      return {} ; // empty object if not configured
+  }
+  let ctx = new models.Context({});
+
+  let common = new models.Entity( ctx, 'product', 0, {} );
+  let productData = new models.Field(ctx, 'productData', {parentType:'product',parent:common, dbField:true});
+  ctx.set("commonData", productData)
+
+
+  let pdt = new models.Entity( ctx, 'product', productId, {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "productLife", { parentType : "product", parent : pdt } );
+  let prd = field.getValue({productId:productId});
+  prd.productId = productId;
+  let newp = prdData(ctx, prd)
+  return newp
+
+}
+
+function prdData(ctx, prd) {
+  // do translations now
+  newp = {}
+  newp.pk = prd.productId
+  newp.doctype = "Product"
+  newp.productCode = prd.internalId
+  newp.productName = prd.productName
+  newp.packageCode = prd.packageCode
+  newp.insType = prd.insType
+  newp.unitFlag = prd.unitFlag
+  newp.salesCategory = prd.salesCategory || ''
+  newp.salesCategoryName = prd.salesCategoryName || ''
+  newp.ageRange = prd.ageRange
+  newp.isWaiver = prd.isWaiver
+  newp.pointToPh = prd.pointToPh
+  newp.isAnnuityProduct = prd.isAnnuityProduct
+  newp.pointToSpouse = prd.pointToSpouse
+  newp.pointToSecInsured = prd.pointToSecInsured
+  newp.smokingIndi = prd.smokingIndi
+  newp.jobIndi = prd.jobIndi
+  newp.socialInsureIndi = prd.socialInsureIndi
+  newp.displayPremiumIndi = prd.displayPremiumIndi
+
+  pdt = new models.Entity( ctx, 'product', prd.productId, {} );
+  ctx.set("product",pdt);
+  field = new models.Field( ctx, "saLimitList", { parentType : "policy", parent : null } )
+  let res = field.getValue({productId:pdt.productId})
+
+  newp.sumAssuredLimitList = res.map(rec => {
+    doc = {}
+    Object.keys(fieldMappings.saLimitMapper).forEach(key => {
+      if (key in rec) doc[fieldMappings.saLimitMapper[key]] = rec[key]
+    })
+    return doc
+  })
+
+  field = new models.Field( ctx, "premiumLimitList", { parentType : "policy", parent : null } )
+  res = field.getValue({productId:pdt.productId})
+  // prd.premiumLimitList = res;
+  newp.premiumLimitList = res.map(rec => {
+    doc = {}
+    Object.keys(fieldMappings.premiumLimitMapper).forEach(key => {
+      if (key in rec) doc[fieldMappings.premiumLimitMapper[key]] = rec[key]
+    })
+    return doc
+  })
+
+  field = new models.Field( ctx, "ageLimitList", { parentType : "policy", parent : null } )
+  res = field.getValue({productId:pdt.productId})
+  // prd.ageLimitList = res
+  newp.ageLimitList = res.map(rec => {
+    doc = {}
+    Object.keys(fieldMappings.ageLimitMapper).forEach(key => {
+      if (key in rec) doc[fieldMappings.ageLimitMapper[key]] = rec[key]
+    })
+    return doc
+
+  })
+  field = new models.Field( ctx, "benefitLevels", { parentType : "policy", parent : null } )
+  res = field.getValue({productId:pdt.productId})
+  // prd.benefitLevelList = res
+  newp.benefitLevelList = res.map(rec => {
+    doc = {}
+    Object.keys(fieldMappings.benefitLevelMapper).forEach(key => {
+      if (key in rec) doc[fieldMappings.benefitLevelMapper[key]] = rec[key]
+    })
+    return doc
+  })
+
+  field = new models.Field( ctx, "coverageTerms", { parentType : "policy", parent : null } )
+  res = field.getValue({productId:pdt.productId})
+  // newp.coverageTerms = res
+  newp.coveragePeriods = res.map(rec => {
+    doc = {}
+    Object.keys(fieldMappings.coveragePeriodMapper).forEach(key => {
+      if (key in rec) doc[fieldMappings.coveragePeriodMapper[key]] = rec[key]
+    })
+    return doc
+  })
+
+  field = new models.Field( ctx, "premiumTerms", { parentType : "policy", parent : null } )
+  res = field.getValue({productId:pdt.productId})
+  // newp.premiumPaymentPeriods = res
+  newp.premiumPaymentPeriods = res.map(rec => {
+    doc = {}
+    Object.keys(fieldMappings.premiumPaymentTermMapper).forEach(key => {
+      if (key in rec) doc[fieldMappings.premiumPaymentTermMapper[key]] = rec[key]
+    })
+    return doc
+  })
+
+  newp.currencies = availableCurrencies(prd.productId)
+  newp.funds = availableFunds(prd.productId)
+  newp.paymentModes = availablePaymentFrequencies(prd.productId)
+  newp.paymentMethods = availablePaymentMethods(prd.productId)
+  newp.inputFields = getConfig(prd.productId).inputFields
+
+  doc = {};
+  Object.keys(fieldMappings.insurerMapper).forEach( key => {
+      if (prd.insurer && key in prd.insurer) doc[fieldMappings.insurerMapper[key]] = prd.insurer[key]
+  })
+  newp.insurer = doc;
+
+  let liabilities = prd.liabilities || prd.liabilityList;
+
+  newp.liabilities = !liabilities ? [] : liabilities.map( row => {
+    doc = {}
+    Object.keys(fieldMappings.liabilityMapper).forEach( key => {
+      if (key === 'pk' && key in row) {
+        doc['liabId'] = row[key].split(':')[2]
+        doc['displayOrder'] =  row[key].split(':')[3];
+      } else {
+        if (key in row) doc[fieldMappings.liabilityMapper[key]] = row[key]
+      }
+    })
+    return doc
+  })
+  //
+  return newp
+}
+
 
 /* getBenefitLevelPlans , input is the productId , output = [ {levelDesc:'Plan400', productLevel : 1, levelAmount: 600000 } ] */
 function availableBenefitPlans(productId) {
@@ -84,7 +266,7 @@ function availableBenefitLevels(productId) {
     let field = new models.Field( ctx, "benefitLevels", { parentType : "product", parent : pdt } );
     let levels = field.getValue('*',{productId:productId});
     let result = {};
-    _.sortBy(levels,['level']).forEach(level => result[level.level] = level.sa );
+    _.sortBy(levels,['level']).forEach(level => result[level.level] = level.levelAmount);
     return result;
 }
 /* getAvailableFunds -- input is the main plan productId */
@@ -224,7 +406,32 @@ function availablePremiumTerms( productId ,  dob = null){
 //    return numYears; // list of years
 }
 
+function availablePremiumPaymentTerms( productId ,  dob = null){
+    if ( ! _.has(models.CONFIGS,productId ) ) {
+        return {};
+    }
+    let ctx = new models.Context({});
+    let pdt = new models.Entity( ctx, 'product', productId, {} );
+    ctx.set("product",pdt);
+    let field = new models.Field( ctx, "premiumTerms", { parentType : "product", parent : pdt} );
+    let terms = field.getValue('*', {productId:productId});
+    return terms
+
+}
+
 /* Get the coverageTerms */
+function availableCoverageTerms(productId) {
+  if ( ! _.has(models.CONFIGS,productId ) ) {
+      return [];
+  }
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', productId, {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "coverageTerms", { parentType : "product", parent : pdt} );
+  let terms = field.getValue('*', {productId:productId});
+  return terms
+}
+
 function availablePolicyTerms( productId, dob=null ){
     /* check if product is configured */
     if ( ! _.has(models.CONFIGS,productId ) ) {
@@ -241,11 +448,13 @@ function availablePolicyTerms( productId, dob=null ){
     let tt = [], info = productInfo(productId);
     terms.filter(row => row.period === '3').forEach(row => {
         let start = _.isNull(dob) ? 1 : utils.calcAge( ageMethod(productId), dob );
-        _.range(start, row.year + 1).forEach(yr => tt.push( String(row.year - yr) ))
-        _.orderBy( _.uniq( tt) ).filter( t => t > 4 ).forEach( t => rowmap[t+''] = t+'');
+        _.range(start, row.year + 1).forEach(yr => tt.push( String(row.year - yr + 1) ))
+        _.orderBy( _.uniq( tt) ).filter( t => t > start ).forEach( t => rowmap[t+''] = t+'');
     })
     return rowmap;
 }
+
+
 function availablePolicyEndAges( productId){
     /* check if product is configured */
     if ( ! _.has(models.CONFIGS,productId ) ) {
@@ -308,16 +517,25 @@ function availablePaymentMethods( productId){
 
 /*
 Get the available riders given the main & riders already attached, also people info to look at the age limits
-So expect a normal input json = { policy : "products" : [ {"main".....},{"rider"....} ], "people" : [ { "Insured"....} ] }
+So expect a normal input json = {  "productList" : [ {"main".....},{"rider"....} ], "insuredList" : [ { "Insured"....} ] }
 */
 function availableRiders( inputjson ) {
     // validate json should be in the above structure
     if ( ! _.isPlainObject(inputjson)) { throw Error("Parameter must be an object representing the input JSON")}
     //if ( "policy" in inputjson ) {
         let policy = inputjson ; // .policy;
+        let productCodeMap = getProductCodeMap();
+        let configuredProducts = Object.keys( models.CONFIGS )
         if ( "productList" in policy && "insuredList" in policy) {
             let products = policy.productList;
             if ( products.length > 0 ) {
+
+              products.forEach(prd => {
+                  if (!prd.productId && prd.productCode) {prd.productId = productCodeMap[prd.productCode]}
+                  if (configuredProducts.indexOf(prd.productId+'') < 0) {
+                    throw new Error(`Product (${prd.productCode || prd.productId}) is not a configured product`)
+                  }
+              })
                 // let people = policy.people;
                 let people = policy.insuredList;
                 let main = products[0];
@@ -393,8 +611,28 @@ function availableRiders( inputjson ) {
     //}
     return []; // nothing
 }
+function getAvailableRiders( inputjson ) {
+  // somewhat same as availableRiders, but the output needs to have more information
+  let rows = availableRiders(inputjson);
+  if (rows.length > 0) {
+      let rider, riderList=[];
+      rows.forEach(row => {
+        rider = getLifeProduct(row.riderId)
+        rider.attachCompulsory = rider.attachCompulsory
+        rider.saEqual = rider.noEqual
+        riderList.push(rider)
+      })
+      rows = riderList
+  }
+  return rows
+
+}
 
 function productInfo(productId) {
+  if ( ! _.has(models.CONFIGS,productId ) ) {
+      return {} ; // empty object if not configured
+  }
+
   // need to go to 2 separate tables , fund & product fund
   let ctx = new models.Context({});
   let pdt = new models.Entity( ctx, 'product', productId, {} );
@@ -438,14 +676,14 @@ function validate(inputjson, validatorList) {
       //return { (validatorList[0]) : ["There are no people specified in the input json "] };
   }
   if ( inputjson.productList && inputjson.productList.length > 0 ) {
-      let res = inputjson.productList.map((prd) => {
-        return (Object.keys(models.CONFIGS).indexOf(prd.productId+'') < 0 ) ? prd.productId : undefined;
-      }).filter(r => r !== undefined);
-      if (res.length > 0){
-        let err = {};
-        err[validatorList[0]] = [`The product is not configured in the system (${res})`];
-        return err;
-      }
+      // let res = inputjson.productList.map((prd) => {
+      //   return (Object.keys(models.CONFIGS).indexOf(prd.productId+'') < 0 ) ? prd.productId : undefined;
+      // }).filter(r => r !== undefined);
+      // if (res.length <= 0){
+      //   let err = {};
+      //   err[validatorList[0]] = [`The product is not configured in the system (${res})`];
+      //   return err;
+      // }
       // let mainProductId = inputjson.mainProduct.productId;
       // let mainProductId = inputjson.productList[0].productId;
       // if ( ! _.has(models.CONFIGS, mainProductId ) ) {
@@ -462,7 +700,11 @@ function validate(inputjson, validatorList) {
   }
   let errors = {};
   let ctx = new models.Context({});
-  _prepareInput(ctx, inputjson);
+  try {
+    _prepareInput(ctx, inputjson);
+  } catch (e) {
+    return e.message
+  }
   // tiggered using engine.validate(json, ['validateMain'])
   let ordering = {main: 0, fund: 10, loading: 20, pdt:30, r: 31, pol: 40, topup: 50, withdraw: 60};
   let keys = Object.keys(ordering), itemlist, entity, k;
@@ -490,17 +732,22 @@ function validateMain( inputjson ) {
         return ["There are no people specified in the input json "];
     }
     if ( inputjson.productList && inputjson.productList.length > 0 ) {
-        let mainProductId = inputjson.productList[0].productId;
-        if ( ! _.has(models.CONFIGS, mainProductId ) ) {
-            return ["The product requested is not configured in the system"];
-        }
+        // let mainProductId = inputjson.productList[0].productId;
+        // if ( ! _.has(models.CONFIGS, mainProductId ) ) {
+        //     return ["The product requested is not configured in the system"];
+        // }
     } else {
         return ["There are no products specified in the input json "];
     }
     /* done with basic check */
     let errors = [];
     let ctx = new models.Context({});
-    _prepareInput(ctx, inputjson);
+    try {
+      _prepareInput(ctx, inputjson);
+    } catch (e) {
+      return e.message
+    }
+
     let mainConfig = getConfig(ctx.get("main").productId);
     // console.log("validateMain--> mainConfig", mainConfig.validators.validateMain);
 //
@@ -553,7 +800,9 @@ function validateRider( inputjson, riderno=1 ) {
 
     let errors = [];
     let ctx = new models.Context({});
-    _prepareInput(ctx, inputjson);
+    try {
+      _prepareInput(ctx, inputjson);
+    } catch (e) { return e.message }
     let main = ctx.get("main");
     let ridercode = "r" + riderno ; // main is always the 1st product, rider number starts from one
     let rider = ctx.get("products")[riderno];
@@ -616,19 +865,30 @@ function validateRider( inputjson, riderno=1 ) {
  */
 function calc(inputJson, svFields=[], mvFields=[]) {
     /* do a quick check that there is a main product id , and there are people */
-    // console.log("calc function", svFields)
-    if ( inputJson.insuredList && inputJson.insuredList === 0 ) { return inputJson }
+    if ( inputJson.insuredList && inputJson.insuredList === 0 ) {
+      inputJson.error = true
+      return inputJson
+    }
     if ( inputJson.productList && inputJson.productList.length > 0  ) {
-        let mainProductId = inputJson.productList[0].productId;
-        if ( ! _.has(models.CONFIGS, mainProductId ) ) {
-            return inputJson;
-        }
-    } else { return inputJson; }
+        // defer this check till later -- as we may not have the productId but productCode instead
+        // let mainProductId = inputJson.productList[0].productId;
+        // if ( ! _.has(models.CONFIGS, mainProductId ) ) {
+        //     return inputJson;
+        // }
+    } else {
+      inputJson.error = true
+      return inputJson;
+    }
 
     /* ok, done with basic check */
     let ctx = new models.Context({});
     let output = _.cloneDeep(inputJson); // create a clone for the output
-    _prepareInput(ctx, inputJson);
+    try {
+      _prepareInput(ctx, inputJson);
+    } catch (e) {
+      return e.message
+    }
+
     let main = ctx.get("main");
     let maxT = main.val("maxT");
     ctx.set("currentT","*"); // so that it is easier
@@ -637,6 +897,30 @@ function calc(inputJson, svFields=[], mvFields=[]) {
         // return item.indexOf("fund.") === 0 ? 0 : item.indexOf("pol.") === 0 ? 2 : 1 ;
         return item.indexOf("fund") === 0 ? 1 : item.indexOf("pol.") === 0 ? 2 : 0 ;
     });
+
+    let allFields = [].concat(svFields).concat(mvFields)
+    _.forEach(allFields, (item,index) => {
+        let pieces = item.split('.');
+        if (pieces.length === 1) {
+            pieces = ['main', item];
+        }
+        let product, fieldName = pieces[1];
+        if ( /^r\d$/.test(pieces[0]) ) {
+          // let productNo = parseInt( pieces[0].split('.')[0].substr(1) );
+          let productNo = parseInt( pieces[0].substr(1) );
+          product = ctx.get("products")[productNo];
+          console.log("product & productNO", productNo, ctx.get("products").length )
+        } else {
+          product = ctx.get("main")
+        }
+        let config = getConfig(product.val("productId") )
+        let formulas = config.formulas
+        if (Object.keys(formulas).indexOf(fieldName) < 0 ) {
+          throw new Error("Requested calculator is not configured")
+        }
+      });
+
+
     _.forEach(workFields, (item,index) => {
         let fieldValue = _getField(ctx, item);
         // console.log( "** Value for svField item ", item, fieldValue);
@@ -662,15 +946,29 @@ function calc(inputJson, svFields=[], mvFields=[]) {
 function _prepareOutput(output,ctx, svFields, mvFields) {
     let fmter;
     let policy = output;
-    let requestedFields = [].concat(svFields).concat(mvFields);
-    // default is to output in years instead of months
-    let  convertToYears = policy.convertToYears && policy.convertToYears === "Y" ? true : false ;
     let people = policy.insuredList ;
     let main = policy.productList[0] || {};
     let riders = policy.productList.slice(1);
     // let products = [].concat([main]).concat(riders);
     let products = policy.productList;
     let funds = policy.fundList || [];
+
+    let requestedFields = [].concat(svFields).concat(mvFields);
+    requestedFields = requestedFields.map(f => f.split('.').length === 2 ? f.split('.')[1] : f )
+    // default is to output in years instead of months
+    let convertToYears
+    if (policy.convertToYears) {
+      convertToYears = policy.convertToYears === "Y" || policy.convertToYears === 'y' ? true : false ;
+    } else {
+      let config;
+      if (main.productId) {
+          config = getConfig(main.productId)
+      } else {
+        let productCodeMap = getProductCodeMap();
+        config = getConfig( productCodeMap[main.productCode] )
+      }
+      convertToYears = config.convertToYears && config.convertToYears.toLowerCase() === 'y' ? true : false
+    }
     //let funds = products.length > 0 ? products[0].funds || [] : [];
     let save;
     _.forOwn(ctx.get("policy").getFields(), (f, k) => {
@@ -680,7 +978,7 @@ function _prepareOutput(output,ctx, svFields, mvFields) {
             if ( Object.keys( f.values).length > 1 ) {
                 policy[k] = {};
                 _.forOwn(f.values, (vv,kk) => {
-                        if (inYears) {
+                        if (convertToYears) {
                             if ( f.resolved[kk] && kk % 12 === 0) { policy[k][kk/12] = _.isNull(fmter) ? vv : _.isNumber(vv) ? fmter(vv) : vv ; }
                         } else {
                             if ( f.resolved[kk]) { policy[k][kk] = _.isNull(fmter) ? vv : _.isNumber(vv) ? fmter(vv) : vv ; }
@@ -720,7 +1018,8 @@ function _prepareOutput(output,ctx, svFields, mvFields) {
       _.forEach(ctx.get("funds"),(fnd,indx) => {
           fund = funds[indx];
           _.forOwn(fnd.getFields(), (f,key) => {
-              if ((f instanceof models.Field) && f.fmlaField && requestedFields.indexOf(k) >= 0 ) {
+              // debugger
+              if ((f instanceof models.Field) && f.fmlaField && requestedFields.indexOf(key) >= 0 ) {
                   fmter = _.isNull(f.format1) ? roundings['roundCentsHalfUp'] : roundings[f.format1]; // default is round to nearest cent
                   if ( Object.keys( f.values).length > 1 ) { // multi valued fields
                       fund[key] = {};
@@ -817,7 +1116,6 @@ function runValidator(ctx,item,t='*') {
     }
 }
 
-
 function _getField(ctx,item,t='*') {
     let pieces = item.split('.');
     if (pieces.length === 1) {
@@ -872,7 +1170,6 @@ function _getField(ctx,item,t='*') {
 }
 function _prepareInput(ctx, inputJson) {
     let input = _.cloneDeep(inputJson);
-
     let policy = input || {};
     let people = policy.insuredList || [] ;
     // let main = policy.mainProduct || {};
@@ -885,8 +1182,21 @@ function _prepareInput(ctx, inputJson) {
     let funds = policy.fundList || [];
     let loadings;
     loadings = [];
-
+    // console.log("B4....", new Date());
+    let productCodeMap = getProductCodeMap();
+    // console.log("After....", new Date());
+    let configuredProducts = Object.keys( models.CONFIGS )
+    products.forEach(prd => {
+        if (!prd.productId && prd.productCode) {prd.productId = productCodeMap[prd.productCode]}
+        if (configuredProducts.indexOf(prd.productId+'') < 0) {
+          throw new Error(`Product (${prd.productCode || prd.productId}) is not a configured product`)
+        }
+    })
     let mainProductId = main.productId;
+    // now we check if the mainProduct is configured
+    // if ( ! _.has(models.CONFIGS, mainProductId ) ) {
+    //     return input;
+    // }
     let pol = new models.Entity(ctx, 'policy', mainProductId, {});
     ctx.set("policy", pol);
     _.forOwn(policy, (v,k) => {
@@ -916,14 +1226,13 @@ function _prepareInput(ctx, inputJson) {
     let policyFields = pol.getFields();
     // this code below needs to be validated again :: TODO ::
     if (!('topupList' in policyFields)){
-        pol.setField('topupList',[]);
-        pol['topupList'] = function(t){ return pol.val('topupList',t)}
+        pol.setField('topups',[]);
+        pol['topups'] = function(t){ return pol.val('topups',t)}
     }
     if (!('withdrawalList' in policyFields)){
-        pol.setField('withdrawalList',[]);
-        pol['withdrawalList'] = function(t){ return pol.val('withdrawalList',t)}
+        pol.setField('withdrawals',[]);
+        pol['withdrawals'] = function(t){ return pol.val('withdrawals',t)}
     }
-
     let fnds = []
     _.forEach(funds, (fund,index) => {
         let row = new models.Entity( ctx, 'fund', mainProductId, {} );
@@ -935,6 +1244,8 @@ function _prepareInput(ctx, inputJson) {
         fnds.push(row);
     });
     ctx.set("funds",fnds);
+    pol.setField("fundList",fnds);
+    pol['fundList'] = function(t){return pol.val('funds',t)}
 
     let prds = []
     _.forEach(products, (prod,i) => {
@@ -1003,10 +1314,398 @@ function _prepareInput(ctx, inputJson) {
     return ctx;
 
 }
+function getInsurers() {
+    let ctx = new models.Context({});
+    let pdt = new models.Entity( ctx, 'product', 0, {} );
+    ctx.set("product",pdt);
+    let field = new models.Field( ctx, "getInsurers", { parentType : "policy", parent : null } );
+    let insurers = field.getValue({productId:0});
+    return insurers
+}
+function getInsurer(insurerId) {
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', 0 , {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "insurer", { parentType : "product", parent : pdt } );
+  let row = field.getValue('*',{organId: insurerId + '' });
+  return row
+}
+function getPackages() {
+    let ctx = new models.Context({});
+    let pdt = new models.Entity( ctx, 'product', 0, {} );
+    ctx.set("product",pdt);
+    let field = new models.Field( ctx, "getPackages", { parentType : "policy", parent : null } );
+    let packages = field.getValue({productId:0});
+    // need to do more work using the main product in the productList
+    let pkgList = [], newpkg;
+    packages.forEach( pkg => {
+      let mainProduct, products = [];
+      pkg.productList.forEach(pp => {
+         let productLife = productInfo(pp.productId);
+         products.push( Object.assign({insType: productLife.insType , packageProductName: productLife.productName, version: null, doctype:'PackageProduct' },pp)) // no version no yet
+         if (productLife.insType === '1') mainProduct = pp;
+      })
+      pkg.productList = products; // overwrite with enhanced object
+      if (mainProduct) {
+         let coverageTerms = availableCoverageTerms(mainProduct.productId);
+         let paymentTerms = availablePremiumPaymentTerms(mainProduct.productId)
+         pkg.coveragePeriods = coverageTerms;
+         pkg.premiumPaymentTerms = paymentTerms;
+
+         // get the attachable riders based on what is in the productList
+         let riders = pkg.productList.filter( prd  => prd.insType !== '1').map(prd => {return {productId: prd.productId, lifeAssuredNumber:0 } })
+         let json = {insuredList:[{name:'example', gender: 'MALE', age: pkg.minAgeUnit === '1' ? pkg.minAge : 20}],
+                     productList: [mainProduct]}
+         let res = availableRiders(json)
+         pkg.attachableRiders = res
+
+      } else {
+        pkg.coveragePeriods = []
+        pkg.premiumPaymentTerms = []
+        pkg.attachableRiders = []
+      }
+
+
+      // convert to required format
+      newpkg = {};
+      newpkg.packageId = pkg.packageId
+      newpkg.productId = pkg.productId
+      newpkg.packageCode = pkg.packageCode
+      newpkg.packageName = pkg.packageName
+      newpkg.examplePremium = pkg.examPrem;
+      newpkg.favourite = false; // fix later ::TODO::
+      newpkg.isNew = false ; // -- ditto --
+      newpkg.productCategory = pkg.salesType;
+      newpkg.ageLimit = {minAge:pkg.minAge, minAgeUnit: pkg.minAgeUnit, maxAge: pkg.maxAge, maxAgeUnit: pkg.maxAgeUnit}
+      newpkg.amountLimit = {minAmount:pkg.minAmount, maxAmount: pkg.maxAmount, currency: pkg.moneyId }
+      newpkg.visitNumber = 0;
+      let doc;
+      newpkg.tagList = pkg.tagList.map( tag => {
+          doc = {}
+          Object.keys(fieldMappings.tagListMapper).forEach( key => {
+            if (key in tag) doc[fieldMappings.tagListMapper[key]] = key === 'pk' ? tag[key].split(':')[1] : tag[key]
+          })
+          return doc
+      })
+      newpkg.coveragePeriods = pkg.coveragePeriods.map( row => {
+        doc = {}
+        Object.keys(fieldMappings.coveragePeriodMapper).forEach( key => {
+          if (key in row) doc[fieldMappings.coveragePeriodMapper[key]] =  row[key]
+        })
+        return doc
+      })
+      newpkg.premiumPaymentTerms = pkg.premiumPaymentTerms.map( row => {
+        doc = {}
+        Object.keys(fieldMappings.premiumPaymentTermMapper).forEach( key => {
+          if (key in row) doc[fieldMappings.premiumPaymentTermMapper[key]] =  row[key]
+        })
+        return doc
+      })
+      newpkg.highlights = pkg.highlights.map( row => {
+        doc = {}
+        Object.keys(fieldMappings.highlightsMapper).forEach( key => {
+          if (key === 'pk' && key in row) {
+            doc['displayOrder'] =  row[key].split(':')[2];
+            doc['highlightId'] = row[key].split(':')[1]
+          } else {
+            if (key in row) doc[fieldMappings.highlightsMapper[key]] = row[key]
+          }
+
+        })
+        return doc
+      })
+      newpkg.liabilities = pkg.liabilities.map( row => {
+        doc = {}
+        Object.keys(fieldMappings.liabilityMapper).forEach( key => {
+          if (key === 'pk' && key in row) {
+            doc['liabId'] = row[key].split(':')[2]
+            doc['displayOrder'] =  row[key].split(':')[3];
+          } else {
+            if (key in row) doc[fieldMappings.liabilityMapper[key]] = row[key]
+          }
+
+        })
+        return doc
+      })
+      doc = {};
+      Object.keys(fieldMappings.insurerMapper).forEach( key => {
+          if (key in pkg.insurer) doc[fieldMappings.insurerMapper[key]] = pkg.insurer[key]
+      })
+      newpkg.insurer = doc;
+
+      // features
+      newpkg.features = pkg.features.map( tag => {
+          doc = {}
+          Object.keys(fieldMappings.featureMapper).forEach( key => {
+            if (key in tag) doc[fieldMappings.featureMapper[key]] = key === 'pk' ? tag[key].split(':')[1] : tag[key]
+          })
+          return doc
+      })
+
+      newpkg.productList = pkg.productList.map( tag => {
+          doc = {}
+          Object.keys(fieldMappings.packageProductMapper).forEach( key => {
+            if (key in tag) doc[fieldMappings.packageProductMapper[key]] =  tag[key]
+          })
+          return doc
+      })
+      newpkg.attachableRiders = pkg.attachableRiders.map( tag => {
+          doc = {}
+          Object.keys(fieldMappings.productAttachableRiderMapper).forEach( key => {
+            if (key in tag) doc[fieldMappings.productAttachableRiderMapper[key]] =  tag[key]
+          })
+          return doc
+      })
+
+      pkgList.push(newpkg)
+    })
+    return pkgList
+    // return packages
+}
+function getPackage(packageCode) {
+
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', 0 , {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "getPackage", { parentType : "product", parent : pdt } );
+  let pkg = field.getValue('*',{packageCode});
+
+  if ( Object.keys(pkg).length == 0 ) return {}
+
+  let mainProduct, products = [];
+  pkg.productList.forEach(pp => {
+     let productLife = productInfo(pp.productId);
+     products.push( Object.assign({insType: productLife.insType , packageProductName: productLife.productName, version: null, doctype:'PackageProduct' },pp)) // no version no yet
+     if (productLife.insType === '1') mainProduct = pp;
+  })
+  pkg.productList = products; // overwrite with enhanced object
+  if (mainProduct) {
+     let coverageTerms = availableCoverageTerms(mainProduct.productId);
+     let paymentTerms = availablePremiumPaymentTerms(mainProduct.productId)
+     pkg.coveragePeriods = coverageTerms;
+     pkg.premiumPaymentTerms = paymentTerms;
+
+     // get the attachable riders based on what is in the productList
+     let riders = pkg.productList.filter( prd  => prd.insType !== '1').map(prd => {return {productId: prd.productId, lifeAssuredNumber:0 } })
+     let json = {insuredList:[{name:'example', gender: 'MALE', age: pkg.minAgeUnit === '1' ? pkg.minAge : 20}],
+                 productList: [mainProduct]}
+     let res = availableRiders(json)
+     pkg.attachableRiders = res
+
+  } else {
+    pkg.coveragePeriods = []
+    pkg.premiumPaymentTerms = []
+    pkg.attachableRiders = []
+  }
+  // convert to required format
+  newpkg = {};
+  newpkg.packageId = pkg.packageId
+  newpkg.productId = pkg.productId
+  newpkg.packageCode = pkg.packageCode
+  newpkg.packageName = pkg.packageName
+  newpkg.examplePremium = pkg.examPrem;
+  newpkg.favourite = false; // fix later ::TODO::
+  newpkg.isNew = false ; // -- ditto --
+  newpkg.productCategory = pkg.salesType;
+  newpkg.ageLimit = {minAge:pkg.minAge, minAgeUnit: pkg.minAgeUnit, maxAge: pkg.maxAge, maxAgeUnit: pkg.maxAgeUnit}
+  newpkg.amountLimit = {minAmount:pkg.minAmount, maxAmount: pkg.maxAmount, currency: pkg.moneyId }
+  newpkg.visitNumber = 0;
+  let doc;
+  newpkg.tagList = pkg.tagList.map( tag => {
+      doc = {}
+      Object.keys(fieldMappings.tagListMapper).forEach( key => {
+        if (key in tag) doc[fieldMappings.tagListMapper[key]] = key === 'pk' ? tag[key].split(':')[1] : tag[key]
+      })
+      return doc
+  })
+  newpkg.coveragePeriods = pkg.coveragePeriods.map( row => {
+    doc = {}
+    Object.keys(fieldMappings.coveragePeriodMapper).forEach( key => {
+      if (key in row) doc[fieldMappings.coveragePeriodMapper[key]] =  row[key]
+    })
+    return doc
+  })
+  newpkg.premiumPaymentTerms = pkg.premiumPaymentTerms.map( row => {
+    doc = {}
+    Object.keys(fieldMappings.premiumPaymentTermMapper).forEach( key => {
+      if (key in row) doc[fieldMappings.premiumPaymentTermMapper[key]] =  row[key]
+    })
+    return doc
+  })
+  newpkg.highlights = pkg.highlights.map( row => {
+    doc = {}
+    Object.keys(fieldMappings.highlightsMapper).forEach( key => {
+      if (key === 'pk' && key in row) {
+        doc['displayOrder'] =  row[key].split(':')[2];
+        doc['highlightId'] = row[key].split(':')[1]
+      } else {
+        if (key in row) doc[fieldMappings.highlightsMapper[key]] = row[key]
+      }
+
+    })
+    return doc
+  })
+  newpkg.liabilities = pkg.liabilities.map( row => {
+    doc = {}
+    Object.keys(fieldMappings.liabilityMapper).forEach( key => {
+      if (key === 'pk' && key in row) {
+        doc['liabId'] = row[key].split(':')[2]
+        doc['displayOrder'] =  row[key].split(':')[3];
+      } else {
+        if (key in row) doc[fieldMappings.liabilityMapper[key]] = row[key]
+      }
+
+    })
+    return doc
+  })
+  doc = {};
+  Object.keys(fieldMappings.insurerMapper).forEach( key => {
+      if (key in pkg.insurer) doc[fieldMappings.insurerMapper[key]] = pkg.insurer[key]
+  })
+  newpkg.insurer = doc;
+
+  // features
+  newpkg.features = pkg.features.map( tag => {
+      doc = {}
+      Object.keys(fieldMappings.featureMapper).forEach( key => {
+        if (key in tag) doc[fieldMappings.featureMapper[key]] = key === 'pk' ? tag[key].split(':')[1] : tag[key]
+      })
+      return doc
+  })
+
+  newpkg.productList = pkg.productList.map( tag => {
+      doc = {}
+      Object.keys(fieldMappings.packageProductMapper).forEach( key => {
+        if (key in tag) doc[fieldMappings.packageProductMapper[key]] =  tag[key]
+      })
+      return doc
+  })
+  newpkg.attachableRiders = pkg.attachableRiders.map( tag => {
+      doc = {}
+      Object.keys(fieldMappings.productAttachableRiderMapper).forEach( key => {
+        if (key in tag) doc[fieldMappings.productAttachableRiderMapper[key]] =  tag[key]
+      })
+      return doc
+  })
+
+  return newpkg
+  // return pkg || {}
+}
+function lifePackageProduct(productId) {
+  if ( ! _.has(models.CONFIGS,productId ) ) {
+      return {} ; // empty object if not configured
+  }
+  let ctx = new models.Context({});
+
+  // have to include the common data as we need it
+  let common = new models.Entity( ctx, 'product', 0, {} );
+  let productData = new models.Field(ctx, 'productData', {parentType:'product',parent:common, dbField:true});
+  ctx.set("commonData", productData)
+
+  let pdt = new models.Entity( ctx, 'product', productId, {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "packageProductLife", { parentType : "product", parent : pdt } );
+  let prd = field.getValue('*',{productId:productId, prdId : productId});
+  prd.productId = productId
+  let newp = prdData(ctx, prd)
+  return newp
+
+}
+
+
+function getPackageInitialData(packageCode){
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', 0 , {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "getPackage", { parentType : "product", parent : pdt } );
+  let pkg = field.getValue('*',{packageCode});
+  if (Object.keys(pkg).length  === 0 ) return pkg ; // returns a blank object
+  // find the main product in the product list
+  let mainProduct = pkg.productList.map(p => Object.assign({productId: p.productId},productInfo(p.productId)) ).find(prd => prd.insType === '1')
+  // return pkg
+  // console.log("mainProductId", mainProduct)
+  if (!mainProduct) return {} // if there are no main product
+
+  let main = new models.Entity( ctx, 'product', mainProduct.productId, {} )
+  ctx.set("product",main);
+  let mainField = new models.Field( ctx, "attachableRiders", { parentType : "product", parent : main } );
+  let attachableRiders = mainField.getValue('*', {productId: mainProduct.productId});
+
+  let data = {};
+  data.packageId = pkg.packageId;
+  data.packageCode = packageCode;
+  data.packageName = pkg.packageName
+  doc = {};
+  Object.keys(fieldMappings.insurerMapper).forEach( key => {
+      if (pkg.insurer && key in pkg.insurer) doc[fieldMappings.insurerMapper[key]] = pkg.insurer[key]
+  })
+  data.insurer = doc;
+
+  data.suggestedReason = pkg.suggestReason
+  let lifeProduct, rider;
+
+  let prods = pkg.productList.map(pp => {
+      lifeProduct = lifePackageProduct(pp.productId)
+      rider = attachableRiders.find(r => r.attachId === pp.productId)
+      lifeProduct.attachCompulsory = rider ? rider.attachCompulsory : "0"
+      lifeProduct.saEqual = rider ? rider.noEqual : "W"
+      return lifeProduct
+  });
+  data.productList = prods;
+  return data
+
+}
+
+function getPackageFilters() {
+    let ctx = new models.Context({});
+    let pdt = new models.Entity( ctx, 'product', 0, {} );
+    ctx.set("product",pdt);
+    let field = new models.Field( ctx, "getInsurers", { parentType : "policy", parent : null } );
+    let pkgLiabs = new models.Field( ctx, "salesPackageLiabilities", { parentType : "policy", parent : null } );
+    let categories = new models.Field( ctx, "salesPackageProductCategories", { parentType : "policy", parent : null } );
+    let insurers = field.getValue({productId:0}).map(doc => { return {insurerId: doc.insurerId , insurerName: doc.companyName}})
+    let salesPackageLiabilities = pkgLiabs.getValue({productId:0}).map(doc => { return {liabId: doc.liabId, liabDesc: doc.liabDesc}})
+    let salesPackageProductCategories = categories.getValue({productId:0}).map(doc => {return {categoryId:doc.productCategory, categoryName: doc.typeName }})
+    return {insurers, salesPackageLiabilities, salesPackageProductCategories}
+}
+function getPackageProduct(packageCode, prdId) {
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', 0, {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "getPackageProduct", { parentType : "product", parent : pdt } );
+  let packageProduct =  field.getValue('*',{packageCode,prdId});
+  doc = {}
+  Object.keys(fieldMappings.packageProductMapper).forEach( key => {
+    if (key in packageProduct) doc[fieldMappings.packageProductMapper[key]] =  packageProduct[key]
+  })
+  return doc
+}
+function planInfo4Product(productId) {
+  if ( ! _.has(models.CONFIGS,productId ) ) {
+      return {} ; // empty object if not configured
+  }
+  let ctx = new models.Context({});
+  let pdt = new models.Entity( ctx, 'product', 0 , {} );
+  ctx.set("product",pdt);
+  let field = new models.Field( ctx, "planInfo", { parentType : "product", parent : pdt } );
+  let planInfo =  field.getValue('*',{prdId:productId});
+  // put the insurer through the field mapping
+  doc = {};
+  Object.keys(fieldMappings.insurerMapper).forEach( key => {
+      if (planInfo.insurer && key in planInfo.insurer) doc[fieldMappings.insurerMapper[key]] = planInfo.insurer[key]
+  })
+  planInfo.insurer = doc;
+
+  return planInfo
+
+}
+
 
 exp =   { calc, calcAge, calcAge4Product, availablePlans, availablePaymentFrequencies, availablePremiumTerms, availablePolicyTerms,
           availableCurrencies, availableRiders, getConfig, validateRider, validate, availableFunds, availableBenefitPlans,
-          availablePaymentMethods, productInfo, availablePolicyEndAges, availableBenefitLevels, getProductOptions
+          availablePaymentMethods, productInfo, availablePolicyEndAges, availableBenefitLevels, getProductOptions, getProductCodeMap,
+          getInsurers, getInsurer, getPackages, getPackage, availableCoverageTerms, availablePremiumPaymentTerms, getPackageFilters,
+          getPackageProduct, availableProducts, getLifeProduct, getAvailableRiders, getPackageInitialData, getLifePackageProduct, planInfo4Product
         }
 
 module.exports = exp;

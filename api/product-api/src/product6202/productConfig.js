@@ -17,6 +17,7 @@ module.exports = {
         premiumAmount               : "premiumAmount__01",
         annualPremium               : "annualPremium__04",
         firstYearPremium            : "annualPremium__04",
+        monthlyCostOfInsurance      : "monthlyCostOfInsurance__21",
         halfYearlyPremium           : "zero",
         quarterlyPremium            : "zero",
         monthlyPremium              : "zero",
@@ -53,7 +54,6 @@ module.exports = {
         // ILP specific
         costOfInsuranceAtT          : "zero",
         costOfInsurance             : "zero",
-        monthlyCostOfInsurance      : "zero",
         costOfRiderAtT              : "zero",
         costOfRidersAtT             : "zero",
         totalCostOfRidersAtT        : "zero",
@@ -111,7 +111,7 @@ module.exports = {
     inputFields  : {
         productId            : 'num',
         productCode          : 'str',
-        productName          : "num",
+//        productName          : "num",
         lifeAssuredNumber    : "num" ,
         benefitLevel         : "num",
     },

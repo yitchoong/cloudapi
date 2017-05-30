@@ -1,8 +1,21 @@
 'use strict';
 
-const utils = require('./utils');
 const api = require('product-api');
 const _ = require('lodash');
+const __ = require('../i18n');
+const utils = require('./utils');
+var fs = require('fs')
+
+const send404 = function (res, next, msg) {
+  res.setHeader('Content-Type', "application/json");
+  res.statusCode = 404;
+    res.end(msg);
+}
+const send400 = function (res, next, msg) {
+  res.setHeader('Content-Type', "application/json");
+  res.statusCode = 400;
+    res.end(msg);
+}
 
 exports.calculateAdhocFields = function(args, res, next) {
   /**
@@ -14,81 +27,89 @@ exports.calculateAdhocFields = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ProposedInsurance
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "insuredList" : [ {
-    "occupation" : "aeiou",
-    "gender" : "aeiou",
-    "smoking" : "aeiou",
-    "name" : "aeiou",
-    "insuredId" : 1.3579000000000001069366817318950779736042022705078125,
-    "socialInsuranceIndi" : "aeiou",
-    "jobCateId" : 1.3579000000000001069366817318950779736042022705078125,
-    "birthDate" : "2000-01-23",
-    "age" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "riderList" : [ "" ],
-  "fundList" : [ {
-    "adhocPercent" : 1.3579000000000001069366817318950779736042022705078125,
-    "fundCode" : "aeiou",
-    "regularTopupPercent" : 1.3579000000000001069366817318950779736042022705078125,
-    "fundName" : "aeiou",
-    "targetPremiumPercent" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "withdrawalList" : [ {
-    "amount" : 1.3579000000000001069366817318950779736042022705078125,
-    "year" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "topupList" : [ {
-    "amount" : 1.3579000000000001069366817318950779736042022705078125,
-    "year" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "lastModified" : "2000-01-23",
-  "mainProduct" : {
-    "premiumAmount" : 1.3579000000000001069366817318950779736042022705078125,
-    "lifeAssuredNumber" : 123,
-    "productName" : "aeiou",
-    "saUnit" : 1.3579000000000001069366817318950779736042022705078125,
-    "illustrationFields" : {
-      "0" : { },
-      "99" : "",
-      "1" : "",
-      "2" : ""
-    },
-    "sumAssured" : 1.3579000000000001069366817318950779736042022705078125,
-    "coverageEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-    "premiumTermEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-    "extensionFields" : {
-      "key" : "aeiou"
-    },
-    "benefitPlan" : "aeiou",
-    "currency" : "aeiou",
-    "monthlyCostOfInsurance" : 1.3579000000000001069366817318950779736042022705078125,
-    "targetPremium" : 1.3579000000000001069366817318950779736042022705078125,
-    "premiumPaymentTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-    "premiumPaymentTermType" : "aeiou",
-    "firstYearPremium" : 1.3579000000000001069366817318950779736042022705078125,
-    "productId" : "aeiou",
-    "paymentMode" : "aeiou",
-    "coverageTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-    "packageId" : "aeiou",
-    "benefitLevel" : "aeiou",
-    "commencementDate" : "2000-01-23",
-    "productCode" : "aeiou",
-    "regularTopup" : 1.3579000000000001069366817318950779736042022705078125,
-    "coverageTermType" : "aeiou"
-  },
-  "userName" : "aeiou",
-  "version" : 1.3579000000000001069366817318950779736042022705078125,
-  "startDate" : "2000-01-23",
-  "status" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+   let json = args.bodyParam.value;
+   let proposedInsurance = json.proposedInsurance;
+   let illustrationFields = json.illustrationFields || []
+   let pid = args.productId.value;
+
+   if (illustrationFields.length === 0 || !proposedInsurance ) {
+      return send400(res, next , __("Either the illustration fields are empty or the proposedInsurance is not set"))
+   }
+
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (proposedInsurance.productList && proposedInsurance.productList.length > 0 ) {
+     proposedInsurance.productList.forEach( (p,idx) => {
+       if (idx === 0) {
+         fields.push("validateInput");
+         fields.push("validateMain");
+       } else {
+         fields.push( "r" + idx + ".validateInput");
+         fields.push( "r" + idx + ".validateRider");
+       }
+     })
+   } else {
+     res.statusCode = 400;
+     errors.push({field:"bodyParam", code:"NO_PRODUCT", message: "There are no products specified"})
+     return
+   }
+   let productData = api.productInfo(pid)
+   let good = false
+   if (productData && productData.benefitType === '41')  {
+
+     good = proposedInsurance.fundList && proposedInsurance.fundList.length > 0 ? true : false
+   }
+  //  console.log("benefitType", productData.benefitType, productData.productId, productData.productName, good)
+   if (!good) {
+     return send400(res, next, JSON.stringify({error: __('The fund list must be provided for investment products') }) ) ;
+   }
+   let result = api.validate(proposedInsurance, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+
+     result = api.calc(proposedInsurance, [], illustrationFields);
+     let requestedFields = illustrationFields.map(f => f.indexOf('.') < 0 ? f : f.split('.')[1] )
+     let output = {}, policyFields = {}, mainFields = {}
+
+     Object.keys(result).forEach(key => {
+
+         if ( requestedFields.indexOf(key) >= 0 ) {
+           // policy level fields -- will be attached to the main product
+           policyFields[key] = result[key]
+         } else if (key !== "productList") {
+              output[key] = result[key]
+         } else {
+              let plist = [];
+              result.productList.forEach(prd => {
+                let illustrationFields = {}
+                let prod = {}
+                Object.keys(prd).filter(k => requestedFields.indexOf(k) < 0 ).forEach(k => prod[k] = prd[k])
+                requestedFields.forEach(f => {
+                  if (f in prd) illustrationFields[f] = prd[f]
+                })
+                prod.illustrationFields = illustrationFields
+                plist.push(prod)
+              })
+              output.productList = plist;
+         }
+     })
+     // for the policy level fields, add it back to the main product
+     let mainProduct = output.productList[0];
+     Object.keys(policyFields).forEach(fname => {mainProduct[fname] = policyFields[fname]})
+     res.end(JSON.stringify(output));
+   } else {
+     res.statusCode = 400;
+     Object.keys(result).forEach((errkey) => {
+       result[errkey].forEach((msg) => {
+         let parts = errkey.split(".");
+         let fname = parts.length === 1 ? "Main Product" : "Rider - " + parts[0].substring(1);
+         errors.push({field: fname, code: "VALIDATION_ERROR", message: msg});
+       })
+     })
+     res.end(JSON.stringify({ errors: errors}), null, 2);
+   }
 }
 
 exports.calculateAge = function(args, res, next) {
@@ -101,16 +122,13 @@ exports.calculateAge = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns inline_response_200_8
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "age" : 1.3579000000000001069366817318950779736042022705078125
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   let productId = args.productId.value;
+   let birthDate = args.birthDate.value;
+   let result = api.calcAge4Product(birthDate,productId)
+   console.log("result", birthDate, result)
+   if (!result) return send400(res, next, JSON.stringify({error: __('Unable to calculate the age. Birth date must be in YYYY-MM-DD format') }) ) ;
+   res.setHeader('Content-Type', 'application/json');
+   res.end(JSON.stringify({age:result}, null, 2));
 }
 
 exports.calculateIllustrationFields = function(args, res, next) {
@@ -123,93 +141,104 @@ exports.calculateIllustrationFields = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns inline_response_200_9
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "proposedInsurance" : {
-    "insuredList" : [ {
-      "occupation" : "aeiou",
-      "gender" : "aeiou",
-      "smoking" : "aeiou",
-      "name" : "aeiou",
-      "insuredId" : 1.3579000000000001069366817318950779736042022705078125,
-      "socialInsuranceIndi" : "aeiou",
-      "jobCateId" : 1.3579000000000001069366817318950779736042022705078125,
-      "birthDate" : "2000-01-23",
-      "age" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "riderList" : [ "" ],
-    "fundList" : [ {
-      "adhocPercent" : 1.3579000000000001069366817318950779736042022705078125,
-      "fundCode" : "aeiou",
-      "regularTopupPercent" : 1.3579000000000001069366817318950779736042022705078125,
-      "fundName" : "aeiou",
-      "targetPremiumPercent" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "withdrawalList" : [ {
-      "amount" : 1.3579000000000001069366817318950779736042022705078125,
-      "year" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "topupList" : [ {
-      "amount" : 1.3579000000000001069366817318950779736042022705078125,
-      "year" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "lastModified" : "2000-01-23",
-    "mainProduct" : {
-      "premiumAmount" : 1.3579000000000001069366817318950779736042022705078125,
-      "lifeAssuredNumber" : 123,
-      "productName" : "aeiou",
-      "saUnit" : 1.3579000000000001069366817318950779736042022705078125,
-      "illustrationFields" : {
-        "0" : { },
-        "99" : "",
-        "1" : "",
-        "2" : ""
-      },
-      "sumAssured" : 1.3579000000000001069366817318950779736042022705078125,
-      "coverageEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumTermEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "extensionFields" : {
-        "key" : "aeiou"
-      },
-      "benefitPlan" : "aeiou",
-      "currency" : "aeiou",
-      "monthlyCostOfInsurance" : 1.3579000000000001069366817318950779736042022705078125,
-      "targetPremium" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumPaymentTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumPaymentTermType" : "aeiou",
-      "firstYearPremium" : 1.3579000000000001069366817318950779736042022705078125,
-      "productId" : "aeiou",
-      "paymentMode" : "aeiou",
-      "coverageTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-      "packageId" : "aeiou",
-      "benefitLevel" : "aeiou",
-      "commencementDate" : "2000-01-23",
-      "productCode" : "aeiou",
-      "regularTopup" : 1.3579000000000001069366817318950779736042022705078125,
-      "coverageTermType" : "aeiou"
-    },
-    "userName" : "aeiou",
-    "version" : 1.3579000000000001069366817318950779736042022705078125,
-    "startDate" : "2000-01-23",
-    "status" : "aeiou"
-  },
-  "tableOfBenefits" : {
-    "columnTitles" : [ {
-      "columnNo" : 123,
-      "columnTitle" : "aeiou"
-    } ],
-    "tableData" : [ {
-      "columnNo" : 123,
-      "value" : 1.3579000000000001069366817318950779736042022705078125
-    } ]
-  }
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+   let json = args.bodyParam.value;
+   let proposedInsurance = json
+   let illustrationFields = []
+   let pid = args.productId.value;
+
+   if (!proposedInsurance ) {
+      return send400(res, next , __("The proposedInsurance is not set in the bodyParam"))
+   }
+
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (proposedInsurance.productList && proposedInsurance.productList.length > 0 ) {
+     proposedInsurance.productList.forEach( (p,idx) => {
+       if (idx === 0) {
+         fields.push("validateInput");
+         fields.push("validateMain");
+       } else {
+         fields.push( "r" + idx + ".validateInput");
+         fields.push( "r" + idx + ".validateRider");
+       }
+     })
+   } else {
+     res.statusCode = 400;
+     errors.push({field:"bodyParam", code:"NO_PRODUCT", message: "There are no products specified"})
+     return
+   }
+   let productData = api.productInfo(pid)
+   let config = api.getConfig(pid)
+   illustrationFields = config.illustrationFields || []
+   if (illustrationFields.length === 0) {
+      return send400(res, next , __("The illustration fields for the product has not been configured"))
+   }
+   let good = false
+   if (productData && productData.benefitType === '41')  {
+     good = proposedInsurance.fundList && proposedInsurance.fundList.length > 0 ? true : false
+   }
+   if (!good) {
+     return send400(res, next, JSON.stringify({error: __('The fund list must be provided for investment products') }) ) ;
+   }
+   let result = api.validate(proposedInsurance, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+
+     result = api.calc(proposedInsurance, [], illustrationFields);
+     let requestedFields = illustrationFields.map(f => f.indexOf('.') < 0 ? f : f.split('.')[1] )
+     let benefitsTable = {columnTitles:[], tableData: [] }
+     config.illustrationColNames.forEach( (col, indx) =>  {benefitsTable.columnTitles.push( {columnNo: indx+1, columnTitle: col}) })
+     let output = {}, policyFields = {}, mainFields = {}
+
+     // remove the requested fields from the result
+     Object.keys(result).forEach(key => {
+
+         if ( requestedFields.indexOf(key) >= 0 ) {
+           // policy level fields -- will be attached to the main product
+           policyFields[key] = result[key]
+         } else if (key !== "productList") {
+              output[key] = result[key]
+         } else {
+              let plist = [];
+              result.productList.forEach( (prd,pno) => {
+                let prod = {}
+                Object.keys(prd).filter(k => requestedFields.indexOf(k) < 0 ).forEach(k => prod[k] = prd[k])
+                requestedFields.forEach(f => {
+                  if (f in prd) {
+                    let indx = config.illustrationFields.indexOf( f )
+                    if ( indx >= 0 && pno === 0 ) { // only save into benefitsTable if main product
+                      mainFields[f] = prd[f]
+                      //benefitsTable.tableData.push( { columnNo: indx + 1, value: prd[f]})
+                    }
+                  }
+                })
+                plist.push(prod)
+              })
+              output.productList = plist;
+         }
+     })
+     // create the benefits table
+     illustrationFields.forEach((fname,indx) => {
+       let parts = fname.indexOf('.') < 0 ? ["main", fname] : fname.split('.') ;
+       let value = (parts[0] === 'pol') ? policyFields[parts[1]] : mainFields[parts[1]]
+       benefitsTable.tableData.push( { columnNo: indx + 1, value: value })
+     })
+
+     output.tableOfBenefits = benefitsTable
+     res.end(JSON.stringify(output));
+   } else {
+     res.statusCode = 400;
+     Object.keys(result).forEach((errkey) => {
+       result[errkey].forEach((msg) => {
+         let parts = errkey.split(".");
+         let fname = parts.length === 1 ? "Main Product" : "Rider - " + parts[0].substring(1);
+         errors.push({field: fname, code: "VALIDATION_ERROR", message: msg});
+       })
+     })
+     res.end(JSON.stringify({ errors: errors}), null, 2);
+   }
 }
 
 exports.calculateProductCostOnInsurance = function(args, res, next) {
@@ -222,81 +251,53 @@ exports.calculateProductCostOnInsurance = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ProposedInsurance
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "insuredList" : [ {
-    "occupation" : "aeiou",
-    "gender" : "aeiou",
-    "smoking" : "aeiou",
-    "name" : "aeiou",
-    "insuredId" : 1.3579000000000001069366817318950779736042022705078125,
-    "socialInsuranceIndi" : "aeiou",
-    "jobCateId" : 1.3579000000000001069366817318950779736042022705078125,
-    "birthDate" : "2000-01-23",
-    "age" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "riderList" : [ "" ],
-  "fundList" : [ {
-    "adhocPercent" : 1.3579000000000001069366817318950779736042022705078125,
-    "fundCode" : "aeiou",
-    "regularTopupPercent" : 1.3579000000000001069366817318950779736042022705078125,
-    "fundName" : "aeiou",
-    "targetPremiumPercent" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "withdrawalList" : [ {
-    "amount" : 1.3579000000000001069366817318950779736042022705078125,
-    "year" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "topupList" : [ {
-    "amount" : 1.3579000000000001069366817318950779736042022705078125,
-    "year" : 1.3579000000000001069366817318950779736042022705078125
-  } ],
-  "lastModified" : "2000-01-23",
-  "mainProduct" : {
-    "premiumAmount" : 1.3579000000000001069366817318950779736042022705078125,
-    "lifeAssuredNumber" : 123,
-    "productName" : "aeiou",
-    "saUnit" : 1.3579000000000001069366817318950779736042022705078125,
-    "illustrationFields" : {
-      "0" : { },
-      "99" : "",
-      "1" : "",
-      "2" : ""
-    },
-    "sumAssured" : 1.3579000000000001069366817318950779736042022705078125,
-    "coverageEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-    "premiumTermEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-    "extensionFields" : {
-      "key" : "aeiou"
-    },
-    "benefitPlan" : "aeiou",
-    "currency" : "aeiou",
-    "monthlyCostOfInsurance" : 1.3579000000000001069366817318950779736042022705078125,
-    "targetPremium" : 1.3579000000000001069366817318950779736042022705078125,
-    "premiumPaymentTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-    "premiumPaymentTermType" : "aeiou",
-    "firstYearPremium" : 1.3579000000000001069366817318950779736042022705078125,
-    "productId" : "aeiou",
-    "paymentMode" : "aeiou",
-    "coverageTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-    "packageId" : "aeiou",
-    "benefitLevel" : "aeiou",
-    "commencementDate" : "2000-01-23",
-    "productCode" : "aeiou",
-    "regularTopup" : 1.3579000000000001069366817318950779736042022705078125,
-    "coverageTermType" : "aeiou"
-  },
-  "userName" : "aeiou",
-  "version" : 1.3579000000000001069366817318950779736042022705078125,
-  "startDate" : "2000-01-23",
-  "status" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+   let json = args.bodyParam.value;
+   let pid = args.productId.value;
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [], calcFields=[];
+   if (json.productList && json.productList.length > 0 ) {
+     json.productList.forEach( (p,idx) => {
+       if (idx === 0) {
+         fields.push("validateInput");
+         fields.push("validateMain");
+         calcFields.push("monthlyCostOfInsurance")
+       } else {
+         fields.push( "r" + idx + ".validateInput");
+         fields.push( "r" + idx + ".validateRider");
+         calcFields.push("r" + idx + ".monthlyCostOfInsurance")
+       }
+     })
+   } else {
+     res.statusCode = 400; 
+     errors.push({field:"bodyParam", code:"NO_PRODUCT", message: "There are no products specified"})
+     return
+   }
+   // for cost of insurance calculation should be an investment product
+   let productData = api.productInfo(pid)
+   let good = false
+   if (productData && productData.benefitType === '41')  good = true
+  //  console.log("benefitType", productData.benefitType, productData.productId, productData.productName, good)
+   if (!good) {
+     return send400(res, next, JSON.stringify({error: __('Cost of insurance only applies to investment products') }) ) ;
+   }
+   let result = api.validate(json, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     result = api.calc(json, calcFields);
+     res.end(JSON.stringify(result));
+   } else {
+     res.statusCode = 400;
+     Object.keys(result).forEach((errkey) => {
+       result[errkey].forEach((msg) => {
+         let parts = errkey.split(".");
+         let fname = parts.length === 1 ? "Main Product" : "Rider - " + parts[0].substring(1);
+         errors.push({field: fname, code: "VALIDATION_ERROR", message: msg});
+       })
+     })
+     res.end(JSON.stringify({ errors: errors}), null, 2);
+   }
 }
 
 exports.calculateProductPremium = function(args, res, next) {
@@ -353,82 +354,6 @@ exports.calculateProductPremium = function(args, res, next) {
      })
      res.end(JSON.stringify({ errors: errors}), null, 2);
    }
-
-//   var examples = {};
-//   examples['application/json'] = {
-//   "insuredList" : [ {
-//     "occupation" : "aeiou",
-//     "gender" : "aeiou",
-//     "smoking" : "aeiou",
-//     "name" : "aeiou",
-//     "insuredId" : 1.3579000000000001069366817318950779736042022705078125,
-//     "socialInsuranceIndi" : "aeiou",
-//     "jobCateId" : 1.3579000000000001069366817318950779736042022705078125,
-//     "birthDate" : "2000-01-23",
-//     "age" : 1.3579000000000001069366817318950779736042022705078125
-//   } ],
-//   "riderList" : [ "" ],
-//   "fundList" : [ {
-//     "adhocPercent" : 1.3579000000000001069366817318950779736042022705078125,
-//     "fundCode" : "aeiou",
-//     "regularTopupPercent" : 1.3579000000000001069366817318950779736042022705078125,
-//     "fundName" : "aeiou",
-//     "targetPremiumPercent" : 1.3579000000000001069366817318950779736042022705078125
-//   } ],
-//   "withdrawalList" : [ {
-//     "amount" : 1.3579000000000001069366817318950779736042022705078125,
-//     "year" : 1.3579000000000001069366817318950779736042022705078125
-//   } ],
-//   "topupList" : [ {
-//     "amount" : 1.3579000000000001069366817318950779736042022705078125,
-//     "year" : 1.3579000000000001069366817318950779736042022705078125
-//   } ],
-//   "lastModified" : "2000-01-23",
-//   "mainProduct" : {
-//     "premiumAmount" : 1.3579000000000001069366817318950779736042022705078125,
-//     "lifeAssuredNumber" : 123,
-//     "productName" : "aeiou",
-//     "saUnit" : 1.3579000000000001069366817318950779736042022705078125,
-//     "illustrationFields" : {
-//       "0" : { },
-//       "99" : "",
-//       "1" : "",
-//       "2" : ""
-//     },
-//     "sumAssured" : 1.3579000000000001069366817318950779736042022705078125,
-//     "coverageEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-//     "premiumTermEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-//     "extensionFields" : {
-//       "key" : "aeiou"
-//     },
-//     "benefitPlan" : "aeiou",
-//     "currency" : "aeiou",
-//     "monthlyCostOfInsurance" : 1.3579000000000001069366817318950779736042022705078125,
-//     "targetPremium" : 1.3579000000000001069366817318950779736042022705078125,
-//     "premiumPaymentTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-//     "premiumPaymentTermType" : "aeiou",
-//     "firstYearPremium" : 1.3579000000000001069366817318950779736042022705078125,
-//     "productId" : "aeiou",
-//     "paymentMode" : "aeiou",
-//     "coverageTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-//     "packageId" : "aeiou",
-//     "benefitLevel" : "aeiou",
-//     "commencementDate" : "2000-01-23",
-//     "productCode" : "aeiou",
-//     "regularTopup" : 1.3579000000000001069366817318950779736042022705078125,
-//     "coverageTermType" : "aeiou"
-//   },
-//   "userName" : "aeiou",
-//   "version" : 1.3579000000000001069366817318950779736042022705078125,
-//   "startDate" : "2000-01-23",
-//   "status" : "aeiou"
-// };
-//   if (Object.keys(examples).length > 0) {
-//     res.setHeader('Content-Type', 'application/json');
-//     res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-//   } else {
-//     res.end();
-//   }
 }
 
 exports.generateProductIllustration = function(args, res, next) {
@@ -441,128 +366,93 @@ exports.generateProductIllustration = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns inline_response_200_7
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "proposedInsurance" : {
-    "insuredList" : [ {
-      "occupation" : "aeiou",
-      "gender" : "aeiou",
-      "smoking" : "aeiou",
-      "name" : "aeiou",
-      "insuredId" : 1.3579000000000001069366817318950779736042022705078125,
-      "socialInsuranceIndi" : "aeiou",
-      "jobCateId" : 1.3579000000000001069366817318950779736042022705078125,
-      "birthDate" : "2000-01-23",
-      "age" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "riderList" : [ "" ],
-    "fundList" : [ {
-      "adhocPercent" : 1.3579000000000001069366817318950779736042022705078125,
-      "fundCode" : "aeiou",
-      "regularTopupPercent" : 1.3579000000000001069366817318950779736042022705078125,
-      "fundName" : "aeiou",
-      "targetPremiumPercent" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "withdrawalList" : [ {
-      "amount" : 1.3579000000000001069366817318950779736042022705078125,
-      "year" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "topupList" : [ {
-      "amount" : 1.3579000000000001069366817318950779736042022705078125,
-      "year" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "lastModified" : "2000-01-23",
-    "mainProduct" : {
-      "premiumAmount" : 1.3579000000000001069366817318950779736042022705078125,
-      "lifeAssuredNumber" : 123,
-      "productName" : "aeiou",
-      "saUnit" : 1.3579000000000001069366817318950779736042022705078125,
-      "illustrationFields" : {
-        "0" : { },
-        "99" : "",
-        "1" : "",
-        "2" : ""
-      },
-      "sumAssured" : 1.3579000000000001069366817318950779736042022705078125,
-      "coverageEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumTermEndAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "extensionFields" : {
-        "key" : "aeiou"
-      },
-      "benefitPlan" : "aeiou",
-      "currency" : "aeiou",
-      "monthlyCostOfInsurance" : 1.3579000000000001069366817318950779736042022705078125,
-      "targetPremium" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumPaymentTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumPaymentTermType" : "aeiou",
-      "firstYearPremium" : 1.3579000000000001069366817318950779736042022705078125,
-      "productId" : "aeiou",
-      "paymentMode" : "aeiou",
-      "coverageTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-      "packageId" : "aeiou",
-      "benefitLevel" : "aeiou",
-      "commencementDate" : "2000-01-23",
-      "productCode" : "aeiou",
-      "regularTopup" : 1.3579000000000001069366817318950779736042022705078125,
-      "coverageTermType" : "aeiou"
-    },
-    "userName" : "aeiou",
-    "version" : 1.3579000000000001069366817318950779736042022705078125,
-    "startDate" : "2000-01-23",
-    "status" : "aeiou"
-  },
-  "planInfo" : {
-    "planFeatures" : [ "" ],
-    "planValueAddedList" : [ {
-      "valueAddedDesc" : "aeiou",
-      "valueAddedPic" : "aeiou",
-      "valueAddedId" : "aeiou",
-      "displayOrder" : 1.3579000000000001069366817318950779736042022705078125,
-      "valueAddedCode" : "aeiou",
-      "valueAddedName" : "aeiou"
-    } ],
-    "planHighlights" : [ "" ],
-    "planLiability" : {
-      "liabCategoryList" : [ {
-        "categoryName" : "aeiou",
-        "simpleLiabList" : [ {
-          "liabList" : "aeiou",
-          "productid" : "aeiou",
-          "libDesc" : "aeiou",
-          "packageId" : "aeiou",
-          "libCalcType" : "aeiou",
-          "liabDisplayName" : "aeiou",
-          "needDiseaseIndi" : "aeiou",
-          "categoryName" : "aeiou",
-          "libDescQuote" : "aeiou",
-          "totalAmount" : 1.3579000000000001069366817318950779736042022705078125,
-          "libCalcMethod" : "aeiou",
-          "liabName" : "aeiou",
-          "liabAmount" : 1.3579000000000001069366817318950779736042022705078125,
-          "liabId" : "aeiou"
-        } ],
-        "categoryId" : "aeiou"
-      } ],
-      "multiProduct" : true
-    }
-  },
-  "tableOfBenefits" : {
-    "columnTitles" : [ {
-      "columnNo" : 123,
-      "columnTitle" : "aeiou"
-    } ],
-    "tableData" : [ {
-      "columnNo" : 123,
-      "value" : 1.3579000000000001069366817318950779736042022705078125
-    } ]
+   // start with getting the parameters in
+   let lang = args.lang.value;
+   let pk = args.productId.value;
+   pk = pk ? parseInt(pk) : -1;
+   let proposedInsurance = args.bodyParam.value
+   if (pk === -1 || !proposedInsurance) {
+     return send400(res,next, __("Please specify the proposed insurance and the product id"))
+   }
+  // first do some validation
+  let products = proposedInsurance.productList
+  if (!products) {
+    return send400(res,next, __("Please specify the main and rider products in the proposed insurance"))
   }
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
+  let validators = ['validateMain']
+  if (products.length > 1 ) validators.push('validateAllRiders')
+  let result = api.validate(proposedInsurance, validators)
+  let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+  if (errCount > 0) {
+     res.statusCode = 400;
+     let errorList = []
+     Object.keys(result).forEach((errkey) => {
+       let errors=[]
+       result[errkey].forEach((msg) => {
+           errors.push(msg)
+       })
+       errorList.push( { validator: errkey, errors: errors})
+    })
+    res.end(JSON.stringify({ errorList: errorList}, null, 2));
+    return
   }
+
+  // ok, we have done the validation, now time to grab the data that we want
+  let input = _.cloneDeep(proposedInsurance); // create a clone for the output
+  // for each of the products, we need to get the product code and name
+  input.productList.forEach(prd => {
+      let pid = prd.productId, productCode = prd.productCode;
+      if (!pid && productCode) {
+          let codeMap = api.getProductCodeMap()
+          pid = codeMap[productCode]
+      }
+      let productInfo = api.productInfo(pid)
+      prd.productId = pid;
+      prd.productCode = productInfo.internalId
+      prd.productName = productInfo.productName
+  })
+
+  // next is the table of benefits
+  // let productData = api.productInfo(pid)
+  let config = api.getConfig(pk)
+  let illustrationFields = config.illustrationFields || []
+  result = api.calc(proposedInsurance, [], illustrationFields);
+  let requestedFields = illustrationFields.map(f => f.indexOf('.') < 0 ? f : f.split('.')[1] )
+  let benefitsTable = {columnTitles:[], tableData: [] }
+  config.illustrationColNames.forEach( (col, indx) =>  {benefitsTable.columnTitles.push( {columnNo: indx+1, columnTitle: col}) })
+  let output = {}, policyFields = {}, mainFields = {}, plist=[];
+  // only interested in policy level fields and product fields
+  Object.keys(result).forEach(key => {
+      if ( requestedFields.indexOf(key) >= 0 ) {
+        // policy level fields -- will be attached to the main product
+        policyFields[key] = result[key]
+      } else if (key === "productList") {
+        let prd = result.productList[0]; // main product only
+        requestedFields.forEach(f => {
+          if (f in prd) {
+            let indx = config.illustrationFields.indexOf( f )
+            if ( indx >= 0) mainFields[f] = prd[f]
+          }
+        })
+      }
+  })
+  // create the benefits table
+  illustrationFields.forEach((fname,indx) => {
+    let parts = fname.indexOf('.') < 0 ? ["main", fname] : fname.split('.') ;
+    let value = (parts[0] === 'pol') ? policyFields[parts[1]] : mainFields[parts[1]]
+    benefitsTable.tableData.push( { columnNo: indx + 1, value: value })
+  })
+  console.log("*** done with benefits table")
+  // last part is to get the package related information for this product, we use lifePackageProduct
+  let planInfo = api.planInfo4Product(pk)
+
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify({proposedInsurance:input, tableOfBenefits:benefitsTable, planInfo: planInfo },null,2))
+  return
+  //  let prd = api.getLifeProduct(pk)
+
+
+
 }
 
 exports.getAttachableRiders = function(args, res, next) {
@@ -575,14 +465,46 @@ exports.getAttachableRiders = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns List
    **/
-  var examples = {};
-  examples['application/json'] = [ "" ];
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+
+   res.setHeader('Content-Type', 'application/json');
+
+   let json = args.bodyParam.value;
+   let pid = args.productId.value;
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (json.productList && json.productList.length > 0 ) {
+     json.productList.forEach( (p,idx) => {
+       if (idx === 0) {
+         fields.push("validateInput");
+         fields.push("validateMain");
+       } else {
+         fields.push( "r" + idx + ".validateInput");
+         fields.push( "r" + idx + ".validateRider");
+       }
+     })
+   } else {
+     res.statusCode = 400;
+     errors.push({field:"bodyParam", code:"NO_PRODUCT", message: "There are no products specified"})
+     return
+   }
+   let result = api.validate(json, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     result = api.getAvailableRiders(json)
+     res.end(JSON.stringify(result))
+
+   } else {
+     res.statusCode = 400;
+     Object.keys(result).forEach((errkey) => {
+       result[errkey].forEach((msg) => {
+         let parts = errkey.split(".");
+         let fname = parts.length === 1 ? "Main Product" : "Rider - " + parts[0].substring(1);
+         errors.push({field: fname, code: "VALIDATION_ERROR", message: msg});
+       })
+     })
+     res.end(JSON.stringify({ errors: errors}), null, 2);
+   }
 }
 
 exports.getDetailedProductList = function(args, res, next) {
@@ -601,18 +523,13 @@ exports.getDetailedProductList = function(args, res, next) {
    * gender String Filter products which are targeted at specific products. Male or Female (optional)
    * returns inline_response_200_6
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "docs" : [ "" ],
-  "offset" : 123,
-  "totalDocs" : 123
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+
+   let data = fetchProductList(args, res, next);
+   // remove some of the unwanted fields
+  //  let removeList = ["coveragePeriods","premiumPaymentPeriods","currencies","funds","paymentModes","paymentMethods"];
+  //  data.docs.forEach(doc => removeList.forEach( field => delete doc[field]))
+   res.setHeader('Content-Type', 'application/json');
+   res.end(JSON.stringify(data,null, 2));
 }
 
 exports.getIllustrationCalculatorFields = function(args, res, next) {
@@ -624,17 +541,21 @@ exports.getIllustrationCalculatorFields = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns List
    **/
-  var examples = {};
-  examples['application/json'] = [ {
-  "fieldName" : "aeiou",
-  "description" : "aeiou"
-} ];
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   let lang = args.lang.value;
+   let pk = args.productId.value;
+   pk = pk ? parseInt(pk) : -1;
+   let prd = api.getLifeProduct(pk)
+   let config = api.getConfig(pk)
+   if ( Object.keys(config) === 0) {
+     res.statusCode = 404;
+     res.end(JSON.stringify({ message: `Unable to find configuration for product ${pk}`}, null, 2))
+     return
+   }
+   //
+   let fields = config.illustrationFields.map(f => f)
+   res.end(JSON.stringify(fields,null,2))
+
+
 }
 
 exports.getPackageProduct = function(args, res, next) {
@@ -647,6 +568,7 @@ exports.getPackageProduct = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns PackageProduct
    **/
+  //  console.log("*** getPackageProduct in ProductServices")
   var examples = {};
   examples['application/json'] = "";
   if (Object.keys(examples).length > 0) {
@@ -666,14 +588,29 @@ exports.getProduct = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns Product
    **/
-  var examples = {};
-  examples['application/json'] = "";
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+
+   let lang = args.lang.value;
+   let pk = args.productId.value;
+   pk = pk ? parseInt(pk) : -1;
+  //  let prd = api.getLifeProduct(pk)
+   let prd = api.getLifePackageProduct(pk)
+   if (Object.keys(prd).length === 0) {
+     return send404(res, next, JSON.stringify({error: __('Product is not found') }) ) ;
+   }
+   res.setHeader('Content-Type', "application/json");
+   res.end(JSON.stringify(prd,null,2));
+  //
+  //
+  //
+  //
+  // var examples = {};
+  // examples['application/json'] = "";
+  // if (Object.keys(examples).length > 0) {
+  //   res.setHeader('Content-Type', 'application/json');
+  //   res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+  // } else {
+  //   res.end();
+  // }
 }
 
 exports.getProductIllustrationTemplate = function(args, res, next) {
@@ -685,16 +622,23 @@ exports.getProductIllustrationTemplate = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns inline_response_200_10
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+
+   let lang = args.lang.value;
+   let pk = args.productId.value;
+  //  pk = pk ? parseInt(pk) : -1;
+   let fname = "./templates/" + pk + '.html'
+   fs.readFile(fname, "utf8", function(err, data) {
+        if (err) {
+          res.statusCode = 404
+          res.end(JSON.stringify({message: __(`Unable to locate template for product ${pk}`)}, null,2))
+        } else {
+          res.setHeader('Content-Type', "application/json");
+          res.end(JSON.stringify({template: data},null,2));
+        }
+    });
+
+
+
 }
 
 exports.getProductList = function(args, res, next) {
@@ -712,90 +656,12 @@ exports.getProductList = function(args, res, next) {
    * gender String Filter products which are targeted at specific products. Male or Female (optional)
    * returns inline_response_200_5
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "docs" : [ {
-    "ageRange" : {
-      "maxAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "minAgeUnit" : "aeiou",
-      "minAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "maxAgeUnit" : "aeiou"
-    },
-    "jobIndi" : "aeiou",
-    "pointToPh" : "aeiou",
-    "smokingIndi" : "aeiou",
-    "productName" : "aeiou",
-    "ageLimitList" : [ {
-      "paymentTermType" : "aeiou",
-      "maxPolicyHolderAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "gender" : "aeiou",
-      "maxInsuredAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "coverageTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-      "minPolicyholderAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumTermType" : "aeiou",
-      "benefitLevel" : "aeiou",
-      "premiumTermValue" : 1.3579000000000001069366817318950779736042022705078125,
-      "minInsuredAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "coverageTermType" : "aeiou",
-      "paymentTermValue" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "pointToSpouse" : "aeiou",
-    "isPackageProduct" : "aeiou",
-    "inputFields" : [ {
-      "fieldName" : "aeiou",
-      "dataType" : "aeiou"
-    } ],
-    "attachCompulsory" : "aeiou",
-    "benefitLevelList" : [ {
-      "levelDesc" : "aeiou",
-      "benefitLevel" : "aeiou"
-    } ],
-    "insType" : "aeiou",
-    "unitFlag" : "aeiou",
-    "pointToSecInsured" : "aeiou",
-    "displayPremiumIndi" : "aeiou",
-    "isWaiver" : "aeiou",
-    "liabilityList" : [ {
-      "liabName" : "aeiou",
-      "liabDesc" : "aeiou",
-      "liabType" : "aeiou",
-      "displayOrder" : 1.3579000000000001069366817318950779736042022705078125,
-      "liabId" : "aeiou",
-      "ifDisplayInIllustration" : "aeiou"
-    } ],
-    "isAnnuityProduct" : "aeiou",
-    "insurerId" : "aeiou",
-    "doctype" : "aeiou",
-    "saEqual" : "aeiou",
-    "productCode" : "aeiou",
-    "sumAssuredLimitList" : [ {
-      "minAmount" : 1.3579000000000001069366817318950779736042022705078125,
-      "maxAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "minAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "currencyId" : "aeiou",
-      "maxAmount" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "socialInsureIndi" : "aeiou",
-    "pk" : "aeiou",
-    "premiumLimitList" : [ {
-      "maxInitialPremium" : 1.3579000000000001069366817318950779736042022705078125,
-      "maxAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "minAge" : 1.3579000000000001069366817318950779736042022705078125,
-      "minInitialPremium" : 1.3579000000000001069366817318950779736042022705078125,
-      "premiumTermType" : "aeiou",
-      "premiumTermValue" : 1.3579000000000001069366817318950779736042022705078125
-    } ],
-    "displayMonthlyCoi" : "aeiou"
-  } ],
-  "offset" : 123,
-  "totalDocs" : 123
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   let data = fetchProductList(args, res, next);
+   // remove some of the unwanted fields
+   let removeList = ["coveragePeriods","premiumPaymentPeriods","currencies","funds","paymentModes","paymentMethods"];
+   data.docs.forEach(doc => removeList.forEach( field => delete doc[field]))
+   res.setHeader('Content-Type', 'application/json');
+   res.end(JSON.stringify(data,null, 2));
 }
 
 exports.getProductValidators = function(args, res, next) {
@@ -807,17 +673,20 @@ exports.getProductValidators = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns List
    **/
-  var examples = {};
-  examples['application/json'] = [ {
-  "fieldName" : "aeiou",
-  "description" : "aeiou"
-} ];
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   let lang = args.lang.value;
+   let pk = args.productId.value;
+   pk = pk ? parseInt(pk) : -1;
+   let prd = api.getLifeProduct(pk)
+   let config = api.getConfig(pk)
+   if ( Object.keys(config) === 0) {
+     res.statusCode = 404;
+     res.end(JSON.stringify({ message: `Unable to find configuration for product ${pk}`}, null, 2))
+     return
+   }
+   //
+   let fields = Object.keys(config.validators).filter(k => config.validators[k] !== 'pass' && config.validators[k] !== 'zero').map(k => k)
+   res.end(JSON.stringify(fields,null,2))
+
 }
 
 exports.validateAdhocProductValidators = function(args, res, next) {
@@ -830,17 +699,43 @@ exports.validateAdhocProductValidators = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ValidatorSuccessResult
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
-}
+   res.setHeader('Content-Type', 'application/json');
+   let policy = args.bodyParam.value;
+   let pid = args.productId.value;
+   let proposedInsurance = policy.proposedInsurance
+   let validatorList = policy.validatorList || []
+
+   if (validatorList.length === 0 || !proposedInsurance) {
+      return send400(res, next, __("Please specify the validatorList and the proposedInsurance fields"))
+   }
+
+   let errors = [];
+   // prepare the data to call the product engine
+  //  let fields = [];
+  //  if (proposedInsurance.fundList && proposedInsurance.fundList.length > 0 ) {
+  //    fields.push('validateAllFundAllocations')
+  //  } else {
+  //    res.statusCode = 400;
+  //    res.end(JSON.stringify({ errorList: [{validator:"validateAllFundAllocations", errors: [__("There are no fund allocations specified") ] }]}, null, 2))
+  //    return
+  //  }
+   let result = api.validate(proposedInsurance, validatorList );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     res.end(JSON.stringify({message:"OK"},null,2));
+   } else {
+      res.statusCode = 400;
+      let errorList = []
+      Object.keys(result).forEach((errkey) => {
+        let errors=[]
+        result[errkey].forEach((msg) => {
+            errors.push(msg)
+        })
+        errorList.push( { validator: errkey, errors: errors})
+     })
+     res.end(JSON.stringify({ errorList: errorList}, null, 2));
+   }
+ }
 
 exports.validateMainProduct = function(args, res, next) {
   /**
@@ -852,16 +747,36 @@ exports.validateMainProduct = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ValidatorSuccessResult
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+
+   let json = args.bodyParam.value;
+   let pid = args.productId.value;
+   let lang = args.lang.value;
+   pid = pid ? parseInt(pid) : -1;
+   let prd = api.getLifeProduct(pid)
+   if (Object.keys(prd).length === 0) {
+     return send404(res, next, JSON.stringify({error: __('Product is not found') }) ) ;
+   }
+
+   // need to change the format , the json that is input is just for an insured i.e. {name:"demo", birthDate:"1988-02-20", gender:"MALE"}
+  //  let inputjson = {insuredList: [json], productList: [{productId:pid, paymentMode: "1", lifeAssuredNumber: 0}]} // default paymentMode to yearly (1)
+
+   let result = api.validate(json, ["validateMain"])
+   let errorList = []; //[{"validateMain": [] }]
+   Object.keys(result).filter(validator => result[validator].length > 0).forEach(validator => {
+      let errors = []
+      result[validator].forEach(err => errors.push(err))
+      errorList.push({validator: validator, errors: errors})
+   })
+   if (errorList.length > 0) {
+      res.statusCode = 400
+      res.end(JSON.stringify({ errorList: errorList}), null, 2);
+      return
+   }
+
+   // no errors here -- get the product object and return it
+   res.setHeader('Content-Type', "application/json");
+   res.end(JSON.stringify({message:"OK"},null,2));
 }
 
 exports.validateProductFunds = function(args, res, next) {
@@ -874,16 +789,35 @@ exports.validateProductFunds = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ValidatorSuccessResult
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+   let proposedInsurance = args.bodyParam.value;
+   let pid = args.productId.value;
+
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (proposedInsurance.fundList && proposedInsurance.fundList.length > 0 ) {
+     fields.push('validateAllFundAllocations')
+   } else {
+     res.statusCode = 400;
+     res.end(JSON.stringify({ errorList: [{validator:"validateAllFundAllocations", errors: [__("There are no fund allocations specified") ] }]}, null, 2))
+     return
+   }
+   let result = api.validate(proposedInsurance, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     res.end(JSON.stringify({message:"OK"},null,2));
+   } else {
+      res.statusCode = 400;
+      let errorList = [{"validateAllFundAllocations":[]}]
+      Object.keys(result).forEach((errkey) => {
+        result[errkey].forEach((msg) => {
+            let fname = "validateAllFundAllocations"
+            errorList[0].validateAllFundAllocations.push( fname + ' : ' + msg)
+       })
+     })
+     res.end(JSON.stringify({ errorList: errorList}, null, 2));
+   }
 }
 
 exports.validateProductInsured = function(args, res, next) {
@@ -896,14 +830,32 @@ exports.validateProductInsured = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns Product
    **/
-  var examples = {};
-  examples['application/json'] = "";
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+
+   let json = args.bodyParam.value;
+   let pid = args.productId.value;
+   let lang = args.lang.value;
+   pid = pid ? parseInt(pid) : -1;
+   let prd = api.getLifeProduct(pid)
+   if (Object.keys(prd).length === 0) {
+     return send404(res, next, JSON.stringify({error: __('Product is not found') }) ) ;
+   }
+
+   // need to change the format , the json that is input is just for an insured i.e. {name:"demo", birthDate:"1988-02-20", gender:"MALE"}
+   let inputjson = {insuredList: [json], productList: [{productId:pid, paymentMode: "1", lifeAssuredNumber: 0}]} // default paymentMode to yearly (1)
+
+   let result = api.validate(inputjson, ["validatePersonProduct"])
+   let errorList = [{"validatePersonProduct": []}]
+   if (result.validatePersonProduct.length > 0) {
+      result.validatePersonProduct.forEach(err => errorList[0].validatePersonProduct.push(err))
+      res.statusCode = 400;
+      res.end(JSON.stringify({ errorList: errorList}), null, 2);
+      return
+   }
+   // no errors here -- get the product object and return it
+   res.setHeader('Content-Type', "application/json");
+   res.end(JSON.stringify(prd,null,2));
+
 }
 
 exports.validateProductRiders = function(args, res, next) {
@@ -916,16 +868,71 @@ exports.validateProductRiders = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ValidatorSuccessResult
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
+   res.setHeader('Content-Type', 'application/json');
+   let proposedInsurance = args.bodyParam.value;
+   let pid = args.productId.value;
+
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (proposedInsurance.productList && proposedInsurance.productList.length > 1 ) {
+     proposedInsurance.productList.forEach( (p,idx) => {
+       if (idx > 0) {
+         fields.push( "r" + idx + ".validateInput");
+         fields.push( "r" + idx + ".validateRider");
+       }
+     })
+   } else {
+     res.statusCode = 400;
+     res.end(JSON.stringify({ errorList: [{validator:"validateRiders", errors: [__("There are no riders specified") ] }]}, null, 2))
+     return
+   }
+  //  let productData = api.productInfo(pid)
+  //  let good = false
+  //  if (productData && productData.benefitType === '41')  {
+  //    good = proposedInsurance.fundList && proposedInsurance.fundList.length > 0 ? true : false
+  //  }
+  //  console.log("benefitType", productData.benefitType, productData.productId, productData.productName, good)
+  //  if (!good) {
+  //    return send400(res, next, JSON.stringify({error: __('The fund list must be provided for investment products') }) ) ;
+  //  }
+
+   let result = api.validate(proposedInsurance, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     res.end(JSON.stringify({message:"OK"},null,2));
+   } else {
+     res.statusCode = 400;
+     let errorList = [{validateRider:[]}]
+     Object.keys(result).forEach((errkey) => {
+       result[errkey].forEach((msg) => {
+         let parts = errkey.split(".");
+         if (parts.length > 1 ) {
+           let fname = "Rider - " + parts[0].substring(1);
+           errorList[0].validateRider.push( fname + ' : ' + msg)
+          //  errors.push({field: fname, code: "VALIDATION_ERROR", message: msg});
+         }
+       })
+     })
+     res.end(JSON.stringify({ errorList: errorList}, null, 2));
+   }
+
+
+  //  let errorList = []; //[{"validateMain": [] }]
+  //  Object.keys(result).filter(validator => result[validator].length > 0).forEach(validator => {
+  //     let errors = []
+  //     result[validator].forEach(err => errors.push(err))
+  //     errorList.push({validator: validator, errors: errors})
+  //  })
+  //  if (errorList.length > 0) {
+  //     res.statusCode = 400
+  //     res.end(JSON.stringify({ errorList: errorList}), null, 2);
+  //     return
+  //  }
+
+
+
+
 }
 
 exports.validateProductTopups = function(args, res, next) {
@@ -938,18 +945,36 @@ exports.validateProductTopups = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ValidatorSuccessResult
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
-  } else {
-    res.end();
-  }
-}
+   res.setHeader('Content-Type', 'application/json');
+   let proposedInsurance = args.bodyParam.value;
+   let pid = args.productId.value;
 
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (proposedInsurance.topupList && proposedInsurance.topupList.length > 0 ) {
+     fields.push('validateAllTopups')
+   } else {
+     res.statusCode = 400;
+     res.end(JSON.stringify({ errorList: [{validator:"validateAllTopups", errors: [__("There are no topups specified") ] }]}, null, 2))
+     return
+   }
+   let result = api.validate(proposedInsurance, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     res.end(JSON.stringify({message:"OK"},null,2));
+   } else {
+      res.statusCode = 400;
+      let errorList = [{"validateTopups":[]}]
+      Object.keys(result).forEach((errkey) => {
+        result[errkey].forEach((msg) => {
+            let fname = "validateAllTopups"
+            errorList[0].validateTopups.push( fname + ' : ' + msg)
+       })
+     })
+     res.end(JSON.stringify({ errorList: errorList}, null, 2));
+   }
+}
 exports.validateProductWithdrawals = function(args, res, next) {
   /**
    * Trigger the validateWithdrawals validator to check the withdrawals in the proposed insurance details.
@@ -960,14 +985,96 @@ exports.validateProductWithdrawals = function(args, res, next) {
    * lang String Language to be used in case the response has text data (e.g. error messages) (optional)
    * returns ValidatorSuccessResult
    **/
-  var examples = {};
-  examples['application/json'] = {
-  "message" : "aeiou"
-};
-  if (Object.keys(examples).length > 0) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+   res.setHeader('Content-Type', 'application/json');
+   let proposedInsurance = args.bodyParam.value;
+   let pid = args.productId.value;
+
+   let errors = [];
+   // prepare the data to call the product engine
+   let fields = [];
+   if (proposedInsurance.withdrawalList && proposedInsurance.withdrawalList.length > 0 ) {
+     fields.push('validateAllWithdrawals')
+   } else {
+     res.statusCode = 400;
+     res.end(JSON.stringify({ errorList: [{validator:"validateAllWithdrawals", errors: [__("There are no withdrawals specified") ] }]}, null, 2))
+     return
+   }
+   let result = api.validate(proposedInsurance, fields );
+   let errCount = _.sum( Object.keys(result).map( k => result[k].length ));
+   if (errCount === 0) {
+     res.end(JSON.stringify({message:"OK"},null,2));
+   } else {
+      res.statusCode = 400;
+      let errorList = [{"validateWithdrawals":[]}]
+      Object.keys(result).forEach((errkey) => {
+        result[errkey].forEach((msg) => {
+            let fname = "validateAllWithdrawals"
+            errorList[0].validateWithdrawals.push( fname + ' : ' + msg)
+       })
+     })
+     res.end(JSON.stringify({ errorList: errorList}, null, 2));
+   }
+}
+
+
+function fetchProductList(args, res, next) {
+
+  let lang = args.lang.value;
+  let offset = args.offset.value || 0;
+  let limit = args.limit.value || 99999999999;
+  let sort = args.sort.value || 'insurerName'
+  // let keys = (args.keys.value || []).map(k => k+'')
+  let keys = []
+  let salesCategory = args.salesCategory.value || ''
+  let mainOrRider = !args.productType.value ? null : args.productType.value.toLowerCase() === 'main' ? '1' : '2'
+  let insurerList = args.insurerIds.value || []
+  let birthDate = args.birthDate.value;
+
+  let prdList = api.availableProducts() || [];
+  let rows = [];
+  if (keys.length === 0) {
+    // first do a sort first, check if there is a negative in front
+    if ( sort) {
+      let sortOrder = sort.startsWith('-') ? 'desc' : 'asc';
+      sort = sort.startsWith('-') ? sort.substring(1) : sort;
+      rows = _.sortBy(prdList, (row) => sort === 'productName' ? row.productName : sort === 'productCode' ? row.productCode : sort === 'insurer' ? row.insurer.insurerName : row.pk )
+      if (sortOrder === 'desc') rows.reverse()
+    }
+    // do we have a filter conditions ??
+    if (mainOrRider) {
+      rows = rows.filter(row => row.insType === mainOrRider)
+    }
+    if (salesCategory) {
+      rows = rows.filter(row => row.salesCategory === salesCategory)
+    }
+    if (birthDate) {
+      // find the absolute min and max age
+      let age = api.calcAge(birthDate)
+      rows = rows.filter(row => {
+          let minAgeList = row.ageLimitList.map(limit => limit.minInsuredAgeUnit === '1' ? limit.minInsuredAge : limit.minInsuredAgeUnit === '5' && limit.minInsuredAge > 7 ? 1 : 0 )
+          let minAge = _.min(minAgeList)
+          let maxAge = _.max( row.ageLimitList.map(limit => limit.maxInsuredAge) )
+          console.log("** min & max ages", minAge, maxAge, age)
+          return age >= minAge && age <= maxAge ? true : false
+      })
+    }
+    if (insurerList.length > 0) {
+      insurerList = insurerList.map(item => (item + '').trim() )
+      rows = rows.filter(row => row.insurer && insurerList.indexOf(row.insurer.insurerId+'') >= 0 )
+    }
+    rows = rows.splice(offset,limit)
+
   } else {
-    res.end();
+    // look for specific keys
+    keys = keys.map( k => k.trim() ) ; // get rid of spaces
+    rows = prdList.filter(row => keys.indexOf(row.productId + '' ) >= 0)
+   //  console.log("****keys", keys, rows.length , pkgs.map(p => p.packageId))
   }
+
+  let data = {
+      offset: offset,
+      totalDocs: prdList.length,
+      docs: rows
+  }
+  return data;
 }

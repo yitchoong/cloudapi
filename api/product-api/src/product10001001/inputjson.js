@@ -9,22 +9,17 @@ module.exports = {
                 ],
                 "productList": [
                     {
-                        "productCode" : "UAL14",
-                        "productName" : "Union Advantage Plan",
+                        "productCode" : "AVRPRIME88",
+                        "productName" : "AVRIST PRIME 88",
                         "sumAssured" : 300000,
                         "lifeAssuredNumber" : 0,
+                        "targetPremium" : 20000,
+                        "regularTopup" : 1000,
                         "coverageTermType" : "2",
                         "coverageTermValue" : 20,
                         "currency" : "SGD",
-                        "paymentMode" : "4"
+                        "paymentMode" : "1"
 
                     },
-                    {
-                        "productCode": "HCPP",
-                        "productId": 6202,
-                        "productName": "Hospital Cash Plan",
-                        "lifeAssuredNumber": 0,
-                        "benefitLevel": "3"
-                      }
                 ]
 }

@@ -1,54 +1,52 @@
 module.exports = {
-    "policy" : {
-                "proposalStartDate" : "01-10-2016",
-                "outputInYears": "1",
-                "payMethod" : "cash",
-                "premiumFrequency"  : "4",
-                "premiumHolidayStartYear" : 14,
-                "people" : [
+    
+                "startDate" : "2017-05-01",
+                "convertToYears" : "Y",
+                "insuredList" : [
                     {   "name":"Policyholder",
-                        "dob":"07-07-1991",
-                        "gender":"Male" ,
-                        "jobClass":1,
-                    },
-                    {   "name":"Son",
-                        "dob":"13-12-1988",
-                        "gender":"Male" ,
-                        "jobClass":1,
-                    },
-                    {   "name":"Spouse",
-                        "dob":"13-12-1997",
-                        "gender":"Female" ,
-                        "jobClass":1,
-                    },
+                        "birthDate":"1980-07-07",
+                        "gender":"MALE" ,
+                        "smoking" : "NON-SMOKER"
+                    }
                 ],
-                "products": [
-                    {   "productId" : 6500,
-                        "internalId" : "TMIN4LINK",
-                        "targetPremium" : 630000,
-                        "regularTopup" : 420000,
-                        "basicSa" : 100000000,
-                        "la" : 0,
-                        "premiumTerm" : 15,
-                        "policyTerm" : 40,
-                        "moneyId" : 30,
-                        "funds" : [
-                            { "fundCode" : "TMEQUITY",
-                              "fundName" : "TM Equity Fund",
-                              "allocation" : 1.00
-                            }
-                        ],
-                        "loadings" : []
+                "productList": [
+                    {
+                        "productId" : 6500,
+                        "productCode" : "IN4LINK",
+                        "productName" : "TM IN4Link",
+                        "sumAssured" : 20000000,
+                        "lifeAssuredNumber" : 0,
+                        "coverageTermType" : "2",
+                        "coverageTermValue" : 20,
+                        "currency" : "IDR",
+                        "paymentMode" : "1",
+                        "targetPremium" : 3500000,
+                        "regularTopup"  : 5000000
                     },
+                    {
+                        "productId" : 6202,
+                        "productCode" : "HCP",
+                        "productName" : "Hospital Cash Plan",
+                        "lifeAssuredNumber": 0,
+                        "benefitLevel" : "3"
+                        
+                    }
                 ],
-                "topups": [{year:3, amount:1000000},
-                           {year:4, amount:1000000},
-                           {year:5, amount:1000000},
-                           {year:6, amount:1000000},
-                           {year:7, amount:1000000},
-                           {year:8, amount:1000000},
-                           {year:9, amount:1000000}
+                "fundList" : [
+                    { "fundCode" : "TMEQUITY",
+                      "fundName" : "TM Equity Fund",
+                      "allocation" : 100,
+                    }
+                ],
+
+                "topupList": [{"year":3, "amount":1000000},
+                           {"year":4, "amount":1000000},
+                           {"year":5, "amount":1000000},
+                           {"year":6, "amount":1000000},
+                           {"year":7, "amount":1000000},
+                           {"year":8, "amount":1000000},
+                           {"year":9, "amount":1000000}
                           ],
-                "withdrawals" : [{year:2, amount:3000000}]
-               }
+                "withdrawalList" : [{"year":7, "amount":3000000}]
+    
 }

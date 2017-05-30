@@ -14,7 +14,7 @@ exp.validateInput__01 =  function(ctx, parent, opts) {
   let people = ctx.get("people");
   let la = people[product.val("lifeAssuredNumber")];
   let errs = [];
-  let productCode = product.productCode()
+  let productCode = product.val("productCode") //product.productCode()
   inputFields.forEach((key) => {
     if (product.input(key) === undefined || product.input(key) === null ) {
       errs.push(__(`Missing input field for product ${productCode} (${key})`) )
@@ -42,6 +42,17 @@ exp.validateInput__01 =  function(ctx, parent, opts) {
     if (personFields.indexOf("jobCateId") >= 0 ) errs.push(validatePersonJobCateId(ctx, product, opts))
     if (personFields.indexOf("socialInsuranceIndi") >= 0 ) errs.push(validatePersonSocialInsuranceIndi(ctx, product, opts))
   }
+  // if main product, some extra checks
+  // console.log("**** insType", product.val("productCode"), product.val("productLife").insType)
+  if (product.val("productLife").insType === '1') {
+    let policy = ctx.get("policy")
+    let topups = policy.val("topupList")
+    let withdrawals = policy.val("withdrawalList")
+    let funds  = ctx.get("funds")
+    if (topups && topups.length > 0 ) errs.push( parent.validate("validateAllTopups"))
+    if (withdrawals && withdrawals.length > 0 ) errs.push( parent.validate("validateAllWithdrawals"))
+    if (funds && funds.length > 0 ) errs.push( parent.validate("validateAllFundAllocations"))
+  }
 
   return errs //.length > 0 ? errs : undefined
 
@@ -58,16 +69,15 @@ function validateProduct(ctx, product, opts) {
 function validateCoverageTerm(ctx, product, opts) {
   let termType = product.input("coverageTermType");
   if ( ["0","1","2","3","4"].indexOf(termType) < 0 ) {
-    return __(`Coverage term type value is invalid (${termType})`)
+    return __(`Coverage term type value for product ${product.val("productCode") || product.val("productId")} is invalid (${termType})`)
   }
 }
 function validateBenefitLevel(ctx, product, opts) {
   // let levels = product.dbval("benefitLevels");
-
   let levels = product.benefitLevels();
   let inputLevel = product.input("benefitLevel");
   let row = levels.find( l => l.level === inputLevel)
-  return !row ? __(`Benefit level is invalid (${inputLevel})`) : undefined
+  return !row ? __(`Benefit level for product ${product.val("productCode") || product.val("productId")} is invalid (${inputLevel})`) : undefined
 }
 function validatePremiumPaymentTerm(ctx, product, opts) {
   let termType = product.input("premiumPaymentTermType");
@@ -78,7 +88,8 @@ function validatePremiumPaymentTerm(ctx, product, opts) {
 function validateCurrency(ctx, product, opts) {
   let currencies = product.availableCurrencies()
   let inputCurrency = product.currency()
-  let currency = currencies.find( row => row.code === inputCurrency)
+  // console.log("**Currencies", currencies, inputCurrency)
+  let currency = currencies.find( row => row.code === inputCurrency || row.currencyId+'' === inputCurrency+'')
   return currency ? undefined : __(`This is not a valid currency for the product (${inputCurrency})`)
 }
 function validatePaymentMode(ctx, product, opts) {

@@ -251,6 +251,7 @@ class Entity {
         } else {
             // field has not been created, lazily create it if the field exists as a db field or calculation field
             let productId = options && options.productId ? options.productId : this._productId;
+            if (!CONFIGS[productId]) debugger
             let config = CONFIGS[productId]['formulas'];
             let fmlaFields = _.keys(config);
             let dbFields = _.keys( DB[productId] );
