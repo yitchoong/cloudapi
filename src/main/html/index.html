@@ -33,7 +33,9 @@
 
   <script type="text/javascript">
     /*setup yaml files*/
-    var baseURL = window.location.protocol+ "//" + window.location.hostname+(window.location.port ? ':'+window.location.port: '') +"/";
+    var baseURL = window.location.protocol+ "//" + window.location.hostname + (window.location.port ? (':' + window.location.port) : '') +"/";
+    //var apiURL  = window.location.protocol+ "//" + window.location.hostname + ":8080/";
+    var apiURL  = window.location.protocol+ "//ebaocloud.life/";
     //var baseURL = "http://localhost:8080/";
     var urls = [
       // ['index', 'Index'],
@@ -47,7 +49,7 @@
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        url = baseURL + 'yaml/products.yaml';
+        url = baseURL + 'api-docs';
       }
 
       hljs.configure({
@@ -72,6 +74,7 @@
               scopeSeparator: " ",
               additionalQueryStringParams: {}
             });
+            console.log(url);
           }
 
           if(window.SwaggerTranslator) {

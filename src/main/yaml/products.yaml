@@ -8,7 +8,7 @@ info:
   # version 0.0.8 changes due to sample implementations
 
 # the domain of the service
-host: localhost:8080
+host: ebaocloud.life:8080
 # array of all schemes that your API supports
 schemes:
   - http

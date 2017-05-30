@@ -101,6 +101,7 @@ function _dist() {
     .pipe(gulp.dest('./dist'))
     .pipe(gulp.dest('./dist/i'))
     .pipe(connect.reload());
+
 }
 gulp.task('dev-dist', ['lint', 'dev-copy'], _dist);
 
@@ -154,6 +155,7 @@ function _copy() {
   gulp
     .src(['./src/main/yaml/**/*'])
     .pipe(gulp.dest('./dist/yaml'))
+    .pipe(gulp.dest('./dist/api-docs'))
     .on('error', log);
 }
 
@@ -173,7 +175,25 @@ gulp.task('rename-index', function(){
     .src('./dist/i/internal.html', {read: false})
     .pipe(clean())
     .on('error', log);
+
 })
+
+
+gulp.task('replace-swagger-ui', function(){
+  //clean
+  gulp
+    .src('./api/nodejs-server/node_modules/swagger-tools/middleware/swagger-ui', {read: false})
+    .pipe(clean())
+    .on('error', log);
+  // copy html to middleware layer, for the api
+  gulp
+    .src(['./dist/**/*'])
+    .pipe(gulp.dest('./api/nodejs-server/node_modules/swagger-tools/middleware/swagger-ui'))
+    .on('error', log);
+
+})
+
+
 gulp.task('dev-copy', ['dev-less', 'copy-local-specs'], _copy);
 
 gulp.task('copy-local-specs', function () {
@@ -241,7 +261,7 @@ gulp.task('handlebars', function () {
 
 gulp.task('default', function(callback) {
     runSequence([ 'dist', 'copy'], ['rename-index'], ['bootprint-openapi'],
-                ['uglify-libs', 'minify-css'],
+                ['uglify-libs', 'minify-css'], ['replace-swagger-ui'],
                 callback);
 });
 gulp.task('serve', ['connect', 'watch']);
