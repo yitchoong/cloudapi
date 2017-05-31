@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Sales API for the product domain on eBao Cloud"
-  version: "0.0.6"
+  version: "0.0.8"
   title: "eBao Cloud API (Product)"
 host: "api.ebaocloud.life"
 basePath: "/v1"
@@ -141,7 +141,9 @@ paths:
       summary: "Fetch a list of packages (basic information)."
       description: "This endpoint returns a list of packages with basic information\
         \ about the package. There are a number of parameters to help with filtering\
-        \ and sorting of the required documents."
+        \ and sorting of the required documents. When setting the filter parameter,\
+        \ the available keys are \"insurer\", \"productCategory\", and \"liability\"\
+        ."
       operationId: "getPackageList"
       parameters:
       - name: "lang"
@@ -200,8 +202,12 @@ paths:
         in: "query"
         description: "Specific filter to get the favourite packages for the user"
         required: false
-        type: "string"
+        type: "boolean"
         allowEmptyValue: true
+      - name: "Token"
+        in: "header"
+        required: false
+        type: "string"
       responses:
         200:
           description: "Successful response to fetching a list of packages."
@@ -229,10 +235,11 @@ paths:
       summary: "Fetch a list of detailed packages (full information)."
       description: "This endpoint returns a list of packages with complete information\
         \ about the package. There are a number of parameters to help with filtering\
-        \ and sorting of the required prospects. This endpoint differs from GET /packages\
-        \ in that it returns packages with full information instead of just basic\
-        \ information. A use case is when multiple packages are selected for further\
-        \ processing."
+        \ and sorting of the required prospects. When setting the filter parameter,\
+        \ the available keys are \"insurer\", \"productCategory\", and \"liability\"\
+        . This endpoint differs from GET /packages in that it returns packages with\
+        \ full information instead of just basic information. A use case is when multiple\
+        \ packages are selected for further processing."
       operationId: "getDetailedPackageList"
       parameters:
       - name: "lang"
@@ -289,10 +296,15 @@ paths:
         collectionFormat: "pipes"
       - name: "favourite"
         in: "query"
-        description: "Specific filter to get the favourite packages for the user"
+        description: "Specific filter to get the favourite packages for the user.\
+          \ When favourites is set as true, other filters are no longer applicable"
+        required: false
+        type: "boolean"
+        allowEmptyValue: true
+      - name: "Token"
+        in: "header"
         required: false
         type: "string"
-        allowEmptyValue: true
       responses:
         200:
           description: "Successful response to fetching a list of packages (complete\
@@ -315,7 +327,7 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Package"
-  /packages/{packageId}:
+  /packages/{packageCode}:
     get:
       tags:
       - "Package"
@@ -329,11 +341,11 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "packageId"
+      - name: "packageCode"
         in: "path"
-        description: "Unique id for the package"
+        description: "Unique code for the package"
         required: true
-        type: "integer"
+        type: "string"
       responses:
         200:
           description: "Successful response when fething a package."
@@ -354,7 +366,7 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Package"
-  /packages/{packageId}/products/{productId}:
+  /packages/{packageCode}/products/{productId}:
     get:
       tags:
       - "Package"
@@ -372,11 +384,11 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "packageId"
+      - name: "packageCode"
         in: "path"
-        description: "Unique id for the package"
+        description: "Unique code for the package"
         required: true
-        type: "integer"
+        type: "string"
       - name: "productId"
         in: "path"
         description: "Unique id for the product"
@@ -438,7 +450,7 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Package"
-  /packages/{packageId}/favourite:
+  /packages/{packageCode}/favourite:
     post:
       tags:
       - "Package"
@@ -453,11 +465,15 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "packageId"
+      - name: "packageCode"
         in: "path"
-        description: "Unique id for the package"
+        description: "Unique code for the package"
         required: true
-        type: "integer"
+        type: "string"
+      - name: "Token"
+        in: "header"
+        required: false
+        type: "string"
       responses:
         200:
           description: "Successful response when setting a favourite package"
@@ -492,11 +508,15 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "packageId"
+      - name: "packageCode"
         in: "path"
-        description: "Unique id for the package"
+        description: "Unique code for the package"
         required: true
-        type: "integer"
+        type: "string"
+      - name: "Token"
+        in: "header"
+        required: false
+        type: "string"
       responses:
         200:
           description: "Successful response when unmarking a favourite package"
@@ -517,7 +537,7 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Package"
-  /packages/{packageId}/quote:
+  /packages/{packageCode}/quote:
     get:
       tags:
       - "Package"
@@ -537,11 +557,11 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "packageId"
+      - name: "packageCode"
         in: "path"
-        description: "Unique id for the package"
+        description: "Unique code for the package"
         required: true
-        type: "integer"
+        type: "string"
       responses:
         200:
           description: "Successful response to a request to fetch the initial data\
@@ -570,7 +590,7 @@ paths:
       - "Product"
       summary: "Fetch a list of products"
       description: "Use this endpoint to get a list of available main products given\
-        \ company id and birth date of the insured. The company id and birth date\
+        \ insurer id and birth date of the insured. The insurer id and birth date\
         \ can optionally be supplied to filter the list of available main products.\
         \ The authenticated user will be used to determine the channel that the intermediary\
         \ belongs to. The channel is then used to filter the list of available products\
@@ -607,7 +627,8 @@ paths:
         format: "string"
       - name: "productType"
         in: "query"
-        description: "Filter products based  on the product type i.e. Main or Rider"
+        description: "Filter products based  on the product type i.e. Main or Rider.\
+          \ Allowable values are MAIN or RIDER"
         required: false
         type: "string"
       - name: "insurerIds"
@@ -617,17 +638,17 @@ paths:
         type: "array"
         items:
           type: "string"
-        collectionFormat: "multi"
+        collectionFormat: "csv"
       - name: "birthDate"
         in: "query"
         description: "Filter products where the calculated age (using the birth date)\
           \ is within the minimum and maximum age limit."
         required: false
         type: "string"
-      - name: "gender"
+        format: "date"
+      - name: "salesCategory"
         in: "query"
-        description: "Filter products which are targeted at specific products. Male\
-          \ or Female"
+        description: "Filter products by sales category"
         required: false
         type: "string"
       responses:
@@ -684,7 +705,8 @@ paths:
         format: "string"
       - name: "productType"
         in: "query"
-        description: "Filter products based  on the product type i.e. Main or Rider"
+        description: "Filter products based  on the product type i.e. Main or Rider.\
+          \ Allowable values are MAIN or RIDER"
         required: false
         type: "string"
       - name: "insurerIds"
@@ -694,17 +716,17 @@ paths:
         type: "array"
         items:
           type: "string"
-        collectionFormat: "multi"
+        collectionFormat: "csv"
       - name: "birthDate"
         in: "query"
         description: "Filter products where the calculated age (using the birth date)\
           \ is within the minimum and maximum age limit."
         required: false
         type: "string"
-      - name: "gender"
+        format: "date"
+      - name: "salesCategory"
         in: "query"
-        description: "Filter products which are targeted at specific products. Male\
-          \ or Female"
+        description: "Filter products by sales category"
         required: false
         type: "string"
       responses:
@@ -797,7 +819,7 @@ paths:
           \ main product details and riders already attached"
         required: true
         schema:
-          $ref: "#/definitions/ProposedInsurance"
+          $ref: "#/definitions/BasicProposedInsurance"
       responses:
         200:
           description: "Successful response that returns the list of riders together\
@@ -805,7 +827,7 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Product"
+              $ref: "#/definitions/RidersResponse"
         400:
           description: "Response to indicate that the request cannot be processed\
             \ due to a client error (submitted data has errors)."
@@ -830,7 +852,6 @@ paths:
     post:
       tags:
       - "Product"
-      - "Illustration"
       summary: "Generate the illustration (plan) data."
       description: "This end point is used to generate all the data that is required\
         \ for presentation the ilustration (plan) to the customer. It differs from\
@@ -962,14 +983,14 @@ paths:
           \ i.e. insureds, main product, and riders input"
         required: true
         schema:
-          $ref: "#/definitions/ProposedInsurance"
+          $ref: "#/definitions/BasicProposedInsurance"
       responses:
         200:
           description: "Successful response that contains the request input with the\
             \ addition of the premium amount (firstYearPremium) for the main product\
             \ and riders"
           schema:
-            $ref: "#/definitions/ProposedInsurance"
+            $ref: "#/definitions/BasicProposedInsurance"
         400:
           description: "Response to indicate that the request cannot be processed\
             \ due to a client error (submitted data has errors)."
@@ -1014,19 +1035,19 @@ paths:
         required: true
         type: "integer"
       - in: "body"
-        name: "proposedInsurance"
+        name: "bodyParam"
         description: "Proposed insurance details required to calculate the cost of\
           \ insurance, i.e. insureds, main product, and riders"
         required: true
         schema:
-          $ref: "#/definitions/ProposedInsurance"
+          $ref: "#/definitions/BasicProposedInsurance"
       responses:
         200:
           description: "Successful response that contains the request input with the\
             \ addition of the monthly cost of insurance (monthlyCostOfInsurance) for\
             \ the main product and riders"
           schema:
-            $ref: "#/definitions/ProposedInsurance"
+            $ref: "#/definitions/BasicProposedInsurance"
         400:
           description: "Response to indicate that the request cannot be processed\
             \ due to a client error (submitted data has errors)."
@@ -1193,7 +1214,7 @@ paths:
         description: "An object that holds the details of the insured person"
         required: true
         schema:
-          $ref: "#/definitions/bodyParam_1"
+          $ref: "#/definitions/Insured"
       responses:
         200:
           description: "Response when the validation has no errors. Returns the complete\
@@ -1249,7 +1270,7 @@ paths:
           \ and main product input"
         required: true
         schema:
-          $ref: "#/definitions/ProposedInsurance"
+          $ref: "#/definitions/BasicProposedInsurance"
       responses:
         200:
           description: "Response when the validation of the main product has no errors"
@@ -1524,7 +1545,7 @@ paths:
           \ details, minimally with the insureds, and main product information"
         required: true
         schema:
-          $ref: "#/definitions/bodyParam_2"
+          $ref: "#/definitions/bodyParam_1"
       responses:
         200:
           description: "Response when the validation has no errors for the requested\
@@ -1621,11 +1642,11 @@ paths:
       responses:
         200:
           description: "Successful response that return a list of illustration fields\
-            \ (name and description)"
+            \ (name)"
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/inline_response_200_11"
+              type: "string"
         401:
           description: "Response when the client is not authorized for this operation."
           schema:
@@ -1671,7 +1692,7 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/inline_response_200_11"
+              type: "string"
         401:
           description: "Response when the client is not authorized for this operation."
           schema:
@@ -1708,6 +1729,9 @@ definitions:
       shortName:
         type: "string"
         description: "Insurer short Name"
+      insurerDescription:
+        type: "string"
+        description: "Description about the insurer"
       logo:
         type: "string"
         description: "Reference to the image to use for the insurer logo (e.g. zurich.png)"
@@ -1717,6 +1741,9 @@ definitions:
       url:
         type: "string"
         description: "Url for the insurer website"
+      underwritingRule:
+        type: "string"
+        description: "Insurers write up on underwriting rules"
       extensionFields:
         type: "object"
         description: "Use this object to hold the aditional fields due to local customizations"
@@ -1748,26 +1775,41 @@ definitions:
     allOf:
     - $ref: "#/definitions/PackageProductSummary"
     - properties:
-        underwritingRule:
-          $ref: "#/definitions/PackageProduct_underwritingRule"
-        liabilities:
+        liabilityList:
           type: "array"
           items:
-            $ref: "#/definitions/PackageProduct_liabilities"
-        caseStudies:
+            $ref: "#/definitions/PackageProduct_liabilityList"
+        exclusionList:
           type: "array"
           items:
-            $ref: "#/definitions/PackageProduct_caseStudies"
+            $ref: "#/definitions/PackageProduct_liabilityList"
+        underwritingRuleList:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProduct_underwritingRuleList"
+        caseInfoList:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProduct_caseInfoList"
+        diseaseList:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProduct_caseInfoList"
+        clauseList:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProduct_caseInfoList"
+        fundAndChargesList:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProduct_caseInfoList"
+        liabilityDiseaseInfo:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProduct_liabilityDiseaseInfo"
         remark:
           type: "string"
           description: "Additional remarks about this product"
-        diseaseInfo:
-          type: "string"
-          description: "Information about diseases covered for the product"
-        termAndConditions:
-          type: "string"
-          description: "Writeup about the detailed terms and conditions of the insurance\
-            \ contract"
   PackageLiability:
     type: "object"
     properties:
@@ -1866,8 +1908,8 @@ definitions:
       productCategory:
         type: "string"
         description: "Product category e.g. Whole Life, Endowment, Health, Accident"
-      ageRange:
-        $ref: "#/definitions/PackageSummary_ageRange"
+      ageLimit:
+        $ref: "#/definitions/PackageSummary_ageLimit"
       visitNumber:
         type: "number"
         description: "Count of the number of times the user has viewed this package"
@@ -1898,6 +1940,8 @@ definitions:
     allOf:
     - $ref: "#/definitions/PackageSummary"
     - properties:
+        amountLimit:
+          $ref: "#/definitions/Package_amountLimit"
         insurer:
           $ref: "#/definitions/Insurer"
         premiumPaymentTerms:
@@ -1908,8 +1952,10 @@ definitions:
           type: "array"
           items:
             $ref: "#/definitions/PackageProductFeature"
-        mainProduct:
-          $ref: "#/definitions/PackageProductSummary"
+        productList:
+          type: "array"
+          items:
+            $ref: "#/definitions/PackageProductSummary"
         attachableRiders:
           type: "array"
           items:
@@ -1927,14 +1973,6 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Product"
-      valueAddedList:
-        type: "array"
-        items:
-          $ref: "#/definitions/NewQuote_valueAddedList"
-      insuranceSpiritList:
-        type: "array"
-        items:
-          $ref: "#/definitions/NewQuote_insuranceSpiritList"
       suggestedReason:
         type: "string"
       extensionFields:
@@ -1953,16 +1991,26 @@ definitions:
       fundName:
         type: "string"
         description: "Name of the fund for investment policies"
+      allocation:
+        type: "number"
+        format: "percentage"
+        description: "Use this allocation percentage if the allocation for the targetPremium,\
+          \ adhoc topup, and regular topup percentages are the same"
       targetPremiumPercent:
         type: "number"
-        description: "The percentage allocation for target (basic) premium"
+        format: "percentage"
+        description: "The  allocation percentage for target (basic) premium. Value\
+          \ should be between 0 and 100"
       adhocPercent:
         type: "number"
-        description: "The percentage allocation for ad-hoc topups"
+        format: "percentage"
+        description: "The allocation percentage for ad-hoc topups. Value should be\
+          \ between 0 and 100"
       regularTopupPercent:
         type: "number"
         format: "percentage"
-        description: "The percentage allocation for regular topups"
+        description: "The  allocation percentage for regular topups. Value should\
+          \ be between 0 and 100"
   Topup:
     type: "object"
     properties:
@@ -1977,6 +2025,14 @@ definitions:
         type: "number"
       amount:
         type: "number"
+  RidersResponse:
+    allOf:
+    - $ref: "#/definitions/ProductSummary"
+    - properties:
+        saEqual:
+          type: "string"
+        attachCompulsory:
+          type: "string"
   ProductSummary:
     type: "object"
     properties:
@@ -1997,8 +2053,10 @@ definitions:
       unitFlag:
         type: "string"
         description: "Premium formula calculation type"
-      insurerId:
+      salesCategory:
         type: "string"
+      insurer:
+        $ref: "#/definitions/Insurer"
       sumAssuredLimitList:
         type: "array"
         items:
@@ -2023,7 +2081,7 @@ definitions:
         $ref: "#/definitions/ProductSummary_ageRange"
       pointToPh:
         type: "string"
-        description: "Flag to indicate if product applies to policholder"
+        description: "Flag to indicate if product applies to policyholder"
       pointToSecInsured:
         type: "string"
         description: "Flag to indicate if product applies to second insured"
@@ -2044,15 +2102,7 @@ definitions:
       isPackageProduct:
         type: "string"
         description: "Flag to indicate if this is a package product"
-      saEqual:
-        type: "string"
-        description: "Rider SA to be equal to main SA"
-      attachCompulsory:
-        type: "string"
       displayPremiumIndi:
-        type: "string"
-        description: "value should be \"Y\" or \"N\""
-      displayMonthlyCoi:
         type: "string"
         description: "value should be \"Y\" or \"N\""
       pointToSpouse:
@@ -2076,11 +2126,11 @@ definitions:
   ProductPremiumPaymentPeriod:
     type: "object"
     properties:
-      premiumPaymentType:
+      termType:
         type: "string"
         description: "Premium payment type can be duration (e.g. 10 years) or the\
           \ end age (e.g. until age 65)"
-      premiumPaymentValue:
+      termValue:
         type: "number"
         description: "Depending on the premiumPaymentType, the meaning of this field\
           \ is either the number of years to pay OR to pay premium until age."
@@ -2193,6 +2243,8 @@ definitions:
         type: "string"
       productName:
         type: "string"
+      packageId:
+        type: "integer"
       lifeAssuredNumber:
         type: "integer"
         description: "index into the insured list i.e. identify person playing role\
@@ -2216,20 +2268,16 @@ definitions:
       commencementDate:
         type: "string"
         format: "date"
-      packageId:
-        type: "integer"
       currency:
         type: "string"
       benefitLevel:
         type: "string"
-      benefitPlan:
-        type: "string"
-      coverageEndAge:
-        type: "number"
-      premiumTermEndAge:
-        type: "number"
       saUnit:
         type: "number"
+      paymentMode:
+        type: "string"
+        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
+          \ 4=Monthly, 5=Single"
       firstYearPremium:
         type: "number"
       monthlyCostOfInsurance:
@@ -2237,10 +2285,6 @@ definitions:
       premiumAmount:
         type: "number"
         description: "Premium amount taking into account the payment frequency (mode)"
-      paymentMode:
-        type: "string"
-        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
-          \ 4=Monthly, 5=Single"
       illustrationFields:
         $ref: "#/definitions/IllustrationMap"
       extensionFields:
@@ -2248,6 +2292,68 @@ definitions:
         description: "extensionFields is an object to hold local customized fields"
         additionalProperties:
           type: "string"
+  BasicProductInput:
+    type: "object"
+    properties:
+      productId:
+        type: "integer"
+      productCode:
+        type: "string"
+      productName:
+        type: "string"
+      lifeAssuredNumber:
+        type: "integer"
+        description: "index into the insured list i.e. identify person playing role\
+          \ of insured for this product"
+      sumAssured:
+        type: "number"
+      coverageTermType:
+        type: "string"
+        description: "Valid values 0=NA, 1=Cover Whole Life, 2=Cover for certain years,\
+          \ 3=Cover up to certain age, 4=Cover for certain months"
+      coverageTermValue:
+        type: "number"
+      premiumPaymentTermType:
+        type: "string"
+      premiumPaymentTermValue:
+        type: "number"
+      targetPremium:
+        type: "number"
+      regularTopup:
+        type: "number"
+      currency:
+        type: "string"
+      benefitLevel:
+        type: "string"
+      saUnit:
+        type: "number"
+      paymentMode:
+        type: "string"
+        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
+          \ 4=Monthly, 5=Single"
+      firstYearPremium:
+        type: "number"
+      monthlyCostOfInsurance:
+        type: "number"
+      premiumAmount:
+        type: "number"
+        description: "Premium amount taking into account the payment frequency (mode)"
+      illustrationFields:
+        $ref: "#/definitions/IllustrationMap"
+  BasicProposedInsurance:
+    properties:
+      startDate:
+        type: "string"
+        format: "date"
+      insuredList:
+        type: "array"
+        items:
+          $ref: "#/definitions/Insured"
+      productList:
+        type: "array"
+        description: "First item in the array will be the main product"
+        items:
+          $ref: "#/definitions/BasicProductInput"
   ProposedInsurance:
     properties:
       insuredList:
@@ -2257,19 +2363,6 @@ definitions:
       startDate:
         type: "string"
         format: "date"
-      status:
-        type: "string"
-        description: "valid values are \"NEW\",\"PENDING\",\"SIGNED\",\"GENERATED\"\
-          ,\"COMPLETED\""
-      lastModified:
-        type: "string"
-        format: "date"
-      version:
-        type: "number"
-        description: "The revision number used for optimistic locking"
-      userName:
-        type: "string"
-        description: "The user that created this quotation"
       productList:
         type: "array"
         description: "First item in the array will be the main product"
@@ -2319,46 +2412,37 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/TableOfBenefits_tableData"
-  PlanHighlight:
-    allOf:
-    - $ref: "#/definitions/PackageHighlight"
-    - {}
-  PlanFeature:
-    allOf:
-    - $ref: "#/definitions/PackageProductFeature"
-    - {}
-  PlanValueAdd:
-    type: "object"
-    properties:
-      valueAddedId:
-        type: "string"
-      valueAddedName:
-        type: "string"
-      valueAddedDesc:
-        type: "string"
-      valueAddedCode:
-        type: "string"
-      valueAddedPic:
-        type: "string"
-      displayOrder:
-        type: "number"
   PlanInfo:
     type: "object"
     properties:
-      planLiability:
-        $ref: "#/definitions/PlanInfo_planLiability"
-      planHighlights:
+      showValueAdded:
+        type: "string"
+      insuranceSpirit:
+        type: "integer"
+      valueAddedIdList:
         type: "array"
         items:
-          $ref: "#/definitions/PlanHighlight"
-      planFeatures:
+          type: "integer"
+      insurer:
+        $ref: "#/definitions/Insurer"
+      planInsuranceSpiritList:
         type: "array"
         items:
-          $ref: "#/definitions/PlanFeature"
+          $ref: "#/definitions/PlanInfo_planInsuranceSpiritList"
+      planLiabilityList:
+        $ref: "#/definitions/PlanInfo_planLiabilityList"
+      planHighlightList:
+        type: "array"
+        items:
+          $ref: "#/definitions/PackageHighlight"
+      planFeatureList:
+        type: "array"
+        items:
+          $ref: "#/definitions/PackageProductFeature"
       planValueAddedList:
         type: "array"
         items:
-          $ref: "#/definitions/PlanValueAdd"
+          $ref: "#/definitions/PlanInfo_planValueAddedList"
   ValidatorSuccessResult:
     type: "object"
     properties:
@@ -2437,15 +2521,11 @@ definitions:
         type: "string"
       categoryName:
         type: "string"
-      displayOrder:
-        type: "number"
-  inline_response_200_3_benefitTypes:
+  inline_response_200_3_liabilities:
     properties:
-      benefitId:
+      liabId:
         type: "string"
-      benefitName:
-        type: "string"
-      benefitDesc:
+      liabDesc:
         type: "string"
   inline_response_200_3:
     properties:
@@ -2457,16 +2537,19 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/inline_response_200_3_productCategories"
-      benefitTypes:
+      liabilities:
         type: "array"
         items:
-          $ref: "#/definitions/inline_response_200_3_benefitTypes"
+          $ref: "#/definitions/inline_response_200_3_liabilities"
   inline_response_200_4:
     properties:
-      message:
+      userId:
         type: "string"
-        description: "Simple message to indicate that the operation was successful.\
-          \ e.g. OK"
+      favouritePackages:
+        type: "array"
+        description: "List of package codes after the update"
+        items:
+          type: "string"
   inline_response_200_5:
     properties:
       docs:
@@ -2514,25 +2597,6 @@ definitions:
           type: "string"
       proposedInsurance:
         $ref: "#/definitions/ProposedInsurance"
-  bodyParam_1:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-      birthDate:
-        type: "string"
-        format: "date"
-      gender:
-        type: "string"
-        description: "Male or Female"
-      smoking:
-        type: "string"
-      occupation:
-        type: "string"
-        description: "The occupation is used to determine the risk class"
-      riskClass:
-        type: "string"
-        description: "Can be provided instead of the occupation"
   inline_response_400_1_errorList:
     properties:
       validator:
@@ -2550,7 +2614,7 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/inline_response_400_1_errorList"
-  bodyParam_2:
+  bodyParam_1:
     type: "object"
     properties:
       validatorList:
@@ -2561,37 +2625,39 @@ definitions:
         $ref: "#/definitions/ProposedInsurance"
   inline_response_200_10:
     properties:
-      message:
+      template:
         type: "string"
         description: "HTML string containing the template"
-  inline_response_200_11:
+  PackageProduct_liabilityList:
     properties:
-      fieldName:
-        type: "string"
-      description:
-        type: "string"
-  PackageProduct_underwritingRule:
-    properties:
-      insurerRule:
-        type: "string"
-        description: "Description of the insurer underwriting rules"
-      productRule:
-        type: "string"
-        description: "Description of the product unerwriting rule"
-  PackageProduct_liabilities:
-    properties:
-      liabDesc:
+      displayOrder:
+        type: "integer"
+      itemDescription:
         type: "string"
         description: "Description about the liability"
-  PackageProduct_caseStudies:
+  PackageProduct_underwritingRuleList:
     properties:
-      caseStudyFileRef:
+      displayOrder:
+        type: "integer"
+      itemDescription:
         type: "string"
-        description: "Reference to a pdf to describe the case study"
+  PackageProduct_caseInfoList:
+    properties:
       displayOrder:
         type: "number"
         description: "For the ordering of the case studies"
-  PackageSummary_ageRange:
+      itemDescription:
+        type: "string"
+  PackageProduct_liabilityDiseaseInfo:
+    properties:
+      liabId:
+        type: "integer"
+      needDiseaseIndi:
+        type: "string"
+        description: "Valid values are Y or N"
+      diseaseDescription:
+        type: "string"
+  PackageSummary_ageLimit:
     properties:
       minAge:
         type: "number"
@@ -2616,28 +2682,18 @@ definitions:
       tagPic:
         type: "string"
         description: "The reference for the picture to load"
-  NewQuote_valueAddedList:
+  Package_amountLimit:
     properties:
-      valueAddedId:
-        type: "string"
-      valueAddedName:
-        type: "string"
-      valueAddedDesc:
-        type: "string"
-      valueAddedCode:
-        type: "string"
-      valueAddedPic:
-        type: "string"
-      displayOrder:
+      minAmount:
         type: "number"
-  NewQuote_insuranceSpiritList:
-    properties:
-      spiritId:
+        description: "Mininum amount"
+      maxAmount:
+        type: "number"
+        description: "Maximum amount"
+      currency:
         type: "string"
-      spiritName:
-        type: "string"
-      defaultSpirit:
-        type: "string"
+        description: "Currency of the limit"
+    description: "Sum assured Limit"
   ProductSummary_sumAssuredLimitList:
     properties:
       currencyId:
@@ -2667,6 +2723,8 @@ definitions:
       gender:
         type: "string"
       benefitLevel:
+        type: "string"
+      minInsuredAgeUnit:
         type: "string"
       minInsuredAge:
         type: "number"
@@ -2732,7 +2790,19 @@ definitions:
         type: "integer"
       value:
         type: "number"
-  PlanInfo_planLiability_simpleLiabList:
+  PlanInfo_planInsuranceSpiritList:
+    properties:
+      spiritId:
+        type: "integer"
+      spiritName:
+        type: "string"
+      displayOrder:
+        type: "integer"
+      spiritDescription:
+        type: "string"
+      spiritPic:
+        type: "string"
+  PlanInfo_planLiabilityList_simpleLiabList:
     properties:
       packageId:
         type: "integer"
@@ -2762,7 +2832,7 @@ definitions:
         type: "string"
       categoryName:
         type: "string"
-  PlanInfo_planLiability_liabCategoryList:
+  PlanInfo_planLiabilityList_liabCategoryList:
     properties:
       categoryId:
         type: "string"
@@ -2771,15 +2841,29 @@ definitions:
       simpleLiabList:
         type: "array"
         items:
-          $ref: "#/definitions/PlanInfo_planLiability_simpleLiabList"
-  PlanInfo_planLiability:
+          $ref: "#/definitions/PlanInfo_planLiabilityList_simpleLiabList"
+  PlanInfo_planLiabilityList:
     properties:
       multiProduct:
         type: "boolean"
       liabCategoryList:
         type: "array"
         items:
-          $ref: "#/definitions/PlanInfo_planLiability_liabCategoryList"
+          $ref: "#/definitions/PlanInfo_planLiabilityList_liabCategoryList"
+  PlanInfo_planValueAddedList:
+    properties:
+      valueAddedId:
+        type: "string"
+      valueAddedName:
+        type: "string"
+      valueAddedDesc:
+        type: "string"
+      valueAddedCode:
+        type: "string"
+      valueAddedPic:
+        type: "string"
+      displayOrder:
+        type: "number"
 parameters:
   queryOffset:
     name: "offset"
@@ -2844,12 +2928,12 @@ parameters:
     description: "Unique id for the product"
     required: true
     type: "integer"
-  packageId:
-    name: "packageId"
+  packageCode:
+    name: "packageCode"
     in: "path"
-    description: "Unique id for the package"
+    description: "Unique code for the package"
     required: true
-    type: "integer"
+    type: "string"
 responses:
   Standard400Response:
     description: "Response to indicate that the request cannot be processed due to\

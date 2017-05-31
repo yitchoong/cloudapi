@@ -55,9 +55,6 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
       } else {
         res.end(JSON.stringify(err));
       }
-
-
-
     });
 
 

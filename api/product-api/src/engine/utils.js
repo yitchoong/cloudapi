@@ -12,7 +12,7 @@ function calcAge(ageMethod, birthdate) {
     let today = now();
     let dob = moment.isMoment(birthdate) ? birthdate : toDate(birthdate);
     if ( !_.has(dob,'isValid') ) { dob = moment(dob); }
-    let anniversary = dob.month() === today.month() && dob.day() === today.day() ? true : false;
+    let anniversary = dob.month() === today.month() && dob.date() === today.date() ? true : false;
     let age = today.diff(dob,'years');
     if (ageMethod === 'ANB') {
         age = anniversary ? age : age + 1;
@@ -47,12 +47,12 @@ exp.toMoment =  toMoment;
 exp.to_moment = exp.toMoment;
 
 
-function toRow(cols, values) {
+function toRow(cols, values, addCols=true) {
     let row = {};
     _.zip(cols,values).forEach( (item, index)=> {
         let [k,v] = item;
         row[k] = v;
-        if (index < 3) {
+        if (index < 3 && addCols) {
             row['col'+index] = v; // to allow access by db0, db1,....
         }
     });
@@ -60,6 +60,18 @@ function toRow(cols, values) {
 }
 exp.toRow =  toRow;
 exp.to_row = exp.toRow;
+
+function toKeyValues(meta, value){
+  let row = {}
+  let data = value.split(':')
+  _.zip(meta._keys, data).forEach( (item, index) => {
+    let k, v = item;
+    kname = k[0];
+    row[kname] = v
+  })
+  return row
+}
+exp.toKeyValues = toKeyValues;
 
 function roundTo(num, dp) {
     let n = num + 0.000000000000001;
@@ -131,6 +143,7 @@ function toKey( tableName, meta, factors, stopOnError=true) {
                         if (deflt)  { keyList.push( '*' ); }
                     }
                     if ( _.isUndefined(deflt) ) {
+                         //console.log("Stop on error ", stopOnError)
                          if (stopOnError) {
                             console.log("*** utils.js toKey--> unable to set the key value for ", tableName, "key=", key, "factors" , factors);
                             // throw Error("utils.js toKey -->Unable to set key value " + tableName, key , factors);

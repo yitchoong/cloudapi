@@ -8,16 +8,29 @@ let exp = {};
 
 exp.validateAllTopups__01 = function validateAllTopups__01(ctx, parent, opts) {
     let errs = [], tot = 0,
-        topups = ctx.get("policy").val("topups");
+        topups = ctx.get("policy").val("topupList");
     try {
-        topups.forEach((fund,index) => {
-           errs.push(fund.validate("validateMinMaxTopupAmounts") );
+        topups.forEach((topup,index) => {
+           let res = validateTopupInput(topup, ctx, parent, opts)
+           if (!res) res = topup.validate("validateMinMaxTopupAmounts")
+           errs.push( res && res.length > 0 ? __("Topup no ") + (index+1) + " : " +  res.join('\n')  : undefined )
         });
     } catch (exc) {
         errs.push(exc.message)
     }
     return errs;
 }
+let validateTopupInput = function (topup, ctx, parent, opts) {
+    // check that we have all the fields
+    let errs =[]
+    let coverageTerm = parent.val("coverageTerm") || 999
+    if (!topup.val("year")) errs.push(__("Topup does not have year"))
+    if (!topup.val("amount")) errs.push(__("Topup does not have amount"))
+    if (topup.val("year") && topup.val("year") > coverageTerm ) errs.push(__(`Topup year is beyond the coverage term (${coverageTerm})`))
+
+    return errs.length > 0 ? errs : undefined
+}
+
 exp.validateMinMaxTopupAmounts__01 = function validateMinMaxTopupAmounts__01(ctx, parent, opts) {
     let amount = parent.val("amount"),
         main = ctx.get("main"),

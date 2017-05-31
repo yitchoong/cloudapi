@@ -12,38 +12,57 @@ let exp = {};
 exp.validateMain__01 =  function validateMain__01(ctx, parent, opts) {
     // more for traditional products
     let errs = [];
-    errs.push( parent.validate("validateSaLimit",opts) );
-    errs.push( parent.validate("validateAgeLimit",opts));
-    errs.push( parent.validate("validatePremiumLimit",opts));
+    try {
+        let res = parent.validate("validateInput",opts)
+        if (res && res.length > 0) {
+          errs.push(res)
+        } else {
+          errs.push( parent.validate("validateSaLimit",opts) );
+          errs.push( parent.validate("validateAgeLimit",opts));
+          errs.push( parent.validate("validatePremiumLimit",opts));
+        }
+    } catch (exc) {
+      errs.push(exc.message)
+    }
     return errs;
 }
 exp.validateMain__02 =  function validateMain__02(ctx, parent, opts) {
     let errs = [];
     try {
-        errs.push( parent.validate("validateSaLimit",opts) );
-        errs.push( parent.validate("validateSaMultiple",opts) ); // extra check for ILP products
-        errs.push( parent.validate("validateAgeLimit",opts));
-        errs.push( parent.validate("validateTargetPremiumLimit",opts));
-        errs.push( parent.validate("validateRegularTopupLimit",opts));
-        errs.push( parent.validate("validateMinRegularTopup",opts));
-
+        let res = parent.validate("validateInput",opts)
+        if (res && res.length > 0) {
+          errs.push(res)
+        } else {
+          errs.push( parent.validate("validateSaLimit",opts) );
+          errs.push( parent.validate("validateSaMultiple",opts) ); // extra check for ILP products
+          errs.push( parent.validate("validateAgeLimit",opts));
+          errs.push( parent.validate("validateTargetPremiumLimit",opts));
+          errs.push( parent.validate("validateRegularTopupLimit",opts));
+          errs.push( parent.validate("validateMinRegularTopup",opts));
+        }
     } catch (exc) {
         errs.push(exc.message)
     }
     return errs;
+}
+function validateMainInput(main, ctx, parent, opts) {
+
 }
 exp.validateAllRiders__01 =  function validateAllRiders__01(ctx, parent, opts) {
     // should be attached to the main plan to call validation on all the riders
     let pol = ctx.get("policy"),
         prds = pol.val("products"),
         riders = prds.length > 1 ? prds.slice(1) : [],
+        res,
         errs = [];
     try {
-        _.forEach( riders, (rider) => {
-            // let start = Date.now()
-            errs.push( rider.validate("validateRider",{}) );
-            // let duration = Date.now() - start;
-            // console.info("DEBUGG ---> duration to validate rider " ,  duration )
+        _.forEach( riders, (rider, index) => {
+            res = rider.validate("validateInput")
+            if (res && res.length > 0) {
+              errs.push(res)
+            } else {
+              errs.push( rider.validate("validateRider",{index}) );
+            }
         });
 
     } catch (exc) {
@@ -148,8 +167,8 @@ exp.validateSaMultiple__01 = function validateSaMultiple__01(ctx, product, opts)
     maxSa = max * tp * modalFactor;
   }
   minSa = min * tp * modalFactor;
-  err = sa > maxSa ? __("Sum Assured is larger than the allowed maxiumum for the target premium amount") :
-        sa < minSa ? __("Sum Assured is smaller than the allowed minimum for the target premium amount") : undefined;
+  err = sa > maxSa ? __(`Sum Assured is larger than the allowed maxiumum for the target premium amount (${product.val("productCode")})`) :
+        sa < minSa ? __(`Sum Assured is smaller than the allowed minimum for the target premium amount (${product.val("productCode")})`) : undefined;
   return err;
 }
 exp.validateSaMultiple__02 = function validateSaMultiple__02(ctx, product, opts) {
@@ -196,7 +215,7 @@ exp.validateAgeLimit__01 = function validateAgeLimit__01(ctx, parent, opts) {
 
     let entryAge = product.val("entryAge"),
         ageRow = product.val("ageLimit"),
-        dob = la.val("dob");
+        dob = la.val("dob") || la.birthDate();
 
     if ( ageRow.minInsdNbAgeUnit === '5' ) {
         // means min is in days e.g. 30 days -- so really no minimum
@@ -306,4 +325,27 @@ exp.validateCoverageEndAge__01 = function validateCoverageEndAge__01(ctx, parent
     return
 }
 exp.validateCoverageEndAge__99 = function validateCoverageEndAge__99(ctx, parent, opts) { return }
+
+exp.validatePersonProduct__01 = function(ctx, parent, opts) {
+    /* Check the the person and product are compatible, mainly checking if age is ok
+       Check also that the person has all the required fields for the given product
+    */
+    let product = parent;
+    let personNo = product.input("lifeAssuredNumber")
+    let person = ctx.get("people")[personNo]
+    let config = ctx.get("_getConfig")(product.val("productId"))
+    let res = product.validate("validateAgeLimit",opts)
+    let errs = []
+    if (res.length > 0 ) {
+      errs.push( __("The life assured age is not compatible with this product. ") + res )
+    }
+    Object.keys(config.personFields).forEach((key) => {
+      if ( person.input(key) === undefined || person.input(key) === null  ) {
+        errs.push(__(`Missing input field for person (${key})`) )
+      }
+    })
+    return errs;
+}
+
+
 module.exports = exp;

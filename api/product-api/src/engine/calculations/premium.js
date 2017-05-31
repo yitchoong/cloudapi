@@ -26,6 +26,12 @@ exp.annualPremium__04  = function(ctx, policy, people, product, fund, t, factors
   let premiumRate = product.db0("premiumRateCash");
   return premiumRate ;
 }
+exp.annualPremium__05  = function(ctx, policy, people, product, fund, t, factors) {
+  let la = people[product.val("lifeAssuredNumber")],
+      sa = product.input("sumAssured"),
+      premiumRate = product.db0("premiumRateendowment");
+  return sa  / premiumRate ;
+}
 
 exp.annualPremiumAtT__02 = function annualPremiumAtT__02(ctx, policy, people, product, fund, t, factors) {
     return product.val('yr',t) > product.val("premiumTerm") ? 0 : product.val("annualPremium");

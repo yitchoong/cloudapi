@@ -226,17 +226,20 @@ class Entity {
         this.entityType = entityType;
         this._productId = productId;
         this.validatorList = {};
-        // pre-create all the possible fields ? -- experimental at the moment
-        // let fmlaFields = _.keys( CONFIGS[productId]['formulas'] );
-        // let dbFields = _.keys(DB[productId]);
-        // fmlaFields.forEach(f => {
-        //     if ( f !== 'proposalStartDate') {
-        //         this[f] = function(tval) { return this.val(f,tval)}
-        //     }
-        // })
-        // dbFields.forEach(f => {
-        //         this[f] = function(tval) { return this.val(f,tval)}
-        // })
+        // pre-create all the possible fields ? -- experimental at the moment -- allow change of syntax e.g prd.benefitLevels(t)
+        if (productId in CONFIGS && productId in DB) {
+          let fmlaFields = _.keys( CONFIGS[productId]['formulas'] );
+          let dbFields = _.keys(DB[productId]);
+          let config = CONFIGS[productId]['formulas'];
+          let zero = function(){ return 0 }
+          fmlaFields.forEach(f => {
+              let fmla = config[f]
+              this[f] = fmla === 'zero' ? zero : function(tval) { return this.val(f,tval)}
+          })
+          dbFields.forEach(f => {
+                  this[f] = function(tval) { return this.val(f,tval)}
+          })
+        }
 
     }
     getFields() {
@@ -248,6 +251,7 @@ class Entity {
         } else {
             // field has not been created, lazily create it if the field exists as a db field or calculation field
             let productId = options && options.productId ? options.productId : this._productId;
+            if (!CONFIGS[productId]) debugger
             let config = CONFIGS[productId]['formulas'];
             let fmlaFields = _.keys(config);
             let dbFields = _.keys( DB[productId] );

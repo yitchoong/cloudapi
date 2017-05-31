@@ -84,7 +84,7 @@ exp.ageAtT__01 = function ageAtT__01(ctx, policy, people, product, fund, t, fact
         main = policy.val("products")[0],
         ageMethod = main.val("ageMethod"),
         la = people[ main.input("la") ],
-        dob = la.input("dob"),
+        dob = la.input("dob") || la.birthDate(),
         entryAge = utils.calcAge( ageMethod, dob );
     return entryAge + t - 1; // -1 is to offset t since it starts from 1 instead of zero
 }
@@ -98,7 +98,7 @@ exp.ageAtT__03 = function ageAtT__03(ctx, policy, people, product, fund, t, fact
     let ageMethod = product.val("ageMethod"),
         la = people[product.val("la")],
         workdate = utils.toDate( policy.val("proposalStartDate")),
-        birthdate = la.val("dob");
+        birthdate = la.val("dob") || la.birthDate() ;
 
     workdate.add(t,'months'); // add the policy month to the proposal start date
 
@@ -180,9 +180,11 @@ exp.maturityAge__02 = function maturityAge__02(ctx, policy, people, product, fun
 exp.maturityAge__03 = function maturityAge__03(ctx, policy, people, product, fund, t, factors) {
     return product.input("policyEndAge"); // this is a case where it is entered, for some products
 }
-
 /* premium_term */
 exp.premiumTerm__01 = function premiumTerm__01(ctx, policy, people, product, fund, t, factors) {
+    return product.val("coverageTerm"); // simply follow the coverage term
+}
+exp.premiumTerm__02 = function premiumTerm__01(ctx, policy, people, product, fund, t, factors) {
     return product.val("coverageTerm"); // simply follow the coverage term
 }
 

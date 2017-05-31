@@ -30,7 +30,7 @@ exp.targetPremiumAtYear__20 = function targetPremiumAtYear__20(ctx, policy, peop
 exp.targetPremiumAtT__20 = function targetPremiumAtT__20(ctx, policy, people, product, fund, t=0, factors) {
   // use for cases where we iterate by month
   if (product.val('yr',t) > product.val("premiumTerm") || product.val("premiumHolidayAtT",t)) { return 0}
-  let tp = product.input("targetPremium"), freq = policy.val("premiumFrequency"),
+  let tp = product.input("targetPremium"), freq = policy.val("premiumFrequency") || product.paymentMode() ,
       mod = freq === '1' ? 12 : freq === '2' ? 6 : freq === '3' ? 3 : 0;
   return freq === '4' ? tp : t % mod === 1 ? tp : 0;
 }
@@ -55,6 +55,10 @@ exp.costOfInsuranceAtT__20 = function costOfInsuranceAtT__20(ctx, policy, people
 exp.monthlyCostOfInsurance__20 = function monthlyCostOfInsurance__20(ctx, policy, people, product, fund, t=0, factors) {
   return product.val("costOfInsuranceAtT",1) ; // get cost at t = 1
 }
+exp.monthlyCostOfInsurance__21 = function monthlyCostOfInsurance__20(ctx, policy, people, product, fund, t=0, factors) {
+  debugger
+  return product.val("annualPremium") / 12 ; // get cost at t = 1
+}
 
 exp.targetPremiumInvestmentAtT__20 = function targetPremiumInvestmentAtT__20(ctx, policy, people, product, fund, t=0, factors) {
     if (product.val('yr',t) > product.val("coverageTerm")) { return 0 }
@@ -70,7 +74,7 @@ exp.targetPremiumInvestmentAtT__20 = function targetPremiumInvestmentAtT__20(ctx
 exp.regularTopupAtT__20 = function regularTopupAtT__20(ctx, policy, people, product, fund, t=0, factors) {
   // use for cases where we iterate by month
   if (product.val('yr',t) > product.val("premiumTerm") || product.val("premiumHolidayAtT",t) ) { return 0 }
-  let rtu = product.input("regularTopup"), freq = policy.val("premiumFrequency"),
+  let rtu = product.input("regularTopup"), freq = policy.val("premiumFrequency") || product.paymentMode(),
       mod = freq === '1' ? 12 : freq === '2' ? 6 : freq === '3' ? 3 : 0;
   return freq === '4' ? rtu : t % mod === 1 ? rtu : 0;
 }
@@ -146,11 +150,12 @@ exp.premiumAtT__20 = function premiumAtT__20(ctx, policy, people, product, fund,
 /* switch over to looking at the tiv value for each of the funds -- define a set of formulas to be used by the each of the funds */
 
 exp.fundInvestmentAllocationAtT__20 = function fundInvestmentAllocationAtT__20(ctx, policy, people, product, fund, t=0, factors) {
-    let main = ctx.get("main"), allocation = fund.input("allocation") || 0;
+    let main = ctx.get("main"), allocation = fund.input("allocation") ?  fund.input("allocation") / 100 : 0;
+    // debugger
     return (main.val("targetPremiumInvestmentAtT",t) + main.val("topupsInvestmentAtT",t) ) * allocation; // allocation rate for the fund
 }
 exp.fundWithdrawalAtT__20 = function fundWithdrawalAtT__20(ctx, policy, people, product, fund, t=0, factors) {
-    let main = ctx.get("main"), allocation = fund.input("allocation") || 0;
+    let main = ctx.get("main"), allocation = fund.input("allocation") ?  fund.input("allocation") / 100 : 0;
     return main.val("netWithdrawalAtT",t) * allocation;
 }
 exp.fundInvestableAmountAtT__20 = function fundInvestableAmountAtT__20(ctx, policy, people, product, fund, t=0, factors) {
@@ -193,19 +198,23 @@ exp.fundMidValueAtT__20 = function fundMidValueAtT__20(ctx, policy, people, prod
 }
 exp.fundHighValueAtT__20 = function fundHighValueAtT__20(ctx, policy, people, product, fund, t=0, factors) {
     if (t===0){return 0}
+    // debugger
     return ( fund.val("fundHighValueAtT",t-1) + fund.val("fundInvestableAmountAtT",t) + fund.val("fundHighCapitalGainAtT",t) )
               * (1 - fund.val("fundMgmtFeeRateAtT",t) ) ;
 }
 /* ***************** end of formulas attached to fund objects *****************/
 /* ***************** define a set of formulas at the policy level -- mainly for aggregating the fund values ****************/
 exp.polLowFundValueAtT__20 = function polLowFundValueAtT__20(ctx, policy, people, product, fund, t=0, factors) {
-    return _.sum( policy.val('products')[0].val('funds').map(f => f.val("fundLowValueAtT",t)));
+    // return _.sum( policy.val('products')[0].val('funds').map(f => f.val("fundLowValueAtT",t)));
+    return _.sum( policy.val('fundList').map(f => f.val("fundLowValueAtT",t)));
 }
 exp.polMidFundValueAtT__20 = function polMidFundValueAtT__20(ctx, policy, people, product, fund, t=0, factors) {
-    return _.sum( policy.val('products')[0].val('funds').map(f => f.val("fundMidValueAtT",t)));
+    return _.sum( policy.val('fundList').map(f => f.val("fundMidValueAtT",t)));
+    //return _.sum( policy.val('products')[0].val('funds').map(f => f.val("fundMidValueAtT",t)));
 }
 exp.polHighFundValueAtT__20 = function polHighFundValueAtT__20(ctx, policy, people, product, fund, t=0, factors) {
-    return _.sum( policy.val('products')[0].val('funds').map(f => f.val("fundHighValueAtT",t)));
+    // return _.sum( policy.val('products')[0].val('funds').map(f => f.val("fundHighValueAtT",t)));
+    return _.sum( policy.val('fundList').map(f => f.val("fundHighValueAtT",t)));
 }
 exp.polDeathBenefitLowAtT__20 = function polDeathBenefitLowAtT__20( ctx, policy, people, product, fund, t, factors) {
     return product.val("polLowFundValueAtT",t,factors) + product.val("polDeathBenefitGtdAtT",t,factors);
@@ -299,6 +308,7 @@ exp.targetPremiumAtT__01 = function targetPremiumAtT__01(ctx, policy, people, pr
 }
 exp.netTargetPremiumAtT__01 = function netTargetPremiumAtT__01(ctx, policy, people, product, fund, t=0, factors) {
   // target premium that is investable
+  if (t > 0 && t < 10) debugger
   let allocationRate = 1 - product.dbval("tpExpenseFee",t).assignRate;
   return product.val('yr',t) > product.val("premiumTerm") ? 0
             : product.input("targetPremium") * product.dbval("modalFactor").chargeRate * allocationRate;
@@ -470,7 +480,7 @@ exp.debtRepayPeriod__01 =  function debtRepayPeriod__01(ctx, policy, people, pro
   return 2;
 }
 exp.accumFactor__01 =  function accumFactor__01( ctx, policy, people, product, fund, t, factors) {
-    let freq = policy.val("premiumFrequency"), factor;
+    let freq = policy.val("premiumFrequency") || product.paymentMode() , factor;
     factor = freq === '1' ? 12 : freq === '5' ? 12 : freq === '2' ? 9 : freq === '3' ? 7.5 : 6.5 ;
     return factor;
 }
