@@ -19,7 +19,7 @@ var proposal = {
         "mailingAddress" : {
             "addressLine1" : "24 Robinson Avenue",
             "country" : "165",
-            "postcode" : 437781,
+            "postcode" : "437781",
             "state" : "Singapore"
         },
         "contactInfo" : {

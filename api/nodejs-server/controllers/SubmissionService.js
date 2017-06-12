@@ -25,7 +25,7 @@ exports.createFirstPartyMedicalSubmission = function(args, res, next) {
    let userId = token || "default" ; // if no user supplied, we just used the default userId
    submission.tenantCode = tenantCode ? tenantCode : submission.tenantCode;
    submission.userId = userId ? userId : submission.userId;
-   proposalApi.processProposalSubmission(submission)
+   proposalApi.processFirstPartyMedicalProposalSubmission(submission)
    .then(result => {
         res.statusCode = 200
         res.setHeader('Content-Type', 'application/json');
@@ -82,7 +82,7 @@ exports.fetchFirstPartyMedicalSubmissionList = function(args, res, next) {
    * sort String Sorting order. Prefix with '-' for descending order (optional)
    * filter List Filter criteria to apply to the search. The format used is filter=condition|condition. The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\*startsWith\\*A. The \\* is used to delimit the components of the criteria. As an example, to find rows with name that starts with 'A', specify as filter=name\\*startsWith\\*A .  When there are multiple criterias in the condition, e.g. find rows where name startsWith A and age greater than 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character is used to separate the criterias. For more complex filters, e.g. Find rows where name starts with 'A' OR name starts with B, then it can be specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use the | to separate OR conditions. (optional)
    * token String The security token, for the moment it is equal to the authenticated user id (optional)
-   * returns List   
+   * returns List
    **/
 
    let token = args.Token && args.Token.value;
