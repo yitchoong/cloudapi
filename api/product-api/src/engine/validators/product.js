@@ -330,12 +330,16 @@ exp.validatePersonProduct__01 = function(ctx, parent, opts) {
     /* Check the the person and product are compatible, mainly checking if age is ok
        Check also that the person has all the required fields for the given product
     */
+    let errs = []
     let product = parent;
     let personNo = product.input("lifeAssuredNumber")
     let person = ctx.get("people")[personNo]
+    if (!person) {
+        errs.push(__("The life assured number specified is incorrect"))
+        return errs
+    }
     let config = ctx.get("_getConfig")(product.val("productId"))
     let res = product.validate("validateAgeLimit",opts)
-    let errs = []
     if (res.length > 0 ) {
       errs.push( __("The life assured age is not compatible with this product. ") + res )
     }

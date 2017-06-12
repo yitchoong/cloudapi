@@ -106,6 +106,7 @@ module.exports = {
         validateSaMultiple          : 'pass',
         validateMinMaxSaUnits       : 'pass',
         validateCoverageEndAge      : 'pass',
+        validatePersonProduct       : 'validatePersonProduct__01'
 
     },
     inputFields  : {

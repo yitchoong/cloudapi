@@ -65,15 +65,39 @@ exp.validateFirstPartyMedicalSubmission = function(json) {
   if (!json.submissionData) {
     errs.push( __("The submissionData is required"))
   } else {
-    if (json.submissionType.toLowerCase() === 'proposal') {
+    if (json.submissionType.toLowerCase() === 'firstpartymedicalproposal') {
         if (json.submissionData.proposalType.toLowerCase() === 'firstpartymedical') {
-            let proposal = json.submissionData;
-            proposal.tenantCode = json.tenantCode;
-            proposal.submissionChannel = json.submissionChannel;
-            errs = errs.concat( exp.validateFirstPartyMedicalProposal(json.submissionData) )
+            // let proposal = Object.assign({} , json.submissionData) ;
+            let proposal = _.cloneDeep(json.submissionData); // create a clone for the proposal
+
+            // there is a need to re-structure the json message to be compatible with the product api
+            // check a few things first, i.e. must have field directMedicalProduct, and the insured must be a an object within the product
+            let proceed = true;
+            if (!proposal.proposedInsuranceSection.directMedicalProduct) {
+                errs.push(__("There is no field called directMedicalProduct in the proposed insurance"))
+                proceed = false
+            } else {
+                if (!proposal.proposedInsuranceSection.directMedicalProduct.insured) {
+                    errs.push(__("There is no insured details for the medical product"))
+                    proceed = false
+                }
+            }
+            if (proceed) {
+                proposal.tenantCode = json.tenantCode;
+                proposal.submissionChannel = json.submissionChannel;
+                proposal.proposedInsuranceSection.insuredList = [ proposal.proposedInsuranceSection.directMedicalProduct.insured ]
+                proposal.proposedInsuranceSection.productList = [ proposal.proposedInsuranceSection.directMedicalProduct ]
+                proposal.proposedInsuranceSection.productList[0].lifeAssuredNumber = 0 ; // only one
+                // debugger;
+                errs = errs.concat( exp.validateFirstPartyMedicalProposal(proposal) )
+            }
+
+
         } else {
             errs.push(__(`The proposal type (${json.submissionData.proposalType})  is currently not supported`))
         }
+    } else {
+        errs.push(__(`The submissionl type (${json.submissionType})  is currently not supported`))
     }
   }
   return errs
@@ -182,7 +206,8 @@ function validateFirstPartyMedicalProposedInsuranceSection(proposal) {
     let errs = []
     // since we are looking at medical insurance, there are no need to run the investment validators
     // make use of the product-api to do the validation
-    let validators = ["validateMain", "validateAllRiders"]
+    // let validators = ["validatePersonProduct","validateMain", "validateAllRiders"]
+    let validators = ["validatePersonProduct","validateMain", "validateAllRiders"]
     let errmap = productApi.validate(proposal.proposedInsuranceSection,validators)
     Object.keys(errmap).forEach(errkey => errs = errs.concat( errmap[errkey] ) )
 
@@ -207,10 +232,11 @@ exp.processFirstPartyMedicalProposalSubmission = function(submission) {
         }
         // we check for duplicates if the submissionRefNo is there, read the document by ref no, if exists, duplicate
         let p = submission.submissionRefNo ? crud.fetchProposalSubmissionByRefNo(submission.submissionRefNo)
-                                                     : new Promise(resolve => resolve({}));
+                                                     : new Promise(resolve => resolve(null ));
 
         p.then(doc => {
             // console.log("proposalApi ---> doc", doc)
+            debugger
             if (!doc) {
                 return crud.createProposalSubmission(submission)
             } else {

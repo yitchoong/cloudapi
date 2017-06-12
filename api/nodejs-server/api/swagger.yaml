@@ -2964,7 +2964,14 @@ definitions:
           \ This is also calculated by the eBaoCloud API service"
   FirstPartyMedicalProposedInsurance:
     type: "object"
+    required:
+    - "directMedicalProduct"
+    - "startDate"
     properties:
+      startDate:
+        type: "string"
+        format: "date"
+        description: "The proposed commencement date of the insurance"
       directMedicalProduct:
         $ref: "#/definitions/DirectMedicalProduct"
   inline_response_200:

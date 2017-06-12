@@ -1151,7 +1151,7 @@ paths:
         - $ref:  '#/parameters/Token'
       tags:
         - Submission
-      operationId: "fetchFirtPartyMedicalSubmissionList"
+      operationId: "fetchFirstPartyMedicalSubmissionList"
       responses:
         200:
           description: Successful response which returns a list of proposal submissions.
@@ -2816,7 +2816,14 @@ definitions:
 
   FirstPartyMedicalProposedInsurance:
     type: object
+    required:
+      - startDate
+      - directMedicalProduct
     properties:
+      startDate:
+        type: string
+        format: date
+        description: The proposed commencement date of the insurance
       directMedicalProduct:
         $ref: '#/definitions/DirectMedicalProduct'
 
