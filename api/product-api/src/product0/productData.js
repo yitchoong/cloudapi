@@ -16396,14 +16396,14 @@ module.exports={
       ""
     ], 
     "6202": [
-      "HCP", 
-      "Hospital Cash Plan", 
-      "HCP", 
+      "MHCP", 
+      "Main Hospital Cash Plan", 
+      "MHCP", 
       "", 
       "", 
       "22", 
       "", 
-      "2", 
+      "1", 
       "N", 
       "N", 
       "N", 
@@ -17818,11 +17818,6 @@ module.exports={
   }, 
   "productPkgTerm": {}, 
   "riderGroups": {
-    "6202": {
-      "deps": [], 
-      "mex": [], 
-      "saLimit": []
-    }, 
     "1010919": {
       "deps": [], 
       "mex": [], 

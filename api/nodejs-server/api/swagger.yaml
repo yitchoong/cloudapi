@@ -1,10 +1,10 @@
 ---
 swagger: "2.0"
 info:
-  description: "Sales API for the product domain on eBao Cloud"
-  version: "0.0.8"
-  title: "eBao Cloud API (Product)"
-host: "api.ebaocloud.life"
+  description: "Sales API for the product & proposal domain on eBao Cloud"
+  version: "0.0.9"
+  title: "eBao Cloud API (Product & Proposal)"
+host: "localhost:8080"
 basePath: "/v1"
 schemes:
 - "http"
@@ -1708,6 +1708,228 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Product"
+  /submissions/firstPartyMedicalProposal:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a list of direct first party medical proposal submissions"
+      description: "Use this end point to fetch all the direct first party medical\
+        \ proposal submissions. When filtering the required rows, the available keys\
+        \ are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status,\
+        \ and decision"
+      operationId: "fetchFirstPartyMedicalSubmissionList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of proposal submissions."
+          schema:
+            $ref: "#/definitions/inline_response_200_11"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+    post:
+      tags:
+      - "Submission"
+      summary: "Create a new direct first party medical proposal submission document\
+        \ (containing proposal details)"
+      description: "This end point is used for the submission of a proposal. This\
+        \ end point is useful when proposals are not persisted prior to submission."
+      operationId: "createFirstPartyMedicalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyMedicalSubmission"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response to create a new proposal submission. Returns\
+            \ the new submission document."
+          schema:
+            $ref: "#/definitions/FirstPartyMedicalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        404:
+          description: "Response when the document is not found."
+          schema:
+            $ref: "#/definitions/inline_response_404"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions/firstPartyMedical/{submissionId}:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a proposal submission document"
+      description: "Use this end-point to fetch a proposal submissions. This will\
+        \ fetch the full document including the proposal data, and the submission\
+        \ status."
+      operationId: "fetchFirstPartyMedicalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns the submission document"
+          schema:
+            $ref: "#/definitions/FirstPartyMedicalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        404:
+          description: "Response when the document is not found."
+          schema:
+            $ref: "#/definitions/inline_response_404"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /proposals/template/codeTables:
+    get:
+      tags:
+      - "Proposal"
+      summary: "Fetch a list of codeTables (with the valid codes and values) used\
+        \ in the proposal application."
+      description: "This end point should be used at design time to get the list of\
+        \ codeTables with the valid values that can be used for the fields with drop\
+        \ down values in the proposal form."
+      operationId: "fetchCodeTableList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which contains the names of the code tables"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/inline_response_200_12"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
 securityDefinitions:
   APISecurity:
     type: "apiKey"
@@ -2450,6 +2672,301 @@ definitions:
         type: "string"
         description: "Simple message to indicate no validation errors e.g. ok"
         default: "ok"
+  FirstPartyMedicalProposal:
+    type: "object"
+    required:
+    - "policyholderSection"
+    - "proposalType"
+    - "proposedInsuranceSection"
+    - "proposerName"
+    properties:
+      proposalType:
+        type: "string"
+        description: "e.g. FirstPartyTerm, FirstPartyMedical etc"
+      policyNumber:
+        type: "string"
+        description: "Policy number assigned by the insurer to this proposal. Should\
+          \ be omitted when by the client."
+      proposerName:
+        type: "string"
+        description: "Should be the same as the policyholder full name"
+      submissionChannel:
+        type: "string"
+        description: "Channel which the proposal is submitted, e.g. direct, banca,\
+          \ etc"
+      tenantCode:
+        type: "string"
+        description: "Insurer i.e. receipient of this proposal submission"
+      policyholderSection:
+        $ref: "#/definitions/BasicPolicyholderSection"
+      proposedInsuranceSection:
+        $ref: "#/definitions/FirstPartyMedicalProposedInsurance"
+      premiumPaymentSection:
+        $ref: "#/definitions/PaymentGatewayPaymentSection"
+      promotionCode:
+        type: "string"
+        description: "For marketing purposes, the campaign or promotion code."
+  SubmissionSummary:
+    type: "object"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission"
+        readOnly: true
+      doctype:
+        type: "string"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. proposal"
+        default: "Proposal"
+      submissionRefNo:
+        type: "string"
+        description: "Unique id identifying the submission type e.g. the proposalId"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+      tenantCode:
+        type: "string"
+        description: "Insurer, i.e. receipient of the submission"
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED,"
+        readOnly: true
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED"
+        readOnly: true
+      userId:
+        type: "string"
+        description: "The user that created this submission"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      version:
+        type: "number"
+        description: "The revision number used for optimistic locking"
+        readOnly: true
+      extensionFields:
+        type: "object"
+        description: "Use this object to hold the aditional fields due to local customizations"
+        additionalProperties:
+          type: "string"
+  FirstPartyMedicalSubmission:
+    type: "object"
+    required:
+    - "submissionChannel"
+    - "submissionData"
+    - "submissionDate"
+    - "submissionType"
+    - "tenantCode"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission. Assigned by backend"
+        readOnly: true
+      doctype:
+        type: "string"
+        description: "Assigned by backend"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. FirstPartyMedicalProposal"
+        default: "FirstPartyMedicalProposal"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+      tenantCode:
+        type: "string"
+        description: "Insurer, i.e. recipient of the submission"
+      submissionRefNo:
+        type: "string"
+        description: "A reference number supplied by the client to uniquely identify\
+          \ the submission"
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
+        readOnly: true
+        default: "SUBMITTED"
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
+          \ is sold online (direct), only clean cases are accepted, so the decision\
+          \ should always be ACCEPTED"
+        readOnly: true
+        default: "ACCEPTED"
+      userId:
+        type: "string"
+        description: "The user that created this submission i.e. sender"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      extensionFields:
+        type: "object"
+        description: "Use this object to hold the aditional fields due to local customizations"
+        additionalProperties:
+          type: "string"
+      submissionData:
+        $ref: "#/definitions/FirstPartyMedicalProposal"
+      messages:
+        type: "array"
+        description: "messages can be used to provide more information on the status\
+          \ or decision on the submission"
+        items:
+          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+  BasicPolicyholderSection:
+    type: "object"
+    required:
+    - "birthCountry"
+    - "birthDate"
+    - "fullName"
+    - "gender"
+    - "idNumber"
+    - "idType"
+    - "insuranceObjective"
+    - "nationality"
+    - "occupation"
+    properties:
+      fullName:
+        type: "string"
+      birthCountry:
+        type: "string"
+      birthDate:
+        type: "string"
+        format: "date"
+      age:
+        type: "number"
+      idType:
+        type: "string"
+        description: "The identification type; a enumerated list based on a code table\
+          \ e.g. \"NRIC\", \"PASSPORT\". \"KTP\", \"BIRTHCERT\" etc"
+      idNumber:
+        type: "string"
+        description: "The identification number"
+      nationality:
+        type: "string"
+        description: "Nationality of the policyholder. Should be selected from an\
+          \ enumerated list of nationalities."
+      gender:
+        type: "string"
+        description: "Gender of the policyholder. Male or Female."
+      pdpaConsent:
+        type: "boolean"
+        description: "Usually a checkbox to get consent to contact the policyholder\
+          \ for servicing and marketing purposes."
+      occupation:
+        type: "string"
+        description: "Select from a coded list of occupations"
+      employmentNature:
+        type: "string"
+      insuranceObjective:
+        type: "string"
+        description: "A coded list of objectives e.g. protection, education, etc"
+      mailingAddress:
+        $ref: "#/definitions/BasicPolicyholderSection_mailingAddress"
+      contactInfo:
+        $ref: "#/definitions/BasicPolicyholderSection_contactInfo"
+      extensionFields:
+        type: "object"
+        description: "Use this object to hold the aditional fields due to local customizations"
+        additionalProperties:
+          type: "string"
+  PaymentGatewayPaymentSection:
+    type: "object"
+    required:
+    - "initialPaymentMethod"
+    - "subsequentPaymentMethod"
+    properties:
+      initialPaymentMethod:
+        type: "string"
+        default: "PaymentGatewayRecurringPayment"
+      subsequentPaymentMethod:
+        type: "string"
+        default: "PaymentGatewayRecurringPayment"
+    description: "For direct insurance via internet the payment gateway can be used\
+      \ to pay for the iniitial payment and subsequent payment using recurring payments.\
+      \ All  the account details are handled by the payment gateway provider."
+  DirectMedicalProduct:
+    type: "object"
+    properties:
+      productId:
+        type: "integer"
+      productCode:
+        type: "string"
+      productName:
+        type: "string"
+      packageCode:
+        type: "string"
+        description: "The package code to reference the marketing plan for this product."
+      insured:
+        $ref: "#/definitions/DirectMedicalProduct_insured"
+      benefitLevel:
+        type: "string"
+        description: "For medical plans, to simplify the input, there are usually\
+          \ predefined plans e.g. platinum, gold, silver. These map to different benefits\
+          \ with their sum assured (amount of the benefit)"
+      coverageTermType:
+        type: "string"
+        description: "Valid values 1=Cover Whole Life, 2=Cover for certain years,\
+          \ 3=Cover up to certain age, 4=Cover for certain months. Normally, customers\
+          \ will be given a choice to cover for a certain years (i.e. 2) or cover\
+          \ up certain age (i.e. 3). At times, the product can only have 1 coverage\
+          \ term, e.g. 5 years, which is typical for medical products"
+        default: "2"
+      coverageTermValue:
+        type: "number"
+        description: "If coverageTermType=2, then it means the number of years that\
+          \ coveraage if required, if coverageTermType=3, then value here means the\
+          \ age in which coverage is required."
+      premiumPaymentTermType:
+        type: "string"
+        description: "Similar meaning to coverageTermType"
+      premiumPaymentTermValue:
+        type: "number"
+        description: "Similar meaning to coverageTermValue"
+      currency:
+        type: "string"
+        description: "When selling direct (online), there should be only one currency,\
+          \ and should be known to the client or omitted."
+        default: "CNY"
+      paymentMode:
+        type: "string"
+        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
+          \ 4=Monthly, 5=Single. When selling direct (internet), to show that it is\
+          \ cheap, default is montly"
+        default: "4"
+      firstYearPremium:
+        type: "number"
+        description: "Calculated by the eBaoCloud service, representing the 1st year\
+          \ annual premium"
+      premiumAmount:
+        type: "number"
+        description: "Premium amount taking into account the payment mode, so if payment\
+          \ mode is monthly (default), then this represents the monthly premium amount.\
+          \ This is also calculated by the eBaoCloud API service"
+  FirstPartyMedicalProposedInsurance:
+    type: "object"
+    properties:
+      directMedicalProduct:
+        $ref: "#/definitions/DirectMedicalProduct"
   inline_response_200:
     properties:
       docs:
@@ -2628,6 +3145,39 @@ definitions:
       template:
         type: "string"
         description: "HTML string containing the template"
+  inline_response_200_11:
+    properties:
+      totalDocs:
+        type: "number"
+      offset:
+        type: "number"
+      docs:
+        type: "array"
+        items:
+          $ref: "#/definitions/SubmissionSummary"
+  proposalstemplatecodeTables_codeTableData:
+    properties:
+      code:
+        type: "string"
+      textValue:
+        type: "string"
+      textValue2:
+        type: "string"
+      numberValue:
+        type: "number"
+      dateValue:
+        type: "string"
+        format: "date"
+  inline_response_200_12:
+    properties:
+      codeTableId:
+        type: "string"
+      codeTableDescription:
+        type: "string"
+      codeTableData:
+        type: "array"
+        items:
+          $ref: "#/definitions/proposalstemplatecodeTables_codeTableData"
   PackageProduct_liabilityList:
     properties:
       displayOrder:
@@ -2864,6 +3414,64 @@ definitions:
         type: "string"
       displayOrder:
         type: "number"
+  FirstPartyMedicalSubmission_messages:
+    properties:
+      messageDate:
+        type: "string"
+      message:
+        type: "string"
+  BasicPolicyholderSection_mailingAddress:
+    required:
+    - "addressLine1"
+    - "country"
+    - "postcode"
+    properties:
+      addressLine1:
+        type: "string"
+      addressLine2:
+        type: "string"
+      country:
+        type: "string"
+      state:
+        type: "string"
+      postcode:
+        type: "string"
+  BasicPolicyholderSection_contactInfo:
+    properties:
+      homeTelNo:
+        type: "string"
+        description: "Home telephone number"
+      mobileNo:
+        type: "string"
+      email:
+        type: "string"
+  DirectMedicalProduct_insured:
+    properties:
+      name:
+        type: "string"
+        description: "Name of the insured"
+      birthDate:
+        type: "string"
+        format: "date"
+        description: "Date of birth for the insured"
+      age:
+        type: "number"
+        description: "Age of the insured. Can be derived from the age method (company\
+          \ or product specific) and the birth date if provided."
+      occupation:
+        type: "string"
+        description: "Typically provided to determine the risk class of this person."
+      occupationClass:
+        type: "string"
+        description: "For some products, this is a risk factor. Can be derived from\
+          \ the occupation if provided."
+      gender:
+        type: "string"
+        description: "MALE or FEMALE"
+      smoking:
+        type: "string"
+        description: "Generally SMOKER or NON-SMOKER and used as a factor to determine\
+          \ the risk premium"
 parameters:
   queryOffset:
     name: "offset"
@@ -2933,6 +3541,19 @@ parameters:
     in: "path"
     description: "Unique code for the package"
     required: true
+    type: "string"
+  Token:
+    name: "Token"
+    in: "header"
+    description: "The security token, for the moment it is equal to the authenticated\
+      \ user id"
+    required: false
+    type: "string"
+  TenantCode:
+    name: "tenantCode"
+    in: "header"
+    description: "The insurer who will receive the document"
+    required: false
     type: "string"
 responses:
   Standard400Response:
