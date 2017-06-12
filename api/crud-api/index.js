@@ -285,7 +285,6 @@ function fetchSubmissionList(userId, submissionType, filters, limit, offset, ord
 }
 
 function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offset, orderBy) {
-
     const jsonFields = ["submissionData", "extensionFields", "messages"].filter(f => fnames.indexOf(f) >= 0)
 
     let sortOrder = orderBy.startsWith('-') ? 'desc' : 'asc';
@@ -294,29 +293,34 @@ function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offse
     let typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
 
     // the filters need to be translated to where conditions , err....not so simple
+    // not production ready --- need to use prepare statement instead
+    const validKeys = ["pk", "submissionType", "submissionDate", "submissionChannel", "tenantCode", "status", "lastModified"]
     let whereClause = ''
     if (filters) {
         let wlist=[]
         wlist = filters.map( ands => {
-
             let andlist = ands.map( and => {
                 let where;
-                if (and.oper === 'eq') {
-                    where = typeof and.value === 'string'  ? `${and.key} = '${and.value}'`
-                                                               : _.isDate(and.value) ? `${and.key} = '${moment(and.value).format('YYYY-MM-DD')}'`
-                                                               : `${and.key} = ${parseInt(and.value)}`
-               } else if (and.oper === 'startsWith') {
-                   where = `${field} like '${and.value}%'`
-               } else if (and.oper === 'contains') {
-                   where = `${field} like '%${and.value}%'`
-               } else if (and.oper === 'gt') {
-                   where = typeof and.value === 'string'  ? `${and.key} > '${and.value}'`
-                                                              : _.isDate(and.value) ? `${and.key} > '${moment(and.value).format('YYYY-MM-DD')}'`
-                                                              : `${and.key} > ${parseInt(and.value)}`
-               } else if  (and.oper === 'gte') {
-                   where = typeof and.value === 'string'  ? `${and.key} >= '${and.value}'`
-                                                              : _.isDate(and.value) ? `${and.key} >= '${moment(and.value).format('YYYY-MM-DD')}'`
-                                                              : `${and.key} >= ${parseInt(and.value)}`
+                if (validKeys.indexOf(and.key) >= 0 ) {
+                    if (and.oper === 'eq') {
+                        where = typeof and.value === 'string'  ? `${and.key} = '${and.value}'`
+                                                                   : _.isDate(and.value) ? `${and.key} = '${moment(and.value).format('YYYY-MM-DD')}'`
+                                                                   : `${and.key} = ${parseInt(and.value)}`
+                   } else if (and.oper === 'startsWith') {
+                       where = `${field} like '${and.value}%'`
+                   } else if (and.oper === 'contains') {
+                       where = `${field} like '%${and.value}%'`
+                   } else if (and.oper === 'gt') {
+                       where = typeof and.value === 'string'  ? `${and.key} > '${and.value}'`
+                                                                  : _.isDate(and.value) ? `${and.key} > '${moment(and.value).format('YYYY-MM-DD')}'`
+                                                                  : `${and.key} > ${parseInt(and.value)}`
+                   } else if  (and.oper === 'gte') {
+                       where = typeof and.value === 'string'  ? `${and.key} >= '${and.value}'`
+                                                                  : _.isDate(and.value) ? `${and.key} >= '${moment(and.value).format('YYYY-MM-DD')}'`
+                                                                  : `${and.key} >= ${parseInt(and.value)}`
+                   }
+               } else {
+                   where = "1=0" // since it is not a valid key , make the where condition fail
                }
                return where
             })

@@ -59,9 +59,15 @@ exports.fetchFirstPartyMedicalSubmission = function(args, res, next) {
    proposalApi.fetchProposalSubmissionByPk(pk)
    .then(doc => {
 
-       let data = doc && doc.submissionType === 'FirstPartyMedicalProposal' && doc.userId === userId ? doc : {} ; // limit by the submissionType
-       res.setHeader('Content-Type', 'application/json');
-       res.end(JSON.stringify( data , null, 2));
+       let data = doc && doc.submissionType === 'FirstPartyMedicalProposal' && doc.userId === userId ? doc : null ; // limit by the submissionType
+       if (data) {
+           res.setHeader('Content-Type', 'application/json');
+           res.end(JSON.stringify( data , null, 2));
+       } else {
+           res.statusCode = 404
+           res.setHeader('Content-Type', 'application/json');
+           res.end(JSON.stringify( {message: __(`The proposal with primary key (${pk}) does not exists for user '${userId}'`)}, null, 2));
+       }
 
    })
    .catch( (err) => {

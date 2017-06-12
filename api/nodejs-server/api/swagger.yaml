@@ -1838,10 +1838,6 @@ paths:
           description: "Response when the client is not authorized for this operation."
           schema:
             $ref: "#/definitions/inline_response_401"
-        404:
-          description: "Response when the document is not found."
-          schema:
-            $ref: "#/definitions/inline_response_404"
         500:
           description: "Response when there is an unexpected server error."
           schema:

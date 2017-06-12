@@ -236,7 +236,6 @@ exp.processFirstPartyMedicalProposalSubmission = function(submission) {
 
         p.then(doc => {
             // console.log("proposalApi ---> doc", doc)
-            debugger
             if (!doc) {
                 return crud.createProposalSubmission(submission)
             } else {
@@ -263,6 +262,7 @@ exp.fetchProposalSubmissionByPk = function(pk) {
 }
 
 exp.fetchFirstPartyMedicalSubmissionSummaryList = function(userId, submissionType, filter, limit, offset, orderBy) {
+    debugger
     return crud.fetchSubmissionSummaryList(userId, 'FirstPartyMedicalProposal' , filter, limit, offset, orderBy)
 }
 
