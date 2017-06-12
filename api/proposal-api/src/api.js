@@ -200,6 +200,7 @@ exp.processFirstPartyMedicalProposalSubmission = function(submission) {
     // it might still have errors, so have to cater for it
     return new Promise((resolve,reject) => {
         let errs = exp.validateFirstPartyMedicalSubmission(submission);
+        // console.log("***** Errors from validation", errs)
         if (errs.length > 0) {
             reject( errs )
             return
@@ -209,10 +210,11 @@ exp.processFirstPartyMedicalProposalSubmission = function(submission) {
                                                      : new Promise(resolve => resolve({}));
 
         p.then(doc => {
+            // console.log("proposalApi ---> doc", doc)
             if (!doc) {
                 return crud.createProposalSubmission(submission)
             } else {
-                return new Promise(resolve => resolve({ ok:false, errors: __("Duplicate submission") }))
+                return new Promise(resolve => resolve({ ok:false, errors: __(`Duplicate submission. The submissionRefNo should be unique (${submission.submissionRefNo}) `) }))
             }
         })
         .then(result => {

@@ -29,11 +29,12 @@ exports.createFirstPartyMedicalSubmission = function(args, res, next) {
    .then(result => {
         res.statusCode = 200
         res.setHeader('Content-Type', 'application/json');
-        console.log("***result ***", result)
+        // console.log("***result ***", result)
         res.end(JSON.stringify( result, null, 2));
    })
    .catch( (err) => {
      res.statusCode = 400
+    //  console.log("***err ***", err); 
      res.setHeader('Content-Type', 'application/json');
      res.end(JSON.stringify( {errors: err}, null, 2));
    })
