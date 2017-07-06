@@ -742,3 +742,25 @@ module.exports.states = {
     {code: "T" , textValue: "Terengganu"},
   ]
 }
+module.exports.SmokingType = {
+  codeTableId :   "SmokingType",
+  codeTableDescription: "List of tobacco that is smoked",
+  codeTableData: [
+    {code: "CI" , textValue: "Cigarettes"},
+    {code: "CG" , textValue: "Cigar"},
+    {code: "SH" , textValue: "Shashish"},
+    {code: "TB" , textValue: "Tobacco"},
+    {code: "OT" , textValue: "Others"},
+  ]
+}
+module.exports.RelationshipType = {
+  codeTableId :   "RelationshipType",
+  codeTableDescription: "Relationships for the Insured",
+  codeTableData: [
+    {code: "BR" , textValue: "Brother"},
+    {code: "SI" , textValue: "Sister"},
+    {code: "MO" , textValue: "Mother"},
+    {code: "FA" , textValue: "Father"},
+    {code: "OT" , textValue: "Others"},
+  ]
+}

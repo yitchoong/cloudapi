@@ -12,7 +12,7 @@ exp.validateInput__01 =  function(ctx, parent, opts) {
   let inputFields = Object.keys( config.inputFields );
   let personFields = Object.keys(config.personFields );
   let people = ctx.get("people");
-  let la = people[product.val("lifeAssuredNumber")];
+  let la = people[product.val("lifeAssuredNumber")] || people[product.val("la")];
   let errs = [];
   let productCode = product.val("productCode") //product.productCode()
   inputFields.forEach((key) => {
@@ -37,6 +37,7 @@ exp.validateInput__01 =  function(ctx, parent, opts) {
   // validate fields for the person
   if (la) {
     errs.push(validatePersonGender(ctx, product, opts))
+    if (personFields.indexOf("birthDate") >= 0 ) errs.push(validatePersonBirthDate(ctx, product, opts))
     if (personFields.indexOf("smoking") >= 0 ) errs.push(validatePersonSmoking(ctx, product, opts))
     if (personFields.indexOf("occupation") >= 0 ) errs.push(validatePersonOccupation(ctx, product, opts))
     if (personFields.indexOf("jobCateId") >= 0 ) errs.push(validatePersonJobCateId(ctx, product, opts))
@@ -104,6 +105,14 @@ function validatePersonGender(ctx, product, opts) {
   let gender = (person.gender() || '').toUpperCase()
   return ["MALE","FEMALE"].indexOf(gender) < 0 ? __(`Not a valid gender (${gender}) for person ${ person.name() }`) : undefined
 }
+function validatePersonBirthDate(ctx, product, opts) {
+  let laNo = product.lifeAssuredNumber()
+  let person = ctx.get("people")[laNo]
+  if (!person.val("birthDate")) return __(`The date of birth of the insured is required`)
+  if ( !utils.toDate(person.val("birthDate")) ) return __(`The date of the birth for the insured is invalid (${person.birthDate})`)
+  return
+}
+
 function validatePersonSmoking(ctx, product, opts) {
   let laNo = product.lifeAssuredNumber()
   let person = ctx.get("people")[laNo]

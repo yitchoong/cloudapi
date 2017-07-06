@@ -217,7 +217,7 @@ exp.validateAgeLimit__01 = function validateAgeLimit__01(ctx, parent, opts) {
         ageRow = product.val("ageLimit"),
         dob = la.val("dob") || la.birthDate();
 
-    if ( ageRow.minInsdNbAgeUnit === '5' ) {
+    if ( dob && ageRow.minInsdNbAgeUnit === '5' ) {
         // means min is in days e.g. 30 days -- so really no minimum
         let cutoff = utils.toMoment(dob).add(ageRow.minInsdNbAge,'days'),
             today = moment();

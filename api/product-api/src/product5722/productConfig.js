@@ -104,17 +104,34 @@ module.exports = {
         validateMinMaxTopupAmounts  : 'validateMinMaxTopupAmounts__01',
         validateAllWithdrawals      : 'validateAllWithdrawals__01',
         validateMinMaxWithdrawal    : 'validateMinMaxWithdrawal__01',
+        validateInput               : 'validateInput__01',
+        validatePersonProduct       : 'validatePersonProduct__01'
 
     },
-    input                   : {
-        backDate            : 'date',
-        la                  : 'num',
-        basicSa             : "num",
-        targetPremium       : "num" ,
-        regularTopup        : "num",
-        premiumTerm         : "num",
-        paymentFrequency    : "str",
+    // input                   : {
+    //     backDate            : 'date',
+    //     la                  : 'num',
+    //     basicSa             : "num",
+    //     targetPremium       : "num" ,
+    //     regularTopup        : "num",
+    //     premiumTerm         : "num",
+    //     paymentFrequency    : "str",
+    // },
+    inputFields  : {
+        productId            : 'num',
+        productCode          : 'str',
+        lifeAssuredNumber    : "num",
+        sumAssured           : "num",
+        regularTopup         : "num",
+        targetPremium        : "num",
+        paymentMode          : "str"
     },
+    personFields : {
+      name : "str",
+      gender : "str",
+      birthDate : "str",
+    },
+
     calculationFields       : ['entryAge','coverageTerm','annualPremium','premium'],
     illustrationFields      : ['t', 'ageAtT', 'targetPremiumAtT', 'regularTopupAtT',
                                'adhocTopupAtT','withdrawalAtT','tivLowAtT','tivMidAtT', 'tivHighAtT',
@@ -128,7 +145,7 @@ module.exports = {
         { type: 'table', label: 'Death Benefit' ,  colIndexes: [0,1,9,10,11] },
         { type: 'chart', label : 'TIV' ,  x: [0], y: [6,7] },
         { type: 'chart', label : 'Death Benefit' ,  x: [0], y: [10,11] },
-        
+
     ]
-    
+
 }

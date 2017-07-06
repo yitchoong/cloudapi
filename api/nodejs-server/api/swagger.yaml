@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Sales API for the product & proposal domain on eBao Cloud"
-  version: "0.0.9"
+  version: "0.0.10"
   title: "eBao Cloud API (Product & Proposal)"
 host: "localhost:8080"
 basePath: "/v1"
@@ -1888,6 +1888,641 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_500"
       x-swagger-router-controller: "Submission"
+  /submissions/firstPartyTermProposal:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a list of direct first party term proposal submissions"
+      description: "Use this end point to fetch all the direct first party term proposal\
+        \ submissions. When filtering the required rows, the available keys are pk,\
+        \ submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and\
+        \ decision"
+      operationId: "fetchFirstPartyTermProposalSubmissionList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of proposal submissions."
+          schema:
+            $ref: "#/definitions/inline_response_200_11"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+    post:
+      tags:
+      - "Submission"
+      summary: "Create a new direct first party term proposal submission document\
+        \ (containing proposal details)"
+      description: "This end point is used for the submission of a first party term\
+        \ proposal. This end point is useful when proposals are not persisted prior\
+        \ to submission."
+      operationId: "createFirstPartyTermProposalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyTermProposalSubmission"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response to create a new proposal submission. Returns\
+            \ the new submission document."
+          schema:
+            $ref: "#/definitions/FirstPartyTermProposalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions/firstPartyTraditionalProposal:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a list of first party traditional proposal submissions"
+      description: "Use this end point to fetch all the first party traditional proposal\
+        \ submissions. When filtering the required rows, the available keys are pk,\
+        \ submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and\
+        \ decision. Eg. submissionRefNo*eq*12345"
+      operationId: "fetchFirstPartyTraditionalProposalSubmissionList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of first party traditional\
+            \ proposal submissions."
+          schema:
+            $ref: "#/definitions/inline_response_200_11"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+    post:
+      tags:
+      - "Submission"
+      summary: "Create a new first party traditional proposal submission document\
+        \ (containing proposal details)"
+      description: "This end point is used for the submission of a first party traditional\
+        \ proposal. This end point is used when proposals are not persisted prior\
+        \ to submission, as the complete proposal details will be included in the\
+        \ submission."
+      operationId: "createFirstPartyTraditionalProposalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response to create a new first party traditional\
+            \ proposal submission. Returns the new submission document."
+          schema:
+            $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions/firstPartyTermProposal/{submissionId}:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a first party term proposal submission document"
+      description: "Use this end-point to fetch a first party term proposal submissions.\
+        \ This will fetch the full document including the proposal data, and the submission\
+        \ status."
+      operationId: "fetchFirstPartyTermProposalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns the submission document"
+          schema:
+            $ref: "#/definitions/FirstPartyTermProposalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        404:
+          description: "Response when the document is not found."
+          schema:
+            $ref: "#/definitions/inline_response_404"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions/firstPartyTraditionalProposal/{submissionId}:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a first party traditional proposal submission document"
+      description: "Use this end-point to fetch a first party traditional proposal\
+        \ submissions. This will fetch the full document including the proposal data,\
+        \ and the submission status."
+      operationId: "fetchFirstPartyTraditionalProposalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns the submission document"
+          schema:
+            $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        404:
+          description: "Response when the document is not found."
+          schema:
+            $ref: "#/definitions/inline_response_404"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions/firstPartyILPProposal:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a list of first party ILP proposal submissions"
+      description: "Use this end point to fetch all the first party ILP proposal submissions.\
+        \ When filtering the required rows, the available keys are pk, submissionDate,\
+        \ submissionRefNo, submissionChannel, tenantCode, status, and decision. Eg.\
+        \ submissionRefNo*eq*12345"
+      operationId: "fetchFirstPartyILPProposalSubmissionList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of first party ILP\
+            \ proposal submissions."
+          schema:
+            $ref: "#/definitions/inline_response_200_11"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+    post:
+      tags:
+      - "Submission"
+      summary: "Create a new first party ILP proposal submission document (containing\
+        \ proposal details)"
+      description: "This end point is used for the submission of a first party traditional\
+        \ proposal. This end point is used when proposals are not persisted prior\
+        \ to submission, as the complete proposal details will be included in the\
+        \ submission."
+      operationId: "createFirstPartyILPProposalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyILPProposalSubmission"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response to create a new first party traditional\
+            \ proposal submission. Returns the new submission document."
+          schema:
+            $ref: "#/definitions/FirstPartyILPProposalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions/firstPartyILPProposal/{submissionId}:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a first party ILP proposal submission document"
+      description: "Use this end-point to fetch a first party ILP proposal submissions.\
+        \ This will fetch the full document including the proposal data, and the submission\
+        \ status."
+      operationId: "fetchFirstPartyILPProposalSubmission"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns the submission document"
+          schema:
+            $ref: "#/definitions/FirstPartyILPProposalSubmission"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        404:
+          description: "Response when the document is not found."
+          schema:
+            $ref: "#/definitions/inline_response_404"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
+  /submissions:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch a list of submissions (all submission types)"
+      description: "Use this end point to fetch all the submissions regardless of\
+        \ submission types. When filtering the required rows, the available keys are\
+        \ pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status,\
+        \ and decision"
+      operationId: "fetchSubmissionList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of proposal submissions."
+          schema:
+            $ref: "#/definitions/inline_response_200_11"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Submission"
   /proposals/template/codeTables:
     get:
       tags:
@@ -1926,12 +2561,48 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_500"
       x-swagger-router-controller: "Proposal"
+  /proposals/template/policyholderDisclosureSpecs:
+    get:
+      tags:
+      - "Submission"
+      summary: "Fetch the specification for the policyholder disclosure section for\
+        \ the given tenantCode.  used in the proposal application."
+      description: "This end point should be used at design time to get the list of\
+        \ codeTables with the valid values that can be used for the fields with drop\
+        \ down values in the proposal form."
+      operationId: "fetchPolicyholderDisclosureSpecs"
+      parameters:
+      - name: "productCode"
+        in: "query"
+        description: "Product code"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response. Returns the list of question in the policyholder\
+            \ disclosure section"
+          schema:
+            $ref: "#/definitions/PolicyholderDisclosuresSpecification"
+      x-swagger-router-controller: "Submission"
 securityDefinitions:
   APISecurity:
     type: "apiKey"
     name: "Token"
     in: "header"
 definitions:
+  Any:
+    description: "Can be any data type"
   Insurer:
     type: "object"
     properties:
@@ -2702,6 +3373,123 @@ definitions:
       promotionCode:
         type: "string"
         description: "For marketing purposes, the campaign or promotion code."
+  FirstPartyTermProposal:
+    type: "object"
+    required:
+    - "policyholderSection"
+    - "proposalType"
+    - "proposedInsuranceSection"
+    - "proposerName"
+    properties:
+      proposalType:
+        type: "string"
+        description: "e.g. FirstPartyTerm, FirstPartyMedical etc"
+        default: "FirstyPartyTerm"
+      policyNumber:
+        type: "string"
+        description: "Policy number assigned by the insurer to this proposal. Should\
+          \ be omitted when by the client."
+        readOnly: true
+      proposerName:
+        type: "string"
+        description: "Should be the same as the policyholder full name"
+      submissionChannel:
+        type: "string"
+        description: "Channel which the proposal is submitted, e.g. direct, banca,\
+          \ etc"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Insurer i.e. receipient of this proposal submission"
+      policyholderSection:
+        $ref: "#/definitions/BasicPolicyholderSection"
+      proposedInsuranceSection:
+        $ref: "#/definitions/FirstPartyTermProposedInsurance"
+      premiumPaymentSection:
+        $ref: "#/definitions/PaymentGatewayPaymentSection"
+      promotionCode:
+        type: "string"
+        description: "For marketing purposes, the campaign or promotion code."
+  FirstPartyTraditionalProposal:
+    type: "object"
+    required:
+    - "policyholderSection"
+    - "proposalType"
+    - "proposedInsuranceSection"
+    - "proposerName"
+    properties:
+      proposalType:
+        type: "string"
+        description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
+          \ etc"
+        default: "FirstyPartyTermProposal"
+      policyNumber:
+        type: "string"
+        description: "Policy number assigned by the insurer to this proposal. Should\
+          \ be omitted when by the client."
+        readOnly: true
+      proposerName:
+        type: "string"
+        description: "Should be the same as the policyholder full name"
+      submissionChannel:
+        type: "string"
+        description: "Channel which the proposal is submitted, e.g. direct, banca,\
+          \ etc"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Insurer i.e. receipient of this proposal submission"
+      policyholderSection:
+        $ref: "#/definitions/BasicPolicyholderSection"
+      policyholderDisclosureSection:
+        $ref: "#/definitions/PolicyholderDisclosures"
+      proposedInsuranceSection:
+        $ref: "#/definitions/FirstPartyTraditionalProposedInsurance"
+      premiumPaymentSection:
+        $ref: "#/definitions/PaymentSection"
+      promotionCode:
+        type: "string"
+        description: "For marketing purposes, the campaign or promotion code."
+  FirstPartyILPProposal:
+    type: "object"
+    required:
+    - "policyholderSection"
+    - "proposalType"
+    - "proposedInsuranceSection"
+    - "proposerName"
+    properties:
+      proposalType:
+        type: "string"
+        description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
+          \ etc"
+        default: "FirstyPartyTermProposal"
+      policyNumber:
+        type: "string"
+        description: "Policy number assigned by the insurer to this proposal. Should\
+          \ be omitted when by the client."
+        readOnly: true
+      proposerName:
+        type: "string"
+        description: "Should be the same as the policyholder full name"
+      submissionChannel:
+        type: "string"
+        description: "Channel which the proposal is submitted, e.g. direct, banca,\
+          \ etc"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Insurer i.e. receipient of this proposal submission"
+      policyholderSection:
+        $ref: "#/definitions/BasicPolicyholderSection"
+      policyholderDisclosureSection:
+        $ref: "#/definitions/PolicyholderDisclosures"
+      proposedInsuranceSection:
+        $ref: "#/definitions/FirstPartyILPProposedInsurance"
+      premiumPaymentSection:
+        $ref: "#/definitions/PaymentSection"
+      promotionCode:
+        type: "string"
+        description: "For marketing purposes, the campaign or promotion code."
   SubmissionSummary:
     type: "object"
     properties:
@@ -2828,6 +3616,218 @@ definitions:
           \ or decision on the submission"
         items:
           $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+  FirstPartyTermProposalSubmission:
+    type: "object"
+    required:
+    - "submissionChannel"
+    - "submissionData"
+    - "submissionDate"
+    - "submissionType"
+    - "tenantCode"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission. Assigned by backend"
+        readOnly: true
+      doctype:
+        type: "string"
+        description: "Assigned by backend"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. FirstPartyMedicalProposal"
+        default: "FirstPartyTermProposal"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Insurer, i.e. recipient of the submission"
+      submissionRefNo:
+        type: "string"
+        description: "A reference number supplied by the client to uniquely identify\
+          \ the submission"
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
+        readOnly: true
+        default: "SUBMITTED"
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
+          \ is sold online (direct), only clean cases are accepted, so the decision\
+          \ should always be ACCEPTED"
+        readOnly: true
+        default: "ACCEPTED"
+      userId:
+        type: "string"
+        description: "The user that created this submission i.e. sender"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      extensionFields:
+        type: "object"
+        description: "Use this object to hold the aditional fields due to local customizations"
+        additionalProperties:
+          type: "string"
+      submissionData:
+        $ref: "#/definitions/FirstPartyTermProposal"
+      messages:
+        type: "array"
+        description: "messages can be used to provide more information on the status\
+          \ or decision on the submission"
+        items:
+          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+  FirstPartyTraditionalProposalSubmission:
+    type: "object"
+    required:
+    - "submissionChannel"
+    - "submissionData"
+    - "submissionDate"
+    - "submissionType"
+    - "tenantCode"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission. Assigned by backend"
+        readOnly: true
+      doctype:
+        type: "string"
+        description: "Assigned by backend"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. FirstPartyEndowmentProposal"
+        default: "FirstPartyTermProposal"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Insurer, i.e. recipient of the submission"
+      submissionRefNo:
+        type: "string"
+        description: "A reference number supplied by the client to uniquely identify\
+          \ the submission at the client"
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
+        readOnly: true
+        default: "SUBMITTED"
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
+          \ is sold online (direct), only clean cases are accepted, so the decision\
+          \ should always be ACCEPTED"
+        readOnly: true
+        default: "ACCEPTED"
+      userId:
+        type: "string"
+        description: "The user that created this submission i.e. sender"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      submissionData:
+        $ref: "#/definitions/FirstPartyTraditionalProposal"
+      messages:
+        type: "array"
+        description: "messages can be used to provide more information on the status\
+          \ or decision on the submission"
+        items:
+          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+      textExtensionFields:
+        $ref: "#/definitions/TextExtensionField"
+      numberExtensionFields:
+        $ref: "#/definitions/NumberExtensionField"
+  FirstPartyILPProposalSubmission:
+    type: "object"
+    required:
+    - "submissionChannel"
+    - "submissionData"
+    - "submissionDate"
+    - "submissionType"
+    - "tenantCode"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission. Assigned by backend"
+        readOnly: true
+      doctype:
+        type: "string"
+        description: "Assigned by backend"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. FirstPartyEndowmentProposal"
+        default: "FirstPartyTermProposal"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Insurer, i.e. recipient of the submission"
+      submissionRefNo:
+        type: "string"
+        description: "A reference number supplied by the client to uniquely identify\
+          \ the submission at the client"
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
+        readOnly: true
+        default: "SUBMITTED"
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
+          \ is sold online (direct), only clean cases are accepted, so the decision\
+          \ should always be ACCEPTED"
+        readOnly: true
+        default: "ACCEPTED"
+      userId:
+        type: "string"
+        description: "The user that created this submission i.e. sender"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      submissionData:
+        $ref: "#/definitions/FirstPartyILPProposal"
+      messages:
+        type: "array"
+        description: "messages can be used to provide more information on the status\
+          \ or decision on the submission"
+        items:
+          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+      extensionFields:
+        $ref: "#/definitions/ExtensionField"
   BasicPolicyholderSection:
     type: "object"
     required:
@@ -2880,11 +3880,10 @@ definitions:
         $ref: "#/definitions/BasicPolicyholderSection_mailingAddress"
       contactInfo:
         $ref: "#/definitions/BasicPolicyholderSection_contactInfo"
-      extensionFields:
-        type: "object"
-        description: "Use this object to hold the aditional fields due to local customizations"
-        additionalProperties:
-          type: "string"
+      textExtensionFields:
+        $ref: "#/definitions/TextExtensionField"
+      numberExtensionFields:
+        $ref: "#/definitions/NumberExtensionField"
   PaymentGatewayPaymentSection:
     type: "object"
     required:
@@ -2900,6 +3899,26 @@ definitions:
     description: "For direct insurance via internet the payment gateway can be used\
       \ to pay for the iniitial payment and subsequent payment using recurring payments.\
       \ All  the account details are handled by the payment gateway provider."
+  PaymentMethod:
+    type: "object"
+    properties:
+      paymentMethod:
+        type: "string"
+        description: "Valid values are cheque, giro, payment-gateway"
+      giroDetails:
+        $ref: "#/definitions/PaymentMethod_giroDetails"
+  PaymentSection:
+    type: "object"
+    required:
+    - "initialPaymentMethod"
+    - "renewalPaymentMethod"
+    properties:
+      initialPaymentMethod:
+        $ref: "#/definitions/PaymentMethod"
+      renewalPaymentMethod:
+        $ref: "#/definitions/PaymentMethod"
+      refundPaymentMethod:
+        $ref: "#/definitions/PaymentMethod"
   DirectMedicalProduct:
     type: "object"
     properties:
@@ -2958,6 +3977,68 @@ definitions:
         description: "Premium amount taking into account the payment mode, so if payment\
           \ mode is monthly (default), then this represents the monthly premium amount.\
           \ This is also calculated by the eBaoCloud API service"
+  DirectTermProduct:
+    type: "object"
+    properties:
+      productId:
+        type: "integer"
+      productCode:
+        type: "string"
+      productName:
+        type: "string"
+      packageCode:
+        type: "string"
+        description: "The package code to reference the marketing plan for this product."
+      insured:
+        $ref: "#/definitions/DirectMedicalProduct_insured"
+      benefitLevel:
+        type: "string"
+        description: "For some term plans, to simplify the input, there are usually\
+          \ predefined levels. These can be mapped to the pre-defined amounts of death\
+          \ benefit and TPD benefit"
+      sumAssured:
+        type: "number"
+        description: "The amount of death benefit / TPD coverage. Possibly derived\
+          \ from the benefitLevel or entered directly in some cases"
+      coverageTermType:
+        type: "string"
+        description: "Valid values 1=Cover Whole Life, 2=Cover for certain years,\
+          \ 3=Cover up to certain age, 4=Cover for certain months. Normally, customers\
+          \ will be given a choice to cover for a certain years (i.e. 2) or cover\
+          \ up certain age (i.e. 3). At times, the product can only have 1 coverage\
+          \ term, e.g. 5 years, which is typical for medical products"
+        default: "2"
+      coverageTermValue:
+        type: "number"
+        description: "If coverageTermType=2, then it means the number of years that\
+          \ coveraage if required, if coverageTermType=3, then value here means the\
+          \ age in which coverage is required."
+      premiumPaymentTermType:
+        type: "string"
+        description: "Similar meaning to coverageTermType"
+      premiumPaymentTermValue:
+        type: "number"
+        description: "Similar meaning to coverageTermValue"
+      currency:
+        type: "string"
+        description: "When selling direct (online), there should be only one currency,\
+          \ and should be known to the client or omitted."
+        default: "CNY"
+      paymentMode:
+        type: "string"
+        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
+          \ 4=Monthly, 5=Single. When selling direct (internet), to show that it is\
+          \ cheap, default is montly"
+        default: "4"
+      firstYearPremium:
+        type: "number"
+        description: "Calculated by the eBaoCloud service, representing the 1st year\
+          \ annual premium"
+      premiumAmount:
+        type: "number"
+        description: "Premium amount taking into account the payment mode, so if payment\
+          \ mode is monthly (default), then this represents the monthly premium amount.\
+          \ This is also calculated by the eBaoCloud API service"
   FirstPartyMedicalProposedInsurance:
     type: "object"
     required:
@@ -2970,6 +4051,233 @@ definitions:
         description: "The proposed commencement date of the insurance"
       directMedicalProduct:
         $ref: "#/definitions/DirectMedicalProduct"
+  FirstPartyTermProposedInsurance:
+    type: "object"
+    required:
+    - "coverage"
+    - "startDate"
+    properties:
+      startDate:
+        type: "string"
+        format: "date"
+        description: "The proposed commencement date of the insurance"
+      coverage:
+        $ref: "#/definitions/DirectTermProduct"
+  FirstPartyTraditionalProposedInsurance:
+    type: "object"
+    required:
+    - "coverageList"
+    - "insuredList"
+    - "startDate"
+    properties:
+      startDate:
+        type: "string"
+        format: "date"
+        description: "The proposed commencement date of the insurance"
+      insuredList:
+        type: "array"
+        items:
+          $ref: "#/definitions/Insured"
+      coverageList:
+        type: "array"
+        items:
+          $ref: "#/definitions/TraditionalProduct"
+  FirstPartyILPProposedInsurance:
+    type: "object"
+    required:
+    - "coverageList"
+    - "insuredList"
+    - "startDate"
+    properties:
+      startDate:
+        type: "string"
+        format: "date"
+        description: "The proposed commencement date of the insurance"
+      insuredList:
+        type: "array"
+        items:
+          $ref: "#/definitions/Insured"
+      coverageList:
+        type: "array"
+        items:
+          $ref: "#/definitions/ILPProduct"
+      topupList:
+        type: "array"
+        items:
+          $ref: "#/definitions/Topup"
+      withdrawalList:
+        type: "array"
+        items:
+          $ref: "#/definitions/Withdrawal"
+      fundList:
+        type: "array"
+        items:
+          $ref: "#/definitions/Fund"
+  TraditionalProduct:
+    type: "object"
+    properties:
+      productId:
+        type: "integer"
+      productCode:
+        type: "string"
+      productName:
+        type: "string"
+      packageCode:
+        type: "string"
+        description: "The package code to reference the marketing plan for this product."
+      insured:
+        $ref: "#/definitions/DirectMedicalProduct_insured"
+      benefitLevel:
+        type: "string"
+        description: "For some term plans, to simplify the input, there are usually\
+          \ predefined levels. These can be mapped to the pre-defined amounts of death\
+          \ benefit and TPD benefit"
+      sumAssured:
+        type: "number"
+        description: "The amount of death benefit / TPD coverage. Possibly derived\
+          \ from the benefitLevel or entered directly in some cases"
+      sumAssuredUnit:
+        type: "number"
+        description: "For some products the number of sum assured units is specified\
+          \ instead of the sum assured. Each unit will represent a specified amount\
+          \ of coverage. E.g. 1 unit = 50,000, so the client may choose 5 units which\
+          \ is equivalent to 5 x 50,000 = 250,000 sum assured."
+      coverageTermType:
+        type: "string"
+        description: "Valid values 1=Cover Whole Life, 2=Cover for certain years,\
+          \ 3=Cover up to certain age, 4=Cover for certain months. Normally, customers\
+          \ will be given a choice to cover for a certain years (i.e. 2) or cover\
+          \ up certain age (i.e. 3). At times, the product can only have 1 coverage\
+          \ term, e.g. 5 years, which is typical for medical products"
+        default: "2"
+      coverageTermValue:
+        type: "number"
+        description: "If coverageTermType=2, then it means the number of years that\
+          \ coveraage if required, if coverageTermType=3, then value here means the\
+          \ age in which coverage is required."
+      premiumPaymentTermType:
+        type: "string"
+        description: "Similar meaning to coverageTermType"
+      premiumPaymentTermValue:
+        type: "number"
+        description: "Similar meaning to coverageTermValue"
+      currency:
+        type: "string"
+        description: "When selling direct (online), there should be only one currency,\
+          \ and should be known to the client or omitted."
+        default: "CNY"
+      paymentMode:
+        type: "string"
+        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
+          \ 4=Monthly, 5=Single. When selling direct (internet), to show that it is\
+          \ cheap, default is montly"
+        default: "4"
+      firstYearPremium:
+        type: "number"
+        description: "Calculated by the eBaoCloud service, representing the 1st year\
+          \ annual premium"
+      premiumAmount:
+        type: "number"
+        description: "Premium amount taking into account the payment mode, so if payment\
+          \ mode is monthly (default), then this represents the monthly premium amount.\
+          \ This is also calculated by the eBaoCloud API service"
+      extensionFields:
+        $ref: "#/definitions/ExtensionField"
+  ILPProduct:
+    type: "object"
+    properties:
+      productId:
+        type: "integer"
+      productCode:
+        type: "string"
+      productName:
+        type: "string"
+      packageCode:
+        type: "string"
+        description: "The package code to reference the marketing plan for this product."
+      targetPremium:
+        type: "number"
+        description: "The amount of regular premium to be contributed"
+      regularTopup:
+        type: "number"
+        description: "Another stream of premium contribution regularly"
+      sumAssured:
+        type: "number"
+        description: "The amount of death benefit / TPD coverage. Possibly derived\
+          \ from the benefitLevel or entered directly in some cases"
+      sumAssuredUnit:
+        type: "number"
+        description: "For some products the number of sum assured units is specified\
+          \ instead of the sum assured. Each unit will represent a specified amount\
+          \ of coverage. E.g. 1 unit = 50,000, so the client may choose 5 units which\
+          \ is equivalent to 5 x 50,000 = 250,000 sum assured."
+      benefitLevel:
+        type: "string"
+        description: "For some term plans, to simplify the input, there are usually\
+          \ predefined levels. These can be mapped to the pre-defined amounts of death\
+          \ benefit and TPD benefit"
+      currency:
+        type: "string"
+        description: "When selling direct (online), there should be only one currency,\
+          \ and should be known to the client or omitted."
+        default: "CNY"
+      paymentMode:
+        type: "string"
+        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
+          \ 4=Monthly, 5=Single. When selling direct (internet), to show that it is\
+          \ cheap, default is montly"
+        default: "4"
+      monthlyCostOfInsurance:
+        type: "number"
+        description: "Calculated by the eBaoCloud service, representing the monthly\
+          \ cost of insurance (risk charge)"
+      extensionFields:
+        $ref: "#/definitions/ExtensionField"
+  ExtensionField:
+    type: "object"
+    description: "Use this object to hold the aditional text fields due to local customizations"
+    additionalProperties:
+      $ref: "#/definitions/Any"
+  TextExtensionField:
+    type: "object"
+    description: "Use this object to hold the aditional text fields due to local customizations"
+    additionalProperties:
+      type: "string"
+  NumberExtensionField:
+    type: "object"
+    description: "Use this object to hold the aditional number fields due to local\
+      \ customizations"
+    additionalProperties:
+      type: "number"
+  QuestionAnswerField:
+    properties:
+      qlabel:
+        type: "string"
+        description: "The label is really optional and redundant but leaving the label\
+          \ here provides context on what was the question so that it is easier to\
+          \ understand the answer."
+      value:
+        $ref: "#/definitions/Any"
+      multiValues:
+        type: "array"
+        items:
+          $ref: "#/definitions/Any"
+  QuestionAndResponses:
+    type: "object"
+    additionalProperties:
+      $ref: "#/definitions/QuestionAnswerField"
+  PolicyholderDisclosures:
+    type: "object"
+    properties:
+      disclosures:
+        $ref: "#/definitions/QuestionAndResponses"
+  PolicyholderDisclosuresSpecification:
+    type: "object"
+    properties:
+      questionList:
+        type: "array"
+        items:
+          $ref: "#/definitions/PolicyholderDisclosuresSpecification_questionList"
   inline_response_200:
     properties:
       docs:
@@ -3448,6 +4756,17 @@ definitions:
         type: "string"
       email:
         type: "string"
+  PaymentMethod_giroDetails:
+    properties:
+      bankAccountName:
+        type: "string"
+      bankName:
+        type: "string"
+      bankBranch:
+        type: "string"
+      bankAccountNumber:
+        type: "string"
+    description: "Giro details are required when the paymentMethod=giro"
   DirectMedicalProduct_insured:
     properties:
       name:
@@ -3475,6 +4794,45 @@ definitions:
         type: "string"
         description: "Generally SMOKER or NON-SMOKER and used as a factor to determine\
           \ the risk premium"
+  PolicyholderDisclosuresSpecification_questionList:
+    properties:
+      qid:
+        type: "string"
+      widget:
+        type: "string"
+        description: "Values are textInput, numberInput, dateInput, enum, yesno, checkbox,\
+          \ radio, hidden, multiLineTextInput. Use hidden if you only want to show\
+          \ a label. The widget can be used to derive the data type of the answer\
+          \ to the question i.e. textInput -> text, numberInput -> number, dateInput\
+          \ -> date, enum -> text, yesno -> text, checkbox -> boolean, radio -> text,\
+          \ hidden -> text, multiLineTextInput -> text"
+      codeTable:
+        type: "string"
+        description: "When suggestedWidget = enum or radio, this optional field is\
+          \ the name of the code table to use for the multiple options. The code values\
+          \ can be obtained using /proposals/codeTables end-point"
+      required:
+        type: "boolean"
+        description: "Mandatory or optional field. Used for validation"
+      qlabel:
+        type: "string"
+        description: "The label for the question"
+      showChildrenValue:
+        type: "string"
+        description: "Show the listChildren or objectChildren if the value matches\
+          \ the value in this field."
+      listChildren:
+        type: "array"
+        description: "Identify the list of qid. Mutually exclusive with objectChildren.\
+          \ Both listChildren and objectChild can be an empty list."
+        items:
+          type: "string"
+      objectChildren:
+        type: "array"
+        description: "List of qid. Mutually exclusive with listChildren. Both listChildren\
+          \ and objectChild can be an empty list"
+        items:
+          type: "string"
 parameters:
   queryOffset:
     name: "offset"

@@ -5,9 +5,17 @@ function run() {
     dbapi.init()
     .then( status => {
 //         api.fetchSubmissionSummaryList([ [{key:'pk',oper:'eq',value:1},{key:'submissionChannel',oper:'eq',value:'directx'}],[{key:'submissionType',oper:'eq',value:'FirstPartyMedicalProposal'}]])
-         api.fetchFirstPartyMedicalSubmissionSummaryList('ycloh','FirstPartyMedicalSubmission',[[{key:"submissionChannel",oper:'eq', value:"39"}]])
+        //  api.fetchFirstPartyMedicalSubmissionSummaryList('ycloh','FirstPartyMedicalSubmission',[[{key:"submissionChannel",oper:'eq', value:"39"}]])
+        //  .then(result => console.log("result ===>", result))
+        //  .catch((err) => console.log("****-- error ---***", err))
+
+        //  api.fetchSubmissionSummaryList('default','FirstPartyTermProposalSubmission') //,[[{key:"submissionChannel",oper:'eq', value:"39"}]])
+        //  api.fetchSubmissionSummaryList('ycloh') //,[[{key:"submissionChannel",oper:'eq', value:"39"}]])
+         api.fetchProposalSubmissionByPk(15,'FirstPartyTermProposalSubmission') //,[[{key:"submissionChannel",oper:'eq', value:"39"}]])
          .then(result => console.log("result ===>", result))
          .catch((err) => console.log("****-- error ---***", err))
+
+
     });
 }
 setTimeout(run, 500)

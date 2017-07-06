@@ -3,7 +3,7 @@ var _ = require('lodash')
 var json = require('./src/product6500/inputjson')
 //var json = require('./src/product1010893/inputjson')
 //json = {insuredList:[{"name":"demo","birthDate":"1918-02-20","gender":"MALE","smoking":"NON-SMOKER"}],"productList":[{"productId":6500,"lifeAssuredNumber":0,"paymentMode":"1"}]}
-var res = api.validate(json, ['validateAllFundAllocations']);
+//var res = api.validate(json, ['validateAllFundAllocations']);
 //var res = api.validate(json, ['validateMain','validateAllRiders'])
 //var xx = api.validate(json,['validateMain','validateAllRiders']);
 //var errcount = _.sum( Object.keys(xx).map(x => xx[x].length))
@@ -13,6 +13,8 @@ var res = api.validate(json, ['validateAllFundAllocations']);
 
 //var res = api.calc(json,['monthlyCostOfInsurance','r1.monthlyCostOfInsurance'],[]);
 //var res = api.getConfig(123);
+
+var res = api.availablePaymentMethods(6500)
 console.log("res -->", JSON.stringify(res,null,2));
 //var res = api.getPackageInitialData("AP88");
 //var res = api.getLifeProduct(1010893)

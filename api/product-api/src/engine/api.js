@@ -533,7 +533,7 @@ function availableRiders( inputjson ) {
               products.forEach(prd => {
                   if (!prd.productId && prd.productCode) {prd.productId = productCodeMap[prd.productCode]}
                   if (configuredProducts.indexOf(prd.productId+'') < 0) {
-                    throw new Error(`Product (${prd.productCode || prd.productId}) is not a configured product`)
+                    throw new Error(`Product ${prd.productCode + '(' + prd.productId + ')'} is not a configured product`)
                   }
               })
                 // let people = policy.people;
@@ -703,7 +703,7 @@ function validate(inputjson, validatorList) {
   try {
     _prepareInput(ctx, inputjson);
   } catch (e) {
-    return e.message
+    return [e.message]
   }
   // tiggered using engine.validate(json, ['validateMain'])
   let ordering = {main: 0, fund: 10, loading: 20, pdt:30, r: 31, pol: 40, topup: 50, withdraw: 60};
@@ -1189,7 +1189,7 @@ function _prepareInput(ctx, inputJson) {
     products.forEach(prd => {
         if (!prd.productId && prd.productCode) {prd.productId = productCodeMap[prd.productCode]}
         if (configuredProducts.indexOf(prd.productId+'') < 0) {
-          throw new Error(`Product (${prd.productCode || prd.productId}) is not a configured product`)
+          throw new Error(`Product ${prd.productCode + '(' + prd.productId + ')'} is not a configured product`)
         }
     })
     let mainProductId = main.productId;

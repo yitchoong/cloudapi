@@ -102,6 +102,8 @@ module.exports = {
         validateSaMultiple          : 'pass',
         validateMinMaxSaUnits       : 'pass',
         validateCoverageEndAge      : 'pass',
+        validateInput               : 'validateInput__01',
+        validatePersonProduct       : 'validatePersonProduct__01'
 
     },
     input                   : {
@@ -114,6 +116,21 @@ module.exports = {
         quotationDate       : 'date',
 
     },
+    inputFields  : {
+        productId            : 'num',
+        productCode          : 'str',
+        lifeAssuredNumber    : "num",
+        coverageTermType     : "str",
+        coverageTermValue    : "num",
+        sumAssured           : "num",
+        paymentMode          : "str"
+    },
+    personFields : {
+      name : "str",
+      gender : "str",
+      birthDate : "str",
+    },
+
     calculationFields       : ['entryAge','phEntryAge','coverageTerm','annualPremium','premium'],
     illustrationFields      : ['t', 'ageAtT', 'pol.polAnnualPremiumAtT', 'pol.polTotalPremiumPaidAtT',
                                'survivalBenefitGtdAtT','accumSurvivalBenefitAtT', 'surrenderValueGtdAtT',

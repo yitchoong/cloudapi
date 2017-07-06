@@ -211,6 +211,7 @@ function createProposalSubmission(submission) {
     submission.doctype = "Submission"
     submission.status = "SUBMITTED"
     submission.lastModified = moment().format("YYYY-MM-DD HH24:mm:ss")
+    if (!submission.userId) submission.userId = 'default'
 
     const jsonFields = ["submissionData", "extensionFields", "messages"]
     jsonFields.forEach(fname => submission[fname] ? submission[fname] = JSON.stringify(submission[fname]) : "")
@@ -254,22 +255,42 @@ function fetchProposalSubmissionByRefNo(refNo) {
     })
 }
 // fetch a submission by pk
-function fetchProposalSubmissionByPk(pk) {
+function fetchProposalSubmissionByPk(pk, submissionType='') {
     const fnames = ["pk", "doctype","submissionDate", "submissionType", "submissionChannel", "tenantCode", "submissionRefNo", "status", "decision", "userId", "lastModified","submissionData", "extensionFields", "messages"]
 
     // ["submissionData", "extensionFields", "messages"].forEach(fname => submission[fname] ? submission[fname] = JSON.stringify(submission[fname]) : "")
     const jsonFields = ["submissionData", "extensionFields", "messages"] ;
+
+    let typeClause = ""
+    if ( _.isArray(submissionType) && submissionType.length > 0 ) {
+        let clause = "AND submissionType in ("
+        submissionType.forEach( (t,i) => clause += "'" + t + "'" + (i+1 === submissionType.length ? ")" : ","))
+        typeClause = clause
+    } else {
+        typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
+    }
+
+    // let typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
+
     return new Promise((resolve,reject) => {
         getDB()
         .then(database => {
             let fieldNames = fnames.join(',')
-            let sql = `select ${fieldNames} from submissions where pk = ? `
+            let sql = `select ${fieldNames} from submissions where pk = ? ${typeClause}`
             database.get(sql,[pk], (err, row) => {
-                if (err) reject(err)
-                jsonFields.forEach(fname => {
-                    row[fname] ? row[fname] = JSON.parse(row[fname]) : row[fname] = fname === 'messages' ? [] : {}
-                })
-                resolve(row)
+                console.log("***", row, err)
+                if (err) {
+                    reject(err)
+                } else {
+                    if (!row) {
+                        resolve(null)
+                    } else {
+                        jsonFields.forEach(fname => {
+                            row[fname] ? row[fname] = JSON.parse(row[fname]) : row[fname] = fname === 'messages' ? [] : {}
+                        })
+                        resolve(row)
+                    }
+                }
             })
         })
     })
@@ -277,11 +298,11 @@ function fetchProposalSubmissionByPk(pk) {
 
 function fetchSubmissionSummaryList(userId, submissionType, filters, limit, offset, orderBy='') {
     const fnames = ["pk", "doctype","submissionDate", "submissionType", "submissionChannel", "tenantCode", "submissionRefNo", "status", "decision", "userId", "lastModified", "extensionFields"]
-    return _fetchSubmissions(fnames, userId, submissionType, filters, limit, offset, orderBy='')
+    return _fetchSubmissions(fnames, userId, submissionType, filters, limit, offset, orderBy)
 }
 function fetchSubmissionList(userId, submissionType, filters, limit, offset, orderBy='') {
     const fnames = ["pk", "doctype","submissionDate", "submissionType", "submissionChannel", "tenantCode", "submissionRefNo", "status", "decision", "userId", "lastModified","submissionData", "extensionFields", "messages"]
-    return _fetchSubmissions(fnames, userId, filters, limit, offset, orderBy='')
+    return _fetchSubmissions(fnames, userId, filters, limit, offset, orderBy)
 }
 
 function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offset, orderBy) {
@@ -290,7 +311,14 @@ function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offse
     let sortOrder = orderBy.startsWith('-') ? 'desc' : 'asc';
     let sort = orderBy.startsWith('-') ? orderBy.substring(1) : orderBy;
     let sorting = orderBy ? `ORDER BY ${sort} ${sortOrder}` : ''
-    let typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
+    let typeClause = ""
+    if ( _.isArray(submissionType) && submissionType.length > 0 ) {
+        let clause = "AND submissionType in ("
+        submissionType.forEach( (t,i) => clause += "'" + t + "'" + (i+1 === submissionType.length ? ")" : ","))
+        typeClause = clause
+    } else {
+        typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
+    }
 
     // the filters need to be translated to where conditions , err....not so simple
     // not production ready --- need to use prepare statement instead

@@ -2,11 +2,12 @@ swagger: '2.0'
 info:
   title: eBao Cloud API (Product & Proposal)
   description: Sales API for the product & proposal domain on eBao Cloud
-  version: "0.0.9"
+  version: "0.0.10"
   # version 0.0.5 include insurer and package resources here
   # version 0.0.7 packageId to packageCode
   # version 0.0.8 changes due to sample implementations
   # version 0.0.9 Added support for submission of FirstPartyMedical proposal
+  # version 0.0.10 Added support for submission of FirstPartyILP proposal submission
 
 # the domain of the service
 host: localhost:8080
@@ -21,6 +22,7 @@ produces:
 
 # ---- Security Definitions -----------
 securityDefinitions:
+
   APISecurity:
     type: apiKey
     in: header
@@ -1228,6 +1230,311 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
+  '/submissions/firstPartyTermProposal':
+    get:
+      summary: Fetch a list of direct first party term proposal submissions
+      description: Use this end point to fetch all the direct first party term proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchFirstPartyTermProposalSubmissionList"
+      responses:
+        200:
+          description: Successful response which returns a list of proposal submissions.
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/SubmissionSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new direct first party term proposal submission document (containing proposal details)
+      description: This end point is used for the submission of a first party term proposal. This end point is useful when proposals are not persisted prior to submission.
+      tags:
+        - Submission
+      parameters:
+        - $ref: '#/parameters/language'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The submission document containing the proposal
+          schema:
+            $ref: '#/definitions/FirstPartyTermProposalSubmission'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+      operationId: "createFirstPartyTermProposalSubmission"
+      responses:
+        200:
+          description: Successful response to create a new proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/FirstPartyTermProposalSubmission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/submissions/firstPartyTermProposal/{submissionId}':
+    get:
+      summary: Fetch a first party term proposal submission document
+      description: Use this end-point to fetch a first party term proposal submissions. This will fetch the full document including the proposal data, and the submission status.
+      parameters:
+        - $ref : '#/parameters/language'
+        - name : submissionId
+          in: path
+          required: true
+          type: string
+          description: Unique id for the submission
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchFirstPartyTermProposalSubmission"
+      responses:
+        200:
+          description: Successful response which returns the submission document
+          schema:
+            $ref: '#/definitions/FirstPartyTermProposalSubmission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/submissions/firstPartyTraditionalProposal':
+    get:
+      summary: Fetch a list of first party traditional proposal submissions
+      description: Use this end point to fetch all the first party traditional proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision. Eg. submissionRefNo*eq*12345
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchFirstPartyTraditionalProposalSubmissionList"
+      responses:
+        200:
+          description: Successful response which returns a list of first party traditional proposal submissions.
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/SubmissionSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new first party traditional proposal submission document (containing proposal details)
+      description: This end point is used for the submission of a first party traditional proposal. This end point is used when proposals are not persisted prior to submission, as the complete proposal details will be included in the submission.
+      tags:
+        - Submission
+      parameters:
+        - $ref: '#/parameters/language'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The submission document containing the proposal
+          schema:
+            $ref: '#/definitions/FirstPartyTraditionalProposalSubmission'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+
+      operationId: "createFirstPartyTraditionalProposalSubmission"
+      responses:
+        200:
+          description: Successful response to create a new first party traditional proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/FirstPartyTraditionalProposalSubmission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/submissions/firstPartyTraditionalProposal/{submissionId}':
+    get:
+      summary: Fetch a first party traditional proposal submission document
+      description: Use this end-point to fetch a first party traditional proposal submissions. This will fetch the full document including the proposal data, and the submission status.
+      parameters:
+        - $ref : '#/parameters/language'
+        - name : submissionId
+          in: path
+          required: true
+          type: string
+          description: Unique id for the submission
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchFirstPartyTraditionalProposalSubmission"
+      responses:
+        200:
+          description: Successful response which returns the submission document
+          schema:
+            $ref: '#/definitions/FirstPartyTraditionalProposalSubmission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/submissions/firstPartyILPProposal':
+    get:
+      summary: Fetch a list of first party ILP proposal submissions
+      description: Use this end point to fetch all the first party ILP proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel, tenantCode, status, and decision. Eg. submissionRefNo*eq*12345
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchFirstPartyILPProposalSubmissionList"
+      responses:
+        200:
+          description: Successful response which returns a list of first party ILP proposal submissions.
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/SubmissionSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new first party ILP proposal submission document (containing proposal details)
+      description: This end point is used for the submission of a first party traditional proposal. This end point is used when proposals are not persisted prior to submission, as the complete proposal details will be included in the submission.
+      tags:
+        - Submission
+      parameters:
+        - $ref: '#/parameters/language'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The submission document containing the proposal
+          schema:
+            $ref: '#/definitions/FirstPartyILPProposalSubmission'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+
+      operationId: "createFirstPartyILPProposalSubmission"
+      responses:
+        200:
+          description: Successful response to create a new first party traditional proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/FirstPartyILPProposalSubmission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/submissions/firstPartyILPProposal/{submissionId}':
+    get:
+      summary: Fetch a first party ILP proposal submission document
+      description: Use this end-point to fetch a first party ILP proposal submissions. This will fetch the full document including the proposal data, and the submission status.
+      parameters:
+        - $ref : '#/parameters/language'
+        - name : submissionId
+          in: path
+          required: true
+          type: string
+          description: Unique id for the submission
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchFirstPartyILPProposalSubmission"
+      responses:
+        200:
+          description: Successful response which returns the submission document
+          schema:
+            $ref: '#/definitions/FirstPartyILPProposalSubmission'
+        401:
+          $ref: '#/responses/Standard401Response'
+        404:
+          $ref: '#/responses/Standard404Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/submissions':
+    get:
+      summary: Fetch a list of submissions (all submission types)
+      description: Use this end point to fetch all the submissions regardless of submission types. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Submission
+      operationId: "fetchSubmissionList"
+      responses:
+        200:
+          description: Successful response which returns a list of proposal submissions.
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/SubmissionSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
 
   '/proposals/template/codeTables':
     get:
@@ -1275,8 +1582,33 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
+  '/proposals/template/policyholderDisclosureSpecs':
+    get:
+      summary: Fetch the specification for the policyholder disclosure section for the given tenantCode.  used in the proposal application.
+      description: This end point should be used at design time to get the list of codeTables with the valid values that can be used for the fields with drop down values in the proposal form.
+      tags:
+        - Submission
+      parameters:
+        - name: productCode
+          in: query
+          description: Product code
+          required: false
+          type: string
+        - $ref: '#/parameters/TenantCode'
+        - $ref : '#/parameters/language'
+
+      operationId: "fetchPolicyholderDisclosureSpecs"
+      responses:
+        200:
+          description: Successful response. Returns the list of question in the policyholder disclosure section
+          schema:
+            $ref: '#/definitions/PolicyholderDisclosuresSpecification'
+
+
 # ******************************  definitions  ***************************
 definitions:
+  Any:
+    description: Can be any data type
 
   Insurer:
     type: object
@@ -1430,7 +1762,6 @@ definitions:
             type: string
             description: Additional remarks about this product
 
-
   PackageLiability:
     type: object
     properties:
@@ -1446,22 +1777,6 @@ definitions:
       displayOrder:
         type: number
         description: Controls the ordering when displaying the liability information.
-
-  # PackageBenefit:
-  #   type: object
-  #   properties:
-  #     benefitId:
-  #       type: string
-  #       description: Unique id of the benefit
-  #     benefitName:
-  #       type: string
-  #       description: Name of the benefit
-  #     benefitDesc:
-  #       type: string
-  #       description: Description about the benefit
-  #     displayOrder:
-  #       type: number
-  #       description: Controls the ordering when displaying the benefit
 
   PackageCoveragePeriod:
     type: object
@@ -1658,7 +1973,6 @@ definitions:
 
           # Does not seem used  -- remove first
 
-
   # definition for object when asking for a new quote
 
   NewQuote:
@@ -1765,7 +2079,6 @@ definitions:
             type: string
           attachCompulsory:
             type: string
-
 
   ProductSummary:
     type: object
@@ -1934,7 +2247,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ProductInputFields'
-
 
   ProductCoveragePeriod:
     type: object
@@ -2170,42 +2482,6 @@ definitions:
       illustrationFields:
         $ref: '#/definitions/IllustrationMap'
 
-  # Fund:
-  #   type: object
-  #   properties:
-  #     fundCode:
-  #       type: string
-  #       description: The code for the fund
-  #     fundName:
-  #       type: string
-  #       description: Name of the fund for investment policies
-  #     targetPremiumPercent:
-  #       type: number
-  #       description: The percentage allocation for target (basic) premium
-  #     adhocPercent:
-  #       type: number
-  #       description: The percentage allocation for ad-hoc topups
-  #     regularTopupPercent:
-  #       type: number
-  #       format: percentage
-  #       description: The percentage allocation for regular topups
-
-  # Topup:
-  #   type: object
-  #   properties:
-  #     year:
-  #       type: number
-  #     amount:
-  #       type: number
-
-  # Withdrawal:
-  #   type: object
-  #   properties:
-  #     year:
-  #       type: number
-  #     amount:
-  #       type: number
-
   BasicProposedInsurance:
     properties:
       startDate:
@@ -2221,33 +2497,6 @@ definitions:
         items:
           $ref: '#/definitions/BasicProductInput'
 
-  # ProposedInsuranceInput:
-  #   properties:
-  #     startDate:
-  #       type: string
-  #       format: date
-  #     insuredList:
-  #       type: array
-  #       items:
-  #         $ref: '#/definitions/Insured'
-  #     productList:
-  #       type: array
-  #       description: First item in the array will be the main product
-  #       items:
-  #         $ref: '#/definitions/ProductInput'
-  #     fundList:
-  #       type: array
-  #       items:
-  #         $ref: '#/definitions/Fund'
-  #     topupList:
-  #       type: array
-  #       items:
-  #         $ref: '#/definitions/Topup'
-  #     withdrawalList:
-  #       type: array
-  #       items:
-  #         $ref: '#/definitions/Withdrawal'
-
   ProposedInsurance:
     properties:
       insuredList:
@@ -2257,21 +2506,7 @@ definitions:
       startDate:
         type: string
         format: date
-      # status:
-      #   type: string
-      #   description: valid values are "NEW","PENDING","SIGNED","GENERATED","COMPLETED"
-      # lastModified:
-      #   type: string
-      #   format: date
-      # version:
-      #   type: number
-      #   description: The revision number used for optimistic locking
-      # userName:
-      #   type: string
-      #   description: The user that created this quotation
-      # mainProduct:
-      #   $ref: '#/definitions/ProductInput'
-      # riderList:
+
       productList:
         type: array
         description: First item in the array will be the main product
@@ -2333,30 +2568,6 @@ definitions:
               type: integer
             value:
               type: number
-
-  # PlanHighlight:
-  #   allOf:
-  #     - $ref: '#/definitions/PackageHighlight'
-
-  # PlanFeature:
-  #   allOf:
-  #   - $ref: '#/definitions/PackageProductFeature'
-
-  # PlanValueAdd:
-  #   type: object
-  #   properties:
-  #     valueAddedId:
-  #       type: string
-  #     valueAddedName:
-  #       type: string
-  #     valueAddedDesc:
-  #       type: string
-  #     valueAddedCode:
-  #       type: string
-  #     valueAddedPic:
-  #       type: string
-  #     displayOrder:
-  #       type: number
 
   PlanInfo:
     type: object
@@ -2462,8 +2673,6 @@ definitions:
             displayOrder:
               type: number
 
-
-
   ValidatorSuccessResult:
     type: object
     properties:
@@ -2472,17 +2681,6 @@ definitions:
         type: string
         default: "ok"
 
-
-  # Error:
-  #   type: object
-  #   properties:
-  #     code:
-  #       type: integer
-  #       format: int32
-  #     message:
-  #       type: string
-  #     fields:
-  #       type: string
 
   # ----------- definitions for submissions & proposal
 
@@ -2515,6 +2713,118 @@ definitions:
         $ref: '#/definitions/FirstPartyMedicalProposedInsurance'
       premiumPaymentSection:
         $ref: '#/definitions/PaymentGatewayPaymentSection'
+      promotionCode:
+        type: string
+        description: For marketing purposes, the campaign or promotion code.
+
+  FirstPartyTermProposal:
+    type: object
+    required:
+      - proposalType
+      - proposerName
+      - policyholderSection
+      - proposedInsuranceSection
+    properties:
+      proposalType:
+        type: string
+        description: e.g. FirstPartyTerm, FirstPartyMedical etc
+        default: "FirstyPartyTerm"
+      policyNumber:
+        type: string
+        readOnly: true
+        description: Policy number assigned by the insurer to this proposal. Should be omitted when by the client.
+      proposerName:
+        type: string
+        description: Should be the same as the policyholder full name
+      submissionChannel:
+        type: string
+        description: Channel which the proposal is submitted, e.g. direct, banca, etc
+        default: "direct"
+      tenantCode:
+        type: string
+        description: Insurer i.e. receipient of this proposal submission
+      policyholderSection:
+        $ref: '#/definitions/BasicPolicyholderSection'
+      proposedInsuranceSection:
+        $ref: '#/definitions/FirstPartyTermProposedInsurance'
+      premiumPaymentSection:
+        $ref: '#/definitions/PaymentGatewayPaymentSection'
+      promotionCode:
+        type: string
+        description: For marketing purposes, the campaign or promotion code.
+
+  FirstPartyTraditionalProposal:
+    type: object
+    required:
+      - proposalType
+      - proposerName
+      - policyholderSection
+      - proposedInsuranceSection
+    properties:
+      proposalType:
+        type: string
+        description: e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal, etc
+        default: "FirstyPartyTermProposal"
+      policyNumber:
+        type: string
+        readOnly: true
+        description: Policy number assigned by the insurer to this proposal. Should be omitted when by the client.
+      proposerName:
+        type: string
+        description: Should be the same as the policyholder full name
+      submissionChannel:
+        type: string
+        description: Channel which the proposal is submitted, e.g. direct, banca, etc
+        default: "direct"
+      tenantCode:
+        type: string
+        description: Insurer i.e. receipient of this proposal submission
+      policyholderSection:
+        $ref: '#/definitions/BasicPolicyholderSection'
+      policyholderDisclosureSection:
+        $ref: '#/definitions/PolicyholderDisclosures'
+      proposedInsuranceSection:
+        $ref: '#/definitions/FirstPartyTraditionalProposedInsurance'
+      premiumPaymentSection:
+        $ref: '#/definitions/PaymentSection'
+      promotionCode:
+        type: string
+        description: For marketing purposes, the campaign or promotion code.
+
+  FirstPartyILPProposal:
+    type: object
+    required:
+      - proposalType
+      - proposerName
+      - policyholderSection
+      - proposedInsuranceSection
+    properties:
+      proposalType:
+        type: string
+        description: e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal, etc
+        default: "FirstyPartyTermProposal"
+      policyNumber:
+        type: string
+        readOnly: true
+        description: Policy number assigned by the insurer to this proposal. Should be omitted when by the client.
+      proposerName:
+        type: string
+        description: Should be the same as the policyholder full name
+      submissionChannel:
+        type: string
+        description: Channel which the proposal is submitted, e.g. direct, banca, etc
+        default: "direct"
+      tenantCode:
+        type: string
+        description: Insurer i.e. receipient of this proposal submission
+      policyholderSection:
+        $ref: '#/definitions/BasicPolicyholderSection'
+      policyholderDisclosureSection:
+        $ref: '#/definitions/PolicyholderDisclosures'
+      proposedInsuranceSection:
+        $ref: '#/definitions/FirstPartyILPProposedInsurance'
+      premiumPaymentSection:
+        $ref: '#/definitions/PaymentSection'
       promotionCode:
         type: string
         description: For marketing purposes, the campaign or promotion code.
@@ -2649,6 +2959,221 @@ definitions:
             message:
               type: string
 
+  FirstPartyTermProposalSubmission:
+    type: object
+    required:
+      - submissionDate
+      - submissionType
+      - submissionData
+      - submissionChannel
+      - tenantCode
+    properties:
+      pk:
+        type: string
+        readOnly: true
+        description: Unique id for the submission. Assigned by backend
+      doctype:
+        type: string
+        readOnly: true
+        default: "Submission"
+        description: Assigned by backend
+      submissionDate:
+        type: string
+        format: date
+      submissionType:
+        type: string
+        description: submission type e.g. FirstPartyMedicalProposal
+        default: "FirstPartyTermProposal"
+      submissionChannel:
+        type: string
+        description: Channel of submission e.g. direct, banca, agency, broker
+        default: "direct"
+      tenantCode:
+        type: string
+        description: Insurer, i.e. recipient of the submission
+      submissionRefNo:
+        type: string
+        description: A reference number supplied by the client to uniquely identify the submission
+      status:
+        type: string
+        readOnly: true
+        default: "SUBMITTED"
+        description: Status of the submission. Valid values should be SUBMITTED, ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend
+      decision:
+        type: string
+        readOnly: true
+        default: "ACCEPTED"
+        description: After the submission is processed, there should be a decision i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which is sold online (direct), only clean cases are accepted, so the decision should always be ACCEPTED
+      userId:
+        type: string
+        readOnly: true
+        description: The user that created this submission i.e. sender
+      lastModified:
+        type: string
+        format: date
+        readOnly: true
+        description: The last time this submission document has been modified
+      extensionFields:
+        type: object
+        description: Use this object to hold the aditional fields due to local customizations
+        additionalProperties:
+          type: string
+      submissionData:
+        $ref: '#/definitions/FirstPartyTermProposal'
+      messages:
+        type: array
+        readOnly: true
+        description: messages can be used to provide more information on the status or decision on the submission
+        items:
+          type: object
+          properties:
+            messageDate:
+              type: string
+            message:
+              type: string
+
+  FirstPartyTraditionalProposalSubmission:
+    type: object
+    required:
+      - submissionDate
+      - submissionType
+      - submissionData
+      - submissionChannel
+      - tenantCode
+    properties:
+      pk:
+        type: string
+        readOnly: true
+        description: Unique id for the submission. Assigned by backend
+      doctype:
+        type: string
+        readOnly: true
+        default: "Submission"
+        description: Assigned by backend
+      submissionDate:
+        type: string
+        format: date
+      submissionType:
+        type: string
+        description: submission type e.g. FirstPartyEndowmentProposal
+        default: "FirstPartyTermProposal"
+      submissionChannel:
+        type: string
+        description: Channel of submission e.g. direct, banca, agency, broker
+        default: "direct"
+      tenantCode:
+        type: string
+        description: Insurer, i.e. recipient of the submission
+      submissionRefNo:
+        type: string
+        description: A reference number supplied by the client to uniquely identify the submission at the client
+      status:
+        type: string
+        readOnly: true
+        default: "SUBMITTED"
+        description: Status of the submission. Valid values should be SUBMITTED, ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend
+      decision:
+        type: string
+        readOnly: true
+        default: "ACCEPTED"
+        description: After the submission is processed, there should be a decision i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which is sold online (direct), only clean cases are accepted, so the decision should always be ACCEPTED
+      userId:
+        type: string
+        readOnly: true
+        description: The user that created this submission i.e. sender
+      lastModified:
+        type: string
+        format: date
+        readOnly: true
+        description: The last time this submission document has been modified
+      submissionData:
+        $ref: '#/definitions/FirstPartyTraditionalProposal'
+      messages:
+        type: array
+        readOnly: true
+        description: messages can be used to provide more information on the status or decision on the submission
+        items:
+          type: object
+          properties:
+            messageDate:
+              type: string
+            message:
+              type: string
+      textExtensionFields:
+        $ref: '#/definitions/TextExtensionField'
+      numberExtensionFields:
+        $ref: '#/definitions/NumberExtensionField'
+
+  FirstPartyILPProposalSubmission:
+    type: object
+    required:
+      - submissionDate
+      - submissionType
+      - submissionData
+      - submissionChannel
+      - tenantCode
+    properties:
+      pk:
+        type: string
+        readOnly: true
+        description: Unique id for the submission. Assigned by backend
+      doctype:
+        type: string
+        readOnly: true
+        default: "Submission"
+        description: Assigned by backend
+      submissionDate:
+        type: string
+        format: date
+      submissionType:
+        type: string
+        description: submission type e.g. FirstPartyEndowmentProposal
+        default: "FirstPartyTermProposal"
+      submissionChannel:
+        type: string
+        description: Channel of submission e.g. direct, banca, agency, broker
+        default: "direct"
+      tenantCode:
+        type: string
+        description: Insurer, i.e. recipient of the submission
+      submissionRefNo:
+        type: string
+        description: A reference number supplied by the client to uniquely identify the submission at the client
+      status:
+        type: string
+        readOnly: true
+        default: "SUBMITTED"
+        description: Status of the submission. Valid values should be SUBMITTED, ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend
+      decision:
+        type: string
+        readOnly: true
+        default: "ACCEPTED"
+        description: After the submission is processed, there should be a decision i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which is sold online (direct), only clean cases are accepted, so the decision should always be ACCEPTED
+      userId:
+        type: string
+        readOnly: true
+        description: The user that created this submission i.e. sender
+      lastModified:
+        type: string
+        format: date
+        readOnly: true
+        description: The last time this submission document has been modified
+      submissionData:
+        $ref: '#/definitions/FirstPartyILPProposal'
+      messages:
+        type: array
+        readOnly: true
+        description: messages can be used to provide more information on the status or decision on the submission
+        items:
+          type: object
+          properties:
+            messageDate:
+              type: string
+            message:
+              type: string
+      extensionFields:
+        $ref: '#/definitions/ExtensionField'
+
   BasicPolicyholderSection:
     type: object
     required:
@@ -2723,11 +3248,10 @@ definitions:
             type: string
           email:
             type: string
-      extensionFields:
-        type: object
-        description: Use this object to hold the aditional fields due to local customizations
-        additionalProperties:
-          type: string
+      textExtensionFields:
+        $ref: '#/definitions/TextExtensionField'
+      numberExtensionFields:
+        $ref: '#/definitions/NumberExtensionField'
 
   PaymentGatewayPaymentSection:
     type: object
@@ -2743,6 +3267,37 @@ definitions:
         type: string
         default: PaymentGatewayRecurringPayment
 
+  PaymentMethod:
+    type: object
+    properties:
+      paymentMethod:
+        type: string
+        description: Valid values are cheque, giro, payment-gateway
+      giroDetails:
+        description: Giro details are required when the paymentMethod=giro
+        type: object
+        properties:
+          bankAccountName:
+            type: string
+          bankName:
+            type: string
+          bankBranch:
+            type: string
+          bankAccountNumber:
+            type: string
+
+  PaymentSection:
+    type: object
+    required:
+      - initialPaymentMethod
+      - renewalPaymentMethod
+    properties:
+      initialPaymentMethod:
+        $ref: '#/definitions/PaymentMethod'
+      renewalPaymentMethod:
+        $ref: '#/definitions/PaymentMethod'
+      refundPaymentMethod:
+        $ref: '#/definitions/PaymentMethod'
 
   DirectMedicalProduct:
     type: object
@@ -2814,6 +3369,78 @@ definitions:
         type: number
         description: Premium amount taking into account the payment mode, so if payment mode is monthly (default), then this represents the monthly premium amount. This is also calculated by the eBaoCloud API service
 
+  DirectTermProduct:
+    type: object
+    properties:
+      productId:
+        type: integer
+      productCode:
+        type: string
+      productName:
+        type: string
+      packageCode:
+        type: string
+        description: The package code to reference the marketing plan for this product.
+      insured:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Name of the insured
+          birthDate:
+            type: string
+            description: Date of birth for the insured
+            format: date
+          age:
+            type: number
+            description: Age of the insured. Can be derived from the age method (company or product specific) and the birth date if provided.
+          occupation:
+            type: string
+            description: Typically provided to determine the risk class of this person.
+          occupationClass:
+            type: string
+            description: For some products, this is a risk factor. Can be derived from the occupation if provided.
+          gender:
+            type: string
+            description: MALE or FEMALE
+          smoking:
+            type: string
+            description: Generally SMOKER or NON-SMOKER and used as a factor to determine the risk premium
+      benefitLevel:
+        type: string
+        description: For some term plans, to simplify the input, there are usually predefined levels. These can be mapped to the pre-defined amounts of death benefit and TPD benefit
+      sumAssured:
+        type: number
+        description: The amount of death benefit / TPD coverage. Possibly derived from the benefitLevel or entered directly in some cases
+      coverageTermType:
+        type: string
+        default: "2"
+        description: Valid values 1=Cover Whole Life, 2=Cover for certain years, 3=Cover up to certain age, 4=Cover for certain months. Normally, customers will be given a choice to cover for a certain years (i.e. 2) or cover up certain age (i.e. 3). At times, the product can only have 1 coverage term, e.g. 5 years, which is typical for medical products
+      coverageTermValue:
+        type: number
+        default: 5
+        description: If coverageTermType=2, then it means the number of years that coveraage if required, if coverageTermType=3, then value here means the age in which coverage is required.
+      premiumPaymentTermType:
+        type: string
+        description: Similar meaning to coverageTermType
+      premiumPaymentTermValue:
+        type: number
+        description: Similar meaning to coverageTermValue
+      currency:
+        type: string
+        default: CNY
+        description: When selling direct (online), there should be only one currency, and should be known to the client or omitted.
+      paymentMode:
+        type: string
+        default: "4"
+        description: The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly, 4=Monthly, 5=Single. When selling direct (internet), to show that it is cheap, default is montly
+      firstYearPremium:
+        type: number
+        description: Calculated by the eBaoCloud service, representing the 1st year annual premium
+      premiumAmount:
+        type: number
+        description: Premium amount taking into account the payment mode, so if payment mode is monthly (default), then this represents the monthly premium amount. This is also calculated by the eBaoCloud API service
+
   FirstPartyMedicalProposedInsurance:
     type: object
     required:
@@ -2826,6 +3453,304 @@ definitions:
         description: The proposed commencement date of the insurance
       directMedicalProduct:
         $ref: '#/definitions/DirectMedicalProduct'
+
+  FirstPartyTermProposedInsurance:
+    type: object
+    required:
+      - startDate
+      - coverage
+    properties:
+      startDate:
+        type: string
+        format: date
+        description: The proposed commencement date of the insurance
+      coverage:
+        $ref: '#/definitions/DirectTermProduct'
+
+  FirstPartyTraditionalProposedInsurance:
+    type: object
+    required:
+      - startDate
+      - insuredList
+      - coverageList
+    properties:
+      startDate:
+        type: string
+        format: date
+        description: The proposed commencement date of the insurance
+      insuredList:
+        type: array
+        items:
+          $ref: '#/definitions/Insured'
+      coverageList:
+        type: array
+        items:
+          $ref: '#/definitions/TraditionalProduct'
+
+  FirstPartyILPProposedInsurance:
+    type: object
+    required:
+      - startDate
+      - insuredList
+      - coverageList
+    properties:
+      startDate:
+        type: string
+        format: date
+        description: The proposed commencement date of the insurance
+      insuredList:
+        type: array
+        items:
+          $ref: '#/definitions/Insured'
+      coverageList:
+        type: array
+        items:
+          $ref: '#/definitions/ILPProduct'
+      topupList:
+        type: array
+        items:
+          $ref: '#/definitions/Topup'
+      withdrawalList:
+        type: array
+        items:
+          $ref: '#/definitions/Withdrawal'
+      fundList:
+        type: array
+        items:
+          $ref: '#/definitions/Fund'
+
+  TraditionalProduct:
+    type: object
+    properties:
+      productId:
+        type: integer
+      productCode:
+        type: string
+      productName:
+        type: string
+      packageCode:
+        type: string
+        description: The package code to reference the marketing plan for this product.
+      insured:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Name of the insured
+          birthDate:
+            type: string
+            description: Date of birth for the insured
+            format: date
+          age:
+            type: number
+            description: Age of the insured. Can be derived from the age method (company or product specific) and the birth date if provided.
+          occupation:
+            type: string
+            description: Typically provided to determine the risk class of this person.
+          occupationClass:
+            type: string
+            description: For some products, this is a risk factor. Can be derived from the occupation if provided.
+          gender:
+            type: string
+            description: MALE or FEMALE
+          smoking:
+            type: string
+            description: Generally SMOKER or NON-SMOKER and used as a factor to determine the risk premium
+      benefitLevel:
+        type: string
+        description: For some term plans, to simplify the input, there are usually predefined levels. These can be mapped to the pre-defined amounts of death benefit and TPD benefit
+      sumAssured:
+        type: number
+        description: The amount of death benefit / TPD coverage. Possibly derived from the benefitLevel or entered directly in some cases
+      sumAssuredUnit:
+        type: number
+        description: For some products the number of sum assured units is specified instead of the sum assured. Each unit will represent a specified amount of coverage. E.g. 1 unit = 50,000, so the client may choose 5 units which is equivalent to 5 x 50,000 = 250,000 sum assured.
+      coverageTermType:
+        type: string
+        default: "2"
+        description: Valid values 1=Cover Whole Life, 2=Cover for certain years, 3=Cover up to certain age, 4=Cover for certain months. Normally, customers will be given a choice to cover for a certain years (i.e. 2) or cover up certain age (i.e. 3). At times, the product can only have 1 coverage term, e.g. 5 years, which is typical for medical products
+      coverageTermValue:
+        type: number
+        default: 5
+        description: If coverageTermType=2, then it means the number of years that coveraage if required, if coverageTermType=3, then value here means the age in which coverage is required.
+      premiumPaymentTermType:
+        type: string
+        description: Similar meaning to coverageTermType
+      premiumPaymentTermValue:
+        type: number
+        description: Similar meaning to coverageTermValue
+      currency:
+        type: string
+        default: CNY
+        description: When selling direct (online), there should be only one currency, and should be known to the client or omitted.
+      paymentMode:
+        type: string
+        default: "4"
+        description: The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly, 4=Monthly, 5=Single. When selling direct (internet), to show that it is cheap, default is montly
+      firstYearPremium:
+        type: number
+        description: Calculated by the eBaoCloud service, representing the 1st year annual premium
+      premiumAmount:
+        type: number
+        description: Premium amount taking into account the payment mode, so if payment mode is monthly (default), then this represents the monthly premium amount. This is also calculated by the eBaoCloud API service
+      extensionFields:
+        $ref: '#/definitions/ExtensionField'
+
+      # numberExtensionFields:
+      #   $ref: '#/definitions/NumberExtensionField'
+      # textExtensionFields:
+      #   $ref: '#/definitions/TextExtensionField'
+
+  ILPProduct:
+    type: object
+    properties:
+      productId:
+        type: integer
+      productCode:
+        type: string
+      productName:
+        type: string
+      packageCode:
+        type: string
+        description: The package code to reference the marketing plan for this product.
+      targetPremium:
+        type: number
+        description: The amount of regular premium to be contributed
+      regularTopup:
+        type: number
+        description: Another stream of premium contribution regularly
+      sumAssured:
+        type: number
+        description: The amount of death benefit / TPD coverage. Possibly derived from the benefitLevel or entered directly in some cases
+      sumAssuredUnit:
+        type: number
+        description: For some products the number of sum assured units is specified instead of the sum assured. Each unit will represent a specified amount of coverage. E.g. 1 unit = 50,000, so the client may choose 5 units which is equivalent to 5 x 50,000 = 250,000 sum assured.
+      benefitLevel:
+        type: string
+        description: For some term plans, to simplify the input, there are usually predefined levels. These can be mapped to the pre-defined amounts of death benefit and TPD benefit
+
+      # coverageTermType:
+      #   type: string
+      #   default: "2"
+      #   description: Valid values 1=Cover Whole Life, 2=Cover for certain years, 3=Cover up to certain age, 4=Cover for certain months. Normally, customers will be given a choice to cover for a certain years (i.e. 2) or cover up certain age (i.e. 3). At times, the product can only have 1 coverage term, e.g. 5 years, which is typical for medical products
+
+      # coverageTermValue:
+      #   type: number
+      #   default: 5
+      #   description: If coverageTermType=2, then it means the number of years that coveraage if required, if coverageTermType=3, then value here means the age in which coverage is required.
+      # premiumPaymentTermType:
+      #   type: string
+      #   description: Similar meaning to coverageTermType
+      # premiumPaymentTermValue:
+      #   type: number
+      #   description: Similar meaning to coverageTermValue
+
+      currency:
+        type: string
+        default: CNY
+        description: When selling direct (online), there should be only one currency, and should be known to the client or omitted.
+      paymentMode:
+        type: string
+        default: "4"
+        description: The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly, 4=Monthly, 5=Single. When selling direct (internet), to show that it is cheap, default is montly
+      monthlyCostOfInsurance:
+        type: number
+        description: Calculated by the eBaoCloud service, representing the monthly cost of insurance (risk charge)
+      extensionFields:
+        $ref: '#/definitions/ExtensionField'
+      # numberExtensionFields:
+      #   $ref: '#/definitions/NumberExtensionField'
+      # textExtensionFields:
+      #   $ref: '#/definitions/TextExtensionField'
+
+  ExtensionField:
+    description: Use this object to hold the aditional text fields due to local customizations
+    additionalProperties:
+      $ref: '#/definitions/Any'
+
+  TextExtensionField:
+    description: Use this object to hold the aditional text fields due to local customizations
+    additionalProperties:
+      type: string
+
+  NumberExtensionField:
+    description: Use this object to hold the aditional number fields due to local customizations
+    additionalProperties:
+      type: number
+
+
+  QuestionAnswerField:
+    properties:
+      qlabel:
+        type: string
+        description: The label is really optional and redundant but leaving the label here provides context on what was the question so that it is easier to understand the answer.
+      value:
+        $ref : '#/definitions/Any'
+      multiValues:
+        type: array
+        items:
+          $ref : '#/definitions/Any'
+
+      #   type: string
+      #   description: The value, numberValue and dateValue are mutually exclusive, i.e. only one is applicable. Refer to the qtype in the PolicyholderDisclosureSpecification
+      # numberValue:
+      #   type: number
+      # dateValue:
+      #   type: string
+      #   format: date
+      # booleanValue:
+      #   type: boolean
+
+  QuestionAndResponses:
+    additionalProperties:
+        $ref: '#/definitions/QuestionAnswerField'
+
+  PolicyholderDisclosures:
+    type: object
+    properties:
+      disclosures:
+        $ref: '#/definitions/QuestionAndResponses'
+      # listChildrenDisclosures:
+      #   type: array
+      #   items:
+      #     $ref: '#/definitions/QuestionAndResponses'
+      # objectChildrenDisclosures:
+      #   $ref: '#/definitions/QuestionAndResponses'
+
+  PolicyholderDisclosuresSpecification:
+    type: object
+    properties:
+      questionList:
+        type: array
+        items:
+          properties:
+            qid:
+              type: string
+            widget:
+              type: string
+              description: Values are textInput, numberInput, dateInput, enum, yesno, checkbox, radio, hidden, multiLineTextInput. Use hidden if you only want to show a label. The widget can be used to derive the data type of the answer to the question i.e. textInput -> text, numberInput -> number, dateInput -> date, enum -> text, yesno -> text, checkbox -> boolean, radio -> text, hidden -> text, multiLineTextInput -> text
+            codeTable:
+              type: string
+              description: When suggestedWidget = enum or radio, this optional field is the name of the code table to use for the multiple options. The code values can be obtained using /proposals/codeTables end-point
+            required:
+              type: boolean
+              description: Mandatory or optional field. Used for validation
+            qlabel:
+              type: string
+              description: The label for the question
+            showChildrenValue:
+              type: string
+              description: Show the listChildren or objectChildren if the value matches the value in this field.
+            listChildren:
+              type: array
+              description: Identify the list of qid. Mutually exclusive with objectChildren. Both listChildren and objectChild can be an empty list.
+              items:
+                type: string
+            objectChildren:
+              type: array
+              description: List of qid. Mutually exclusive with listChildren. Both listChildren and objectChild can be an empty list
+              items:
+                type: string
 
 
 # ********************* parameters *************************
