@@ -1,5 +1,6 @@
 require('./src/product0')
-//require('./src/product5712')
+require('./src/product5712')
+require('./src/product7202')
 //require('./src/product5013')
 //require('./src/product4671')
 //require('./src/product5722')
