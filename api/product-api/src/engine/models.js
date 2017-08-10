@@ -232,12 +232,14 @@ class Entity {
           let dbFields = _.keys(DB[productId]);
           let config = CONFIGS[productId]['formulas'];
           let zero = function(){ return 0 }
+          let getter = function(tval) { return this.val(f,tval)}
           fmlaFields.forEach(f => {
               let fmla = config[f]
               this[f] = fmla === 'zero' ? zero : function(tval) { return this.val(f,tval)}
+            //   Object.defineProperty(this, f, { get: function () { return this.val(f} });
           })
           dbFields.forEach(f => {
-                  this[f] = function(tval) { return this.val(f,tval)}
+                  this[f] = getter //function(tval) { return this.val(f,tval)}
           })
         }
 

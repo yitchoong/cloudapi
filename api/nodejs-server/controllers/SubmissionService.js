@@ -112,10 +112,10 @@ exports.fetchFirstPartyMedicalSubmission = function(args, res, next) {
    let pk = args.submissionId.value
    let token = args.Token && args.Token.value;
    let userId = token || "default" ; // if no user supplied, we just used the default userId
-   proposalApi.fetchProposalSubmissionByPk(pk, "FirstPartyMedicalProposal")
+   proposalApi.fetchProposalSubmissionByPk(pk, ["FirstPartyMedicalProposal","FirstPartyMedicalProposalSubmission"])
    .then(doc => {
 
-       let data = doc && doc.submissionType === 'FirstPartyMedicalProposal' && doc.userId === userId ? doc : null ; // limit by the submissionType
+       let data = doc && ["FirstPartyMedicalProposal","FirstPartyMedicalProposalSubmission"].indexOf(doc.submissionType) >= 0 && doc.userId === userId ? doc : null ; // limit by the submissionType
        if (data) {
            res.setHeader('Content-Type', 'application/json');
            res.end(JSON.stringify( data , null, 2));
@@ -178,7 +178,7 @@ exports.fetchFirstPartyMedicalSubmissionList = function(args, res, next) {
    //       sqlFilter = ors;
    //     } else { sqlFilter = null }
    // }
-   proposalApi.fetchFirstPartyMedicalSubmissionSummaryList(userId, 'FirstPartyMedicalProposal', sqlFilter, limit, offset, sort)
+   proposalApi.fetchFirstPartyMedicalSubmissionSummaryList(userId, 'FirstPartyMedicalProposalSubmission', sqlFilter, limit, offset, sort)
    .then(submissions => {
        let data = {
            offset: offset,
@@ -285,6 +285,7 @@ function _fetchSubmissionList (args, res, next, submissionType) {
     let limit = args.limit.value || 99999999999;
     let sort = args.sort.value || 'submissionDate'
     let sqlFilter = buildFilterClause(args);
+    console.log(">>>>submission type & filter", submissionType, sqlFilter)
     proposalApi.fetchSubmissionSummaryList(userId, submissionType, sqlFilter, limit, offset, sort)
     .then(submissions => {
         let data = {
@@ -325,7 +326,7 @@ exports.createFirstPartyTraditionalProposalSubmission =  function(args, res, nex
 }
 
 exports.fetchFirstPartyTraditionalProposalSubmissionList = function(args, res, next) {
-    return _fetchSubmissionList(args, res, next, ["FirstPartyTermProposalSubmission","FirstPartyMedicalProposal","FirstPartyEndowmentProposalSubmission", "FirstPartyWholeLifeProposalSubmission"])
+    return _fetchSubmissionList(args, res, next, ["FirstPartyTermProposalSubmission","FirstPartyMedicalProposalSubmission","FirstPartyEndowmentProposalSubmission", "FirstPartyWholeLifeProposalSubmission"])
 
 }
 
@@ -335,9 +336,13 @@ exports.fetchFirstPartyTraditionalProposalSubmission = function(args, res, next)
     let pk = args.submissionId.value
     let token = args.Token && args.Token.value;
     let userId = token || "default" ; // if no user supplied, we just used the default userId
-    proposalApi.fetchProposalSubmissionByPk(pk, "FirstPartyTermProposalSubmission")
+    const validSubmissions = ["FirstPartyTermProposalSubmission","FirstPartyMedicalProposalSubmission",
+                              "FirstPartyWholeLifeProposalSubmission","FirstPartyEndowmentProposalSubmission"]
+
+    proposalApi.fetchProposalSubmissionByPk(pk, validSubmissions)
     .then(doc => {
-        let data = doc && doc.submissionType === 'FirstPartyTermProposalSubmission' && doc.userId === userId ? doc : null ; // limit by the submissionType
+        // let data = doc && doc.submissionType === 'FirstPartyTermProposalSubmission' && doc.userId === userId ? doc : null ; // limit by the submissionType
+        let data = doc && validSubmissions.indexOf(doc.submissionType) >= 0 && doc.userId === userId ? doc : null ; // limit by the submissionType, user
         if (data) {
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify( data , null, 2));
@@ -355,7 +360,7 @@ exports.fetchFirstPartyTraditionalProposalSubmission = function(args, res, next)
 
 }
 // ILP related
-exports.createFirstPartyILPProposalSubmission =  function(args, res, next) {
+exports.createFirstPartyIlpProposalSubmission =  function(args, res, next) {
 
     // res.setHeader('Content-Type', 'application/json');
     // res.end(JSON.stringify( {message: "TODO"}, null, 2));
@@ -368,7 +373,7 @@ exports.createFirstPartyILPProposalSubmission =  function(args, res, next) {
     let userId = token || "default" ; // if no user supplied, we just used the default userId
     submission.tenantCode = tenantCode ? tenantCode : submission.tenantCode;
     submission.userId = userId ? userId : submission.userId;
-    proposalApi.processFirstPartyILPProposalSubmission(submission)
+    proposalApi.processFirstPartyIlpProposalSubmission(submission)
     .then(result => {
          res.statusCode = 200
          res.setHeader('Content-Type', 'application/json');
@@ -382,15 +387,15 @@ exports.createFirstPartyILPProposalSubmission =  function(args, res, next) {
 
 }
 
-exports.fetchFirstPartyILPProposalSubmissionList = function(args, res, next) {
+exports.fetchFirstPartyIlpProposalSubmissionList = function(args, res, next) {
     // res.setHeader('Content-Type', 'application/json');
     // res.end(JSON.stringify( {message: "TODO"}, null, 2));
     // return
 
-    return _fetchSubmissionList(args, res, next, ["FirstPartyILPProposalSubmission"])
+    return _fetchSubmissionList(args, res, next, ["FirstPartyIlpProposalSubmission"])
 
 }
-exports.fetchFirstPartyILPProposalSubmission = function(args, res, next) {
+exports.fetchFirstPartyIlpProposalSubmission = function(args, res, next) {
 
     // res.setHeader('Content-Type', 'application/json');
     // res.end(JSON.stringify( {message: "TODO"}, null, 2));
@@ -400,9 +405,9 @@ exports.fetchFirstPartyILPProposalSubmission = function(args, res, next) {
     let pk = args.submissionId.value
     let token = args.Token && args.Token.value;
     let userId = token || "default" ; // if no user supplied, we just used the default userId
-    proposalApi.fetchProposalSubmissionByPk(pk, "FirstPartyILPProposalSubmission")
+    proposalApi.fetchProposalSubmissionByPk(pk, "FirstPartyIlpProposalSubmission")
     .then(doc => {
-        let data = doc && doc.submissionType === 'FirstPartyILPProposalSubmission' && doc.userId === userId ? doc : null ; // limit by the submissionType
+        let data = doc && doc.submissionType === 'FirstPartyIlpProposalSubmission' && doc.userId === userId ? doc : null ; // limit by the submissionType
         if (data) {
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify( data , null, 2));
@@ -419,8 +424,111 @@ exports.fetchFirstPartyILPProposalSubmission = function(args, res, next) {
     })
 
 }
+exports.createThirdPartyTraditionalProposalSubmission = function(args, res, next) {
+    let lang = args.lang.value;
+    let submission = args.bodyParam.value;
+    let tenantCode = args.tenantCode.value;
+    let token = args.Token && args.Token.value;
+    let userId = token || "default" ; // if no user supplied, we just used the default userId
+    submission.tenantCode = tenantCode ? tenantCode : submission.tenantCode;
+    submission.userId = userId ? userId : submission.userId;
+    proposalApi.processThirdPartyTraditionalProposalSubmission(submission)
+    .then(result => {
+         res.statusCode = 200
+         res.setHeader('Content-Type', 'application/json');
+         res.end(JSON.stringify( result, null, 2));
+    })
+    .catch( (err) => {
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify( {errors: err}, null, 2));
+    })
+}
+exports.fetchThirdPartyTraditionalProposalSubmission = function(args, res, next) {
+    let lang = args.lang.value;
+    let pk = args.submissionId.value
+    let token = args.Token && args.Token.value;
+    let userId = token || "default" ; // if no user supplied, we just used the default userId
+    const validSubmissions = ["ThirdPartyTermProposalSubmission","ThirdPartyMedicalProposalSubmission",
+                              "ThirdPartyWholeLifeProposalSubmission","ThirdPartyEndowmentProposalSubmission"]
+    proposalApi.fetchProposalSubmissionByPk(pk)  // no need to filter by type in this call, filter the results here
+    .then(doc => {
+        let data = doc && validSubmissions.indexOf(doc.submissionType) >= 0 && doc.userId === userId ? doc : null ; // limit by the submissionType, user
+        if (data) {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify( data , null, 2));
+        } else {
+            res.statusCode = 404
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify( {message: __(`The third party proposal with primary key (${pk}) does not exists for user '${userId}'`)}, null, 2));
+        }
+    })
+    .catch( (err) => {
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify( {error: err}, null, 2));
+    })
+}
+exports.fetchThirdPartyTraditionalProposalSubmissionList = function(args, res, next) {
+    return _fetchSubmissionList(args, res, next, ["ThirdPartyTermProposalSubmission","ThirdPartyMedicalProposalSubmission","ThirdPartyWholeLifeProposalSubmission","ThirdPartyEndowmentProposalSubmission"])
+}
+
+// functions for third party ilp proposal submission
+
+exports.createThirdPartyIlpProposalSubmission = function(args, res, next) {
+    let lang = args.lang.value;
+    let submission = args.bodyParam.value;
+    let tenantCode = args.tenantCode.value;
+    let token = args.Token && args.Token.value;
+    let userId = token || "default" ; // if no user supplied, we just used the default userId
+    submission.tenantCode = tenantCode ? tenantCode : submission.tenantCode;
+    submission.userId = userId ? userId : submission.userId;
+    proposalApi.processThirdPartyIlpProposalSubmission(submission)
+    .then(result => {
+         res.statusCode = 200
+         res.setHeader('Content-Type', 'application/json');
+         res.end(JSON.stringify( result, null, 2));
+    })
+    .catch( (err) => {
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify( {errors: err}, null, 2));
+    })
+}
+exports.fetchThirdPartyIlpProposalSubmission = function(args, res, next) {
+    let lang = args.lang.value;
+    let pk = args.submissionId.value
+    let token = args.Token && args.Token.value;
+    let userId = token || "default" ; // if no user supplied, we just used the default userId
+    const validSubmissions = ["ThirdPartyIlpProposalSubmission"]
+    proposalApi.fetchProposalSubmissionByPk(pk)  // no need to filter by type in this call, filter the results here
+    .then(doc => {
+        let data = doc && validSubmissions.indexOf(doc.submissionType) >= 0 && doc.userId === userId ? doc : null ; // limit by the submissionType, user
+        if (data) {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify( data , null, 2));
+        } else {
+            res.statusCode = 404
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify( {message: __(`The third party proposal with primary key (${pk}) does not exists for user '${userId}'`)}, null, 2));
+        }
+    })
+    .catch( (err) => {
+      res.statusCode = 400
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify( {error: err}, null, 2));
+    })
+}
+exports.fetchThirdPartyIlpProposalSubmissionList = function(args, res, next) {
+    return _fetchSubmissionList(args, res, next, ["ThirdPartyIlpProposalSubmission"])
+}
 
 
+
+function stub(args, res, next) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify( {message: "Not yet implemented"}, null, 2));
+}
 
 exports.fetchPolicyholderDisclosureSpecs = function(args, res, next) {
     let tenantCode = args.tenantCode.value;
@@ -430,4 +538,12 @@ exports.fetchPolicyholderDisclosureSpecs = function(args, res, next) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify( {policyholderDisclosureSpecs: spec}, null, 2));
 
+}
+exports.fetchLifeAssuredDisclosureSpecs  = function(args,res, next) {
+    let tenantCode = args.tenantCode.value;
+    let productId = null; // for the moment, set to null
+    let spec = proposalApi.fetchLifeAssuredDiscloureSpec(tenantCode, productId)
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify( {lifeAssuredDisclosureSpecs: spec}, null, 2));
 }
