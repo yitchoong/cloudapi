@@ -976,7 +976,7 @@ function patchProposal(proposal) {
 }
 exp.updateFirstPartyTraditionalProposal = function(proposal) {
     proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,,firstPartyTraditionalProposalTypes)
+    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyTraditionalProposalTypes)
 }
 exp.updateFirstPartyIlpProposal = function(proposal){
     proposal = patchProposal(proposal)

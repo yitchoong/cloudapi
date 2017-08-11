@@ -306,14 +306,14 @@ function submitProposal(submission) {
                         const okay = dbstatus['s1'] === 'ok' && dbstatus['s2'] === 'ok'
                         if (okay) {
                             db.run("commit")
-                            resolve({ok:true, response: submission})
+                            resolve({ok:true, submission: submission})
                         } else {
                             db.run("rollback")
                             resolve({ok:false, errors: err})
                         }
                     }
                 })
-                
+
             })
         })
         .catch((err) => {
