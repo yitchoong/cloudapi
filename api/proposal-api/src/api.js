@@ -321,7 +321,7 @@ function processFirstPartyProposal(submission, proposal, productFieldName) {
     // there is a need to re-structure the json message to be compatible with the product api
     // check a few things first, i.e. must have field directMedicalProduct, and the insured must be a an object within the product
     let proceed = true;
-    if (proposal.proposalType === 'FirstPartyEndowment' || proposal.proposalType === 'FirstPartyWholeLife') {
+    //if (proposal.proposalType === 'FirstPartyEndowment' || proposal.proposalType === 'FirstPartyWholeLife') {
         if (!proposal.proposedInsuranceSection.coverageList) {
             errs.push(__(`There is no coverages (coverageList) specified in the proposed insurance`))
             proceed = false
@@ -332,18 +332,18 @@ function processFirstPartyProposal(submission, proposal, productFieldName) {
             }
         }
 
-    } else {
-        productFieldName = productFieldName || "coverage"; // default name is coverage
-        if (!proposal.proposedInsuranceSection[productFieldName]) {
-            errs.push(__(`There is no field called ${productFieldName} in the proposed insurance`))
-            proceed = false
-        } else {
-            if (!proposal.proposedInsuranceSection[productFieldName].insured) {
-                errs.push(__("There is no insured details for the product"))
-                proceed = false
-            }
-        }
-    }
+    // } else {
+    //     productFieldName = productFieldName || "coverage"; // default name is coverage
+    //     if (!proposal.proposedInsuranceSection[productFieldName]) {
+    //         errs.push(__(`There is no field called ${productFieldName} in the proposed insurance`))
+    //         proceed = false
+    //     } else {
+    //         if (!proposal.proposedInsuranceSection[productFieldName].insured) {
+    //             errs.push(__("There is no insured details for the product"))
+    //             proceed = false
+    //         }
+    //     }
+    // }
     if (proceed) {
         proposal.tenantCode = submission.tenantCode;
         proposal.submissionChannel = submission.submissionChannel;
