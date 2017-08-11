@@ -311,10 +311,11 @@ exp.validateThirdPartySubmission = function(json) {
   return errs
 }
 
-function processFirstPartyMedicalProposal(submission,proposal) { return processFirstPartyProposal(submission, proposal, "directMedicalProduct") }
-function processFirstPartyTermProposal(submission,proposal) {return processFirstPartyProposal(submission, proposal) }
-function processFirstPartyEndowmentProposal(submission,proposal) {return processFirstPartyProposal(submission, proposal, "coverageList") }
-function processFirstPartyWholeLifeProposal(submission,proposal) {return processFirstPartyProposal(submission, proposal, "coverageList") }
+// function processFirstPartyMedicalProposal(submission,proposal) { return processFirstPartyProposal(submission, proposal, "directMedicalProduct") }
+function processFirstPartyMedicalProposal(submission,proposal) { return processFirstPartyProposal(submission, proposal, "coverageList") }
+function processFirstPartyTermProposal(submission,proposal) {return processFirstPartyProposal(submission, proposal,"coverageList") }
+function processFirstPartyEndowmentProposal(submission,proposal){return processFirstPartyProposal(submission, proposal, "coverageList") }
+function processFirstPartyWholeLifeProposal(submission,proposal){return processFirstPartyProposal(submission, proposal, "coverageList") }
 function processFirstPartyProposal(submission, proposal, productFieldName) {
     let errs = [];
     // there is a need to re-structure the json message to be compatible with the product api
