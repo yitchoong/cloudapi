@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Sales API for the product & proposal domain on eBao Cloud"
-  version: "0.0.11"
+  version: "0.0.13"
   title: "eBao Cloud API (Product, Proposal, Submission)"
 host: "localhost:8080"
 basePath: "/v1"
@@ -1708,367 +1708,6 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Product"
-  /submissions/firstPartyMedicalProposal:
-    get:
-      tags:
-      - "Submission"
-      summary: "Fetch a list of direct first party medical proposal submissions"
-      description: "Use this end point to fetch all the direct first party medical\
-        \ proposal submissions. When filtering the required rows, the available keys\
-        \ are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status,\
-        \ and decision"
-      operationId: "fetchFirstPartyMedicalSubmissionList"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "offset"
-        in: "query"
-        description: "Number of records to skip in the result list"
-        required: false
-        type: "number"
-        default: 0
-        format: "integer"
-      - name: "limit"
-        in: "query"
-        description: "Limit the number of rows to return"
-        required: false
-        type: "number"
-        default: 100
-        format: "integer"
-      - name: "keys"
-        in: "query"
-        description: "Specify multiple rows to fetch ?keys=123,456"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "csv"
-      - name: "sort"
-        in: "query"
-        description: "Sorting order. Prefix with '-' for descending order"
-        required: false
-        type: "string"
-        format: "string"
-      - name: "filter"
-        in: "query"
-        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
-          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
-          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
-          \ As an example, to find rows with name that starts with 'A', specify as\
-          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
-          \ condition, e.g. find rows where name startsWith A and age greater than\
-          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
-          \ is used to separate the criterias. For more complex filters, e.g. Find\
-          \ rows where name starts with 'A' OR name starts with B, then it can be\
-          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
-          \ the | to separate OR conditions."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "pipes"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns a list of proposal submissions."
-          schema:
-            $ref: "#/definitions/inline_response_200_11"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Submission"
-    post:
-      tags:
-      - "Submission"
-      summary: "Create a new direct first party medical proposal submission document\
-        \ (containing proposal details)"
-      description: "This end point is used for the submission of a proposal. This\
-        \ end point is useful when proposals are not persisted prior to submission."
-      operationId: "createFirstPartyMedicalSubmission"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The submission document containing the proposal"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyMedicalSubmission"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response to create a new proposal submission. Returns\
-            \ the new submission document."
-          schema:
-            $ref: "#/definitions/FirstPartyMedicalSubmission"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Submission"
-  /submissions/firstPartyMedical/{submissionId}:
-    get:
-      tags:
-      - "Submission"
-      summary: "Fetch a proposal submission document"
-      description: "Use this end-point to fetch a proposal submissions. This will\
-        \ fetch the full document including the proposal data, and the submission\
-        \ status."
-      operationId: "fetchFirstPartyMedicalSubmission"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "submissionId"
-        in: "path"
-        description: "Unique id for the submission"
-        required: true
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns the submission document"
-          schema:
-            $ref: "#/definitions/FirstPartyMedicalSubmission"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        404:
-          description: "Response when the document is not found."
-          schema:
-            $ref: "#/definitions/inline_response_404"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Submission"
-  /submissions/firstPartyTermProposal:
-    get:
-      tags:
-      - "Submission"
-      summary: "Fetch a list of direct first party term proposal submissions"
-      description: "Use this end point to fetch all the direct first party term proposal\
-        \ submissions. When filtering the required rows, the available keys are pk,\
-        \ submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and\
-        \ decision"
-      operationId: "fetchFirstPartyTermProposalSubmissionList"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "offset"
-        in: "query"
-        description: "Number of records to skip in the result list"
-        required: false
-        type: "number"
-        default: 0
-        format: "integer"
-      - name: "limit"
-        in: "query"
-        description: "Limit the number of rows to return"
-        required: false
-        type: "number"
-        default: 100
-        format: "integer"
-      - name: "keys"
-        in: "query"
-        description: "Specify multiple rows to fetch ?keys=123,456"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "csv"
-      - name: "sort"
-        in: "query"
-        description: "Sorting order. Prefix with '-' for descending order"
-        required: false
-        type: "string"
-        format: "string"
-      - name: "filter"
-        in: "query"
-        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
-          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
-          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
-          \ As an example, to find rows with name that starts with 'A', specify as\
-          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
-          \ condition, e.g. find rows where name startsWith A and age greater than\
-          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
-          \ is used to separate the criterias. For more complex filters, e.g. Find\
-          \ rows where name starts with 'A' OR name starts with B, then it can be\
-          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
-          \ the | to separate OR conditions."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "pipes"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns a list of proposal submissions."
-          schema:
-            $ref: "#/definitions/inline_response_200_11"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Submission"
-    post:
-      tags:
-      - "Submission"
-      summary: "Create a new direct first party term proposal submission document\
-        \ (containing proposal details)"
-      description: "This end point is used for the submission of a first party term\
-        \ proposal. This end point is useful when proposals are not persisted prior\
-        \ to submission."
-      operationId: "createFirstPartyTermProposalSubmission"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The submission document containing the proposal"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyTermProposalSubmission"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response to create a new proposal submission. Returns\
-            \ the new submission document."
-          schema:
-            $ref: "#/definitions/FirstPartyTermProposalSubmission"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Submission"
-  /submissions/firstPartyTermProposal/{submissionId}:
-    get:
-      tags:
-      - "Submission"
-      summary: "Fetch a first party term proposal submission document"
-      description: "Use this end-point to fetch a first party term proposal submissions.\
-        \ This will fetch the full document including the proposal data, and the submission\
-        \ status."
-      operationId: "fetchFirstPartyTermProposalSubmission"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "submissionId"
-        in: "path"
-        description: "Unique id for the submission"
-        required: true
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns the submission document"
-          schema:
-            $ref: "#/definitions/FirstPartyTermProposalSubmission"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        404:
-          description: "Response when the document is not found."
-          schema:
-            $ref: "#/definitions/inline_response_404"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Submission"
   /submissions/firstPartyTraditionalProposal:
     get:
       tags:
@@ -3023,852 +2662,6 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_500"
       x-swagger-router-controller: "Proposal"
-  /proposals/firstPartyIlp:
-    get:
-      tags:
-      - "Proposal"
-      summary: "Fetch a list of first party ILP proposals"
-      description: "Use this end point to fetch all the proposals (both submitted\
-        \ and pending). When filtering the required rows, the available keys are pk,\
-        \ submissionChannel,tenantCode, status, proposalType"
-      operationId: "fetchFirstPartyIlpProposalList"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "offset"
-        in: "query"
-        description: "Number of records to skip in the result list"
-        required: false
-        type: "number"
-        default: 0
-        format: "integer"
-      - name: "limit"
-        in: "query"
-        description: "Limit the number of rows to return"
-        required: false
-        type: "number"
-        default: 100
-        format: "integer"
-      - name: "keys"
-        in: "query"
-        description: "Specify multiple rows to fetch ?keys=123,456"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "csv"
-      - name: "sort"
-        in: "query"
-        description: "Sorting order. Prefix with '-' for descending order"
-        required: false
-        type: "string"
-        format: "string"
-      - name: "filter"
-        in: "query"
-        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
-          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
-          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
-          \ As an example, to find rows with name that starts with 'A', specify as\
-          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
-          \ condition, e.g. find rows where name startsWith A and age greater than\
-          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
-          \ is used to separate the criterias. For more complex filters, e.g. Find\
-          \ rows where name starts with 'A' OR name starts with B, then it can be\
-          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
-          \ the | to separate OR conditions."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "pipes"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns a list of first party ilp\
-            \ proposals"
-          schema:
-            $ref: "#/definitions/inline_response_200_12"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a new first party ilp proposal document"
-      description: "This end point is used for creating a first party ilp proposal."
-      operationId: "createFirstPartyIlpProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document to save"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyIlpProposal"
-      responses:
-        200:
-          description: "Successful response to create a new first party ILP proposal\
-            \ submission. Returns the new submission document."
-          schema:
-            $ref: "#/definitions/FirstPartyIlpProposal"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/firstPartyTraditional/sectionStatuses:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Submit details of the first party proposal to validate the completeness\
-        \ of the sections"
-      description: "This end point is used to validate that the information in the\
-        \ first party proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
-      operationId: "validateFirstPartyTraditionalProposalSections"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document that needs to be validated"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyTraditionalProposal"
-      responses:
-        200:
-          description: "Successful response where the statuses of the various sections\
-            \ is returned"
-          schema:
-            type: "object"
-            description: "Key will be proposal section name, value is ok or ko"
-            additionalProperties:
-              type: "string"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/firstPartyIlp/sectionStatuses:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Submit details of the first party ILP proposal to validate the completeness\
-        \ of the sections"
-      description: "This end point is used to validate that the information in the\
-        \ first party ILP proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
-      operationId: "validateFirstPartyIlpProposalSections"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document that needs to be validated"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyIlpProposal"
-      responses:
-        200:
-          description: "Successful response where the statuses of the various sections\
-            \ is returned"
-          schema:
-            type: "object"
-            description: "Key will be proposal section name, value is ok or ko"
-            additionalProperties:
-              type: "string"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/thirdPartyTraditional:
-    get:
-      tags:
-      - "Proposal"
-      summary: "Fetch a list of third party proposals"
-      description: "Use this end point to fetch all the proposals (both submitted\
-        \ and pending). When filtering the required rows, the available keys are pk,\
-        \ submissionChannel,tenantCode, status, proposalType"
-      operationId: "fetchThirdPartyTraditionalProposalList"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "offset"
-        in: "query"
-        description: "Number of records to skip in the result list"
-        required: false
-        type: "number"
-        default: 0
-        format: "integer"
-      - name: "limit"
-        in: "query"
-        description: "Limit the number of rows to return"
-        required: false
-        type: "number"
-        default: 100
-        format: "integer"
-      - name: "keys"
-        in: "query"
-        description: "Specify multiple rows to fetch ?keys=123,456"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "csv"
-      - name: "sort"
-        in: "query"
-        description: "Sorting order. Prefix with '-' for descending order"
-        required: false
-        type: "string"
-        format: "string"
-      - name: "filter"
-        in: "query"
-        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
-          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
-          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
-          \ As an example, to find rows with name that starts with 'A', specify as\
-          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
-          \ condition, e.g. find rows where name startsWith A and age greater than\
-          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
-          \ is used to separate the criterias. For more complex filters, e.g. Find\
-          \ rows where name starts with 'A' OR name starts with B, then it can be\
-          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
-          \ the | to separate OR conditions."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "pipes"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns a list of third party proposals"
-          schema:
-            $ref: "#/definitions/inline_response_200_12"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a new third party traditional proposal document"
-      description: "This end point is used for creating a third party traditional\
-        \ proposal."
-      operationId: "createThirdPartyTraditionalProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document to save"
-        required: true
-        schema:
-          $ref: "#/definitions/ThirdPartyTraditionalProposal"
-      responses:
-        200:
-          description: "Successful response to create a new third party traditional\
-            \ proposal submission. Returns the new submission document."
-          schema:
-            $ref: "#/definitions/ThirdPartyTraditionalProposal"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/thirdPartyIlp:
-    get:
-      tags:
-      - "Proposal"
-      summary: "Fetch a list of third party ILP proposals"
-      description: "Use this end point to fetch all the third party ILP proposals\
-        \ (both submitted and pending). When filtering the required rows, the available\
-        \ keys are pk, submissionChannel,tenantCode, status, proposalType"
-      operationId: "fetchThirdPartyIlpProposalList"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "offset"
-        in: "query"
-        description: "Number of records to skip in the result list"
-        required: false
-        type: "number"
-        default: 0
-        format: "integer"
-      - name: "limit"
-        in: "query"
-        description: "Limit the number of rows to return"
-        required: false
-        type: "number"
-        default: 100
-        format: "integer"
-      - name: "keys"
-        in: "query"
-        description: "Specify multiple rows to fetch ?keys=123,456"
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "csv"
-      - name: "sort"
-        in: "query"
-        description: "Sorting order. Prefix with '-' for descending order"
-        required: false
-        type: "string"
-        format: "string"
-      - name: "filter"
-        in: "query"
-        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
-          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
-          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
-          \ As an example, to find rows with name that starts with 'A', specify as\
-          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
-          \ condition, e.g. find rows where name startsWith A and age greater than\
-          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
-          \ is used to separate the criterias. For more complex filters, e.g. Find\
-          \ rows where name starts with 'A' OR name starts with B, then it can be\
-          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
-          \ the | to separate OR conditions."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "pipes"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response which returns a list of third party proposals"
-          schema:
-            $ref: "#/definitions/inline_response_200_12"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a new third party ILP proposal document"
-      description: "This end point is used for creating a third party ILP proposal."
-      operationId: "createThirdPartyIlpProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document to save"
-        required: true
-        schema:
-          $ref: "#/definitions/ThirdPartyIlpProposal"
-      responses:
-        200:
-          description: "Successful response to create a new third party ILP proposal\
-            \ submission. Returns the new submission document."
-          schema:
-            $ref: "#/definitions/ThirdPartyIlpProposal"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/thirdPartyTraditional/sectionStatuses:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Submit details of the third party proposal to validate the completeness\
-        \ of the sections"
-      description: "This end point is used to validate that the information in the\
-        \ third party proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
-      operationId: "validateThirdPartyTraditionalProposalSections"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document that needs to be validated"
-        required: true
-        schema:
-          $ref: "#/definitions/ThirdPartyTraditionalProposal"
-      responses:
-        200:
-          description: "Successful response where the statuses of the various sections\
-            \ is returned"
-          schema:
-            type: "object"
-            description: "Key will be proposal section name, value is ok or ko"
-            additionalProperties:
-              type: "string"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/thirdPartyIlp/sectionStatuses:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Submit details of the third party ILP proposal to validate the completeness\
-        \ of the sections"
-      description: "This end point is used to validate that the information in the\
-        \ third party ILP proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
-      operationId: "validateThirdPartyIlpProposalSections"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The proposal document that needs to be validated"
-        required: true
-        schema:
-          $ref: "#/definitions/ThirdPartyIlpProposal"
-      responses:
-        200:
-          description: "Successful response where the statuses of the various sections\
-            \ is returned"
-          schema:
-            type: "object"
-            description: "Key will be proposal section name, value is ok or ko"
-            additionalProperties:
-              type: "string"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/firstPartyTraditional/{proposalId}/submissions:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a first party traditional proposal submission for the given\
-        \ propoal id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/firstPartyTraditionalProposal, except that the\
-        \ proposal details does not need to be submitted as part of the request (as\
-        \ the proposalId is used to retrieve the proposal details)."
-      operationId: "submitFirstPartyTraditionalProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - name: "proposalId"
-        in: "path"
-        description: "Unique id for the proposal"
-        required: true
-        type: "integer"
-      - name: "version"
-        in: "query"
-        description: "The version id of the proposal document"
-        required: true
-        type: "number"
-      responses:
-        200:
-          description: "Successful response where the proposal submission is created"
-          schema:
-            $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/firstPartyIlp/{proposalId}/submissions:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a first party ILP proposal submission for the given propoal\
-        \ id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/firstPartyIlpProposal, except that the proposal\
-        \ details does not need to be submitted as part of the request (as the proposalId\
-        \ is used to retrieve the proposal details)."
-      operationId: "submitFirstPartyIlpProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - name: "proposalId"
-        in: "path"
-        description: "Unique id for the proposal"
-        required: true
-        type: "integer"
-      - name: "version"
-        in: "query"
-        description: "The version id of the proposal document"
-        required: true
-        type: "number"
-      responses:
-        200:
-          description: "Successful response where the proposal submission is created"
-          schema:
-            $ref: "#/definitions/FirstPartyIlpProposalSubmission"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/thirdPartyTraditional/{proposalId}/submissions:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a third party traditional proposal submission for the given\
-        \ propoal id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/thirdPartyTraditionalProposal, except that the\
-        \ proposal details does not need to be submitted as part of the request (as\
-        \ the proposalId is used to retrieve the proposal details)."
-      operationId: "submitThirdPartyTraditionalProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - name: "proposalId"
-        in: "path"
-        description: "Unique id for the proposal"
-        required: true
-        type: "integer"
-      - name: "version"
-        in: "query"
-        description: "The version id of the proposal document"
-        required: true
-        type: "number"
-      responses:
-        200:
-          description: "Successful response where the proposal submission is created"
-          schema:
-            $ref: "#/definitions/ThirdPartyTraditionalProposalSubmission"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
-  /proposals/thirdPartyIlp/{proposalId}/submissions:
-    post:
-      tags:
-      - "Proposal"
-      summary: "Create a third party ILP proposal submission for the given propoal\
-        \ id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/thirdPartyIlpProposal, except that the proposal\
-        \ details does not need to be submitted as part of the request (as the proposalId\
-        \ is used to retrieve the proposal details)."
-      operationId: "submitThirdPartyIlpProposal"
-      parameters:
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
-        required: false
-        type: "string"
-      - name: "Token"
-        in: "header"
-        description: "The security token, for the moment it is equal to the authenticated\
-          \ user id"
-        required: false
-        type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - name: "proposalId"
-        in: "path"
-        description: "Unique id for the proposal"
-        required: true
-        type: "integer"
-      - name: "version"
-        in: "query"
-        description: "The version id of the proposal document"
-        required: true
-        type: "number"
-      responses:
-        200:
-          description: "Successful response where the proposal submission is created"
-          schema:
-            $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
-        400:
-          description: "Response to indicate that the request cannot be processed\
-            \ due to a client error (submitted data has errors)."
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Response when the client is not authorized for this operation."
-          schema:
-            $ref: "#/definitions/inline_response_401"
-        500:
-          description: "Response when there is an unexpected server error."
-          schema:
-            $ref: "#/definitions/inline_response_500"
-      x-swagger-router-controller: "Proposal"
   /proposals/firstPartyTraditional/{proposalId}:
     get:
       tags:
@@ -4038,6 +2831,251 @@ paths:
             $ref: "#/definitions/inline_response_500"
       security:
       - APISecurity: []
+      x-swagger-router-controller: "Proposal"
+  /proposals/firstPartyTraditional/sectionStatuses:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Submit details of the first party proposal to validate the completeness\
+        \ of the sections"
+      description: "This end point is used to validate that the information in the\
+        \ first party proposal is complete. Each of the sections that is required\
+        \ must be complete, before the proposal is considered to be complete. This\
+        \ check can be done prior to submission or it will be done automatically as\
+        \ part of the proposal submission."
+      operationId: "validateFirstPartyTraditionalProposalSections"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document that needs to be validated"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyTraditionalProposal"
+      responses:
+        200:
+          description: "Successful response where the statuses of the various sections\
+            \ is returned"
+          schema:
+            type: "object"
+            description: "Key will be proposal section name, value is ok or ko"
+            additionalProperties:
+              type: "string"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/firstPartyTraditional/{proposalId}/submissions:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a first party traditional proposal submission for the given\
+        \ propoal id."
+      description: "This end point is used to a proposal submission. It is similar\
+        \ to the POST /submissions/firstPartyTraditionalProposal, except that the\
+        \ proposal details does not need to be submitted as part of the request (as\
+        \ the proposalId is used to retrieve the proposal details)."
+      operationId: "submitFirstPartyTraditionalProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - name: "proposalId"
+        in: "path"
+        description: "Unique id for the proposal"
+        required: true
+        type: "integer"
+      - name: "version"
+        in: "query"
+        description: "The version id of the proposal document"
+        required: true
+        type: "number"
+      responses:
+        200:
+          description: "Successful response where the proposal submission is created"
+          schema:
+            $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/firstPartyIlp:
+    get:
+      tags:
+      - "Proposal"
+      summary: "Fetch a list of first party ILP proposals"
+      description: "Use this end point to fetch all the proposals (both submitted\
+        \ and pending). When filtering the required rows, the available keys are pk,\
+        \ submissionChannel,tenantCode, status, proposalType"
+      operationId: "fetchFirstPartyIlpProposalList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of first party ilp\
+            \ proposals"
+          schema:
+            $ref: "#/definitions/inline_response_200_12"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a new first party ilp proposal document"
+      description: "This end point is used for creating a first party ilp proposal."
+      operationId: "createFirstPartyIlpProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document to save"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyIlpProposal"
+      responses:
+        200:
+          description: "Successful response to create a new first party ILP proposal\
+            \ submission. Returns the new submission document."
+          schema:
+            $ref: "#/definitions/FirstPartyIlpProposal"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
       x-swagger-router-controller: "Proposal"
   /proposals/firstPartyIlp/{proposalId}:
     get:
@@ -4219,6 +3257,251 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Proposal"
+  /proposals/firstPartyIlp/sectionStatuses:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Submit details of the first party ILP proposal to validate the completeness\
+        \ of the sections"
+      description: "This end point is used to validate that the information in the\
+        \ first party ILP proposal is complete. Each of the sections that is required\
+        \ must be complete, before the proposal is considered to be complete. This\
+        \ check can be done prior to submission or it will be done automatically as\
+        \ part of the proposal submission."
+      operationId: "validateFirstPartyIlpProposalSections"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document that needs to be validated"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyIlpProposal"
+      responses:
+        200:
+          description: "Successful response where the statuses of the various sections\
+            \ is returned"
+          schema:
+            type: "object"
+            description: "Key will be proposal section name, value is ok or ko"
+            additionalProperties:
+              type: "string"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/firstPartyIlp/{proposalId}/submissions:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a first party ILP proposal submission for the given propoal\
+        \ id."
+      description: "This end point is used to a proposal submission. It is similar\
+        \ to the POST /submissions/firstPartyIlpProposal, except that the proposal\
+        \ details does not need to be submitted as part of the request (as the proposalId\
+        \ is used to retrieve the proposal details)."
+      operationId: "submitFirstPartyIlpProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - name: "proposalId"
+        in: "path"
+        description: "Unique id for the proposal"
+        required: true
+        type: "integer"
+      - name: "version"
+        in: "query"
+        description: "The version id of the proposal document"
+        required: true
+        type: "number"
+      responses:
+        200:
+          description: "Successful response where the proposal submission is created"
+          schema:
+            $ref: "#/definitions/FirstPartyIlpProposalSubmission"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/thirdPartyTraditional:
+    get:
+      tags:
+      - "Proposal"
+      summary: "Fetch a list of third party proposals"
+      description: "Use this end point to fetch all the proposals (both submitted\
+        \ and pending). When filtering the required rows, the available keys are pk,\
+        \ submissionChannel,tenantCode, status, proposalType"
+      operationId: "fetchThirdPartyTraditionalProposalList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of third party proposals"
+          schema:
+            $ref: "#/definitions/inline_response_200_12"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a new third party traditional proposal document"
+      description: "This end point is used for creating a third party traditional\
+        \ proposal."
+      operationId: "createThirdPartyTraditionalProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document to save"
+        required: true
+        schema:
+          $ref: "#/definitions/ThirdPartyTraditionalProposal"
+      responses:
+        200:
+          description: "Successful response to create a new third party traditional\
+            \ proposal submission. Returns the new submission document."
+          schema:
+            $ref: "#/definitions/ThirdPartyTraditionalProposal"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
   /proposals/thirdPartyTraditional/{proposalId}:
     get:
       tags:
@@ -4399,6 +3682,250 @@ paths:
       security:
       - APISecurity: []
       x-swagger-router-controller: "Proposal"
+  /proposals/thirdPartyTraditional/sectionStatuses:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Submit details of the third party proposal to validate the completeness\
+        \ of the sections"
+      description: "This end point is used to validate that the information in the\
+        \ third party proposal is complete. Each of the sections that is required\
+        \ must be complete, before the proposal is considered to be complete. This\
+        \ check can be done prior to submission or it will be done automatically as\
+        \ part of the proposal submission."
+      operationId: "validateThirdPartyTraditionalProposalSections"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document that needs to be validated"
+        required: true
+        schema:
+          $ref: "#/definitions/ThirdPartyTraditionalProposal"
+      responses:
+        200:
+          description: "Successful response where the statuses of the various sections\
+            \ is returned"
+          schema:
+            type: "object"
+            description: "Key will be proposal section name, value is ok or ko"
+            additionalProperties:
+              type: "string"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/thirdPartyTraditional/{proposalId}/submissions:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a third party traditional proposal submission for the given\
+        \ propoal id."
+      description: "This end point is used to a proposal submission. It is similar\
+        \ to the POST /submissions/thirdPartyTraditionalProposal, except that the\
+        \ proposal details does not need to be submitted as part of the request (as\
+        \ the proposalId is used to retrieve the proposal details)."
+      operationId: "submitThirdPartyTraditionalProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - name: "proposalId"
+        in: "path"
+        description: "Unique id for the proposal"
+        required: true
+        type: "integer"
+      - name: "version"
+        in: "query"
+        description: "The version id of the proposal document"
+        required: true
+        type: "number"
+      responses:
+        200:
+          description: "Successful response where the proposal submission is created"
+          schema:
+            $ref: "#/definitions/ThirdPartyTraditionalProposalSubmission"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/thirdPartyIlp:
+    get:
+      tags:
+      - "Proposal"
+      summary: "Fetch a list of third party ILP proposals"
+      description: "Use this end point to fetch all the third party ILP proposals\
+        \ (both submitted and pending). When filtering the required rows, the available\
+        \ keys are pk, submissionChannel,tenantCode, status, proposalType"
+      operationId: "fetchThirdPartyIlpProposalList"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "Number of records to skip in the result list"
+        required: false
+        type: "number"
+        default: 0
+        format: "integer"
+      - name: "limit"
+        in: "query"
+        description: "Limit the number of rows to return"
+        required: false
+        type: "number"
+        default: 100
+        format: "integer"
+      - name: "keys"
+        in: "query"
+        description: "Specify multiple rows to fetch ?keys=123,456"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "csv"
+      - name: "sort"
+        in: "query"
+        description: "Sorting order. Prefix with '-' for descending order"
+        required: false
+        type: "string"
+        format: "string"
+      - name: "filter"
+        in: "query"
+        description: "Filter criteria to apply to the search. The format used is filter=condition|condition.\
+          \ The format of the condition is {key}\\*{operator}\\*{value) e.g. filter=name\\\
+          *startsWith\\*A. The \\* is used to delimit the components of the criteria.\
+          \ As an example, to find rows with name that starts with 'A', specify as\
+          \ filter=name\\*startsWith\\*A .  When there are multiple criterias in the\
+          \ condition, e.g. find rows where name startsWith A and age greater than\
+          \ 30, specify as filter=name\\*startsWith\\*A;age\\*GT\\*30 . The ; character\
+          \ is used to separate the criterias. For more complex filters, e.g. Find\
+          \ rows where name starts with 'A' OR name starts with B, then it can be\
+          \ specified as filter=name\\*startsWith\\*A|name\\*startsWith\\*B . Use\
+          \ the | to separate OR conditions."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "pipes"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "Successful response which returns a list of third party proposals"
+          schema:
+            $ref: "#/definitions/inline_response_200_12"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a new third party ILP proposal document"
+      description: "This end point is used for creating a third party ILP proposal."
+      operationId: "createThirdPartyIlpProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document to save"
+        required: true
+        schema:
+          $ref: "#/definitions/ThirdPartyIlpProposal"
+      responses:
+        200:
+          description: "Successful response to create a new third party ILP proposal\
+            \ submission. Returns the new submission document."
+          schema:
+            $ref: "#/definitions/ThirdPartyIlpProposal"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
   /proposals/thirdPartyIlp/{proposalId}:
     get:
       tags:
@@ -4523,7 +4050,7 @@ paths:
       summary: "Delete a third party ILP proposal"
       description: "This end point is used to delete the proposal with the given proposal\
         \ id. The version of the proposal document is required to ensure there are\
-        \ no changes since the proposal document was fetched. e.g. DELETE /proposals/thirdPartyTraditional/1234?version=12"
+        \ no changes since the proposal document was fetched. e.g. DELETE /proposals/thirdPartyIlp/1234?version=12"
       operationId: "deleteThirdPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -4578,6 +4105,118 @@ paths:
             $ref: "#/definitions/inline_response_500"
       security:
       - APISecurity: []
+      x-swagger-router-controller: "Proposal"
+  /proposals/thirdPartyIlp/sectionStatuses:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Submit details of the third party ILP proposal to validate the completeness\
+        \ of the sections"
+      description: "This end point is used to validate that the information in the\
+        \ third party ILP proposal is complete. Each of the sections that is required\
+        \ must be complete, before the proposal is considered to be complete. This\
+        \ check can be done prior to submission or it will be done automatically as\
+        \ part of the proposal submission."
+      operationId: "validateThirdPartyIlpProposalSections"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The proposal document that needs to be validated"
+        required: true
+        schema:
+          $ref: "#/definitions/ThirdPartyIlpProposal"
+      responses:
+        200:
+          description: "Successful response where the statuses of the various sections\
+            \ is returned"
+          schema:
+            type: "object"
+            description: "Key will be proposal section name, value is ok or ko"
+            additionalProperties:
+              type: "string"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
+      x-swagger-router-controller: "Proposal"
+  /proposals/thirdPartyIlp/{proposalId}/submissions:
+    post:
+      tags:
+      - "Proposal"
+      summary: "Create a third party ILP proposal submission for the given propoal\
+        \ id."
+      description: "This end point is used to a proposal submission. It is similar\
+        \ to the POST /submissions/thirdPartyIlpProposal, except that the proposal\
+        \ details does not need to be submitted as part of the request (as the proposalId\
+        \ is used to retrieve the proposal details)."
+      operationId: "submitThirdPartyIlpProposal"
+      parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
+      - name: "Token"
+        in: "header"
+        description: "The security token, for the moment it is equal to the authenticated\
+          \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
+        required: false
+        type: "string"
+      - name: "proposalId"
+        in: "path"
+        description: "Unique id for the proposal"
+        required: true
+        type: "integer"
+      - name: "version"
+        in: "query"
+        description: "The version id of the proposal document"
+        required: true
+        type: "number"
+      responses:
+        200:
+          description: "Successful response where the proposal submission is created"
+          schema:
+            $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
+        400:
+          description: "Response to indicate that the request cannot be processed\
+            \ due to a client error (submitted data has errors)."
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Response when the client is not authorized for this operation."
+          schema:
+            $ref: "#/definitions/inline_response_401"
+        500:
+          description: "Response when there is an unexpected server error."
+          schema:
+            $ref: "#/definitions/inline_response_500"
       x-swagger-router-controller: "Proposal"
   /proposals:
     get:
@@ -5593,7 +5232,6 @@ definitions:
         type: "string"
         description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
           \ etc"
-        default: "FirstyPartyTermProposal"
       proposalReferenceNo:
         type: "string"
         description: "Reference number assigned by client. Should be unique to the\

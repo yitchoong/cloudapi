@@ -940,21 +940,26 @@ function createProposalSubmission( submission, validator) {
 }
 // apis for handling proposals
 
+const firstPartyTraditionalProposalTypes = ["FirstPartyTerm", "FirstPartyMedical","FirstPartyWholeLife","FirstPartyEndowment"]
+const firstPartyIlpProposalTypes = ["FirstPartyIlp"]
+const thirdPartyTraditionalProposalTypes = ["ThirdPartyTerm", "ThirdPartyMedical","ThirdPartyWholeLife","ThirdPartyEndowment"]
+const thirdPartyIlpProposalTypes = ["ThirdPartyIlp"]
+
 exp.newFirstPartyTraditionalProposal = function(proposal) {
     proposal = patchProposal(proposal)
-    return createProposal(proposal, exp.validateMinimalFirstPartyProposal)
+    return createProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyTraditionalProposalTypes)
 }
 exp.newFirstPartyIlpProposal = function(proposal){
     proposal = patchProposal(proposal)
-    return createProposal(proposal, exp.validateMinimalFirstPartyProposal )
+    return createProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyIlpProposalTypes )
 }
 exp.newThirdPartyTraditionalProposal = function(proposal){
     proposal = patchProposal(proposal)
-    return createProposal(proposal, exp.validateMinimalThirdPartyProposal )
+    return createProposal(proposal, exp.validateMinimalThirdPartyProposal,thirdPartyTraditionalProposalTypes )
 }
 exp.newThirdPartyIlpProposal = function(proposal){
     proposal = patchProposal(proposal)
-    return createProposal(proposal, exp.validateMinimalThirdPartyProposal )
+    return createProposal(proposal, exp.validateMinimalThirdPartyProposal,thirdPartyIlpProposalTypes )
 }
 function patchProposal(proposal) {
     if (proposal.proposedInsuranceSection.coverageList && !proposal.proposedInsuranceSection.productList) {
@@ -971,24 +976,31 @@ function patchProposal(proposal) {
 }
 exp.updateFirstPartyTraditionalProposal = function(proposal) {
     proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal)
+    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,,firstPartyTraditionalProposalTypes)
 }
 exp.updateFirstPartyIlpProposal = function(proposal){
     proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal )
+    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyIlpProposalTypes )
 }
 exp.updateThirdPartyTraditionalProposal = function(proposal){
     proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal )
+    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal,thirdPartyTraditionalProposalTypes  )
 }
 exp.updateThirdPartyIlpProposal = function(proposal){
     proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal )
+    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal, thirdPartyIlpProposalTypes )
 }
 
-function createProposal( proposal, validator) {
+function createProposal( proposal, validator, validProposalTypes) {
     return new Promise((resolve,reject) => {
-        let errs = validator(proposal)
+        let errs = []
+        if (validProposalTypes.indexOf(proposal.proposalType) < 0 ) {
+            errs.push(__(`Invalid proposal type for the end-point !`))
+            reject(errs)
+            return
+        }
+
+        errs = [].concat( validator(proposal) )
         if (errs.length > 0) {
             reject( errs )
             return
@@ -1020,7 +1032,7 @@ function createProposal( proposal, validator) {
     });
 }
 
-function updateProposal( proposal, validator) {
+function updateProposal( proposal, validator, validProposalTypes) {
     return new Promise((resolve,reject) => {
         let errs = []
         if (!proposal.version) {
@@ -1028,6 +1040,12 @@ function updateProposal( proposal, validator) {
             reject(errs)
             return
         }
+        if (validProposalTypes.indexOf(proposal.proposalType) < 0 ) {
+            errs.push(__(`Invalid proposal type for the end-point !`))
+            reject(errs)
+            return
+        }
+
         errs = [].concat( validator(proposal) )
         if (errs.length > 0) {
             reject( errs )
@@ -1255,10 +1273,10 @@ function verifyAndSubmitProposal(proposalTypes, pk, version, userId, tenantCode,
             const submission = {
                 "submissionDate": moment().format("YYYY-MM-DD"),
                 "submissionType": subType,
-                "tenantCode" : doc.tenantCode || "ebao",
+                "tenantCode" : doc.tenantCode || tenantCode || "ebao",
                 "submissionChannel" : doc.submissionChannel || "direct",
                 "submissionRefNo": doc.proposalReferenceNo || "",
-                "userId" : tenantCode || "default",
+                "userId" : userId || "default",
                 "submissionData": doc
             }
             // validate the submission as well -- some duplicate work here as proposal is already validated -- can tighten code later

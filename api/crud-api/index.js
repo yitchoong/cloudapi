@@ -284,19 +284,6 @@ function submitProposal(submission) {
         .then(db => {
             db.serialize(function() {
                 db.run("begin transaction")
-                db.run(`update proposals set status = 'SUBMITTED' where pk = ? and version = ? `, [proposalId, version] , function(err) {
-                    dbstatus['s1'] = !err && this.changes === 1 ? 'ok' : 'ko'
-                    if (dbstatus['s1'] !== '?' && dbstatus['s2'] !== '?') {
-                        const okay = dbstatus['s1'] === 'ok' && dbstatus['s2'] === 'ok'
-                        if (okay) {
-                            db.run("commit")
-                            resolve({ok:true, response: submission})
-                        } else {
-                            db.run("rollback")
-                            resolve({ok:false, errors: err})
-                        }
-                    }
-                })
                 db.run( sql, data, function (err)  {
                     dbstatus['s2'] = !err && this.lastID ? 'ok' : 'ko'
                     submission.pk = this.lastID
@@ -312,6 +299,21 @@ function submitProposal(submission) {
                         }
                     }
                 })
+
+                db.run(`update proposals set status = 'SUBMITTED' where pk = ? and version = ? `, [proposalId, version] , function(err) {
+                    dbstatus['s1'] = !err && this.changes === 1 ? 'ok' : 'ko'
+                    if (dbstatus['s1'] !== '?' && dbstatus['s2'] !== '?') {
+                        const okay = dbstatus['s1'] === 'ok' && dbstatus['s2'] === 'ok'
+                        if (okay) {
+                            db.run("commit")
+                            resolve({ok:true, response: submission})
+                        } else {
+                            db.run("rollback")
+                            resolve({ok:false, errors: err})
+                        }
+                    }
+                })
+                
             })
         })
         .catch((err) => {

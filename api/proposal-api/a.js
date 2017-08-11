@@ -145,56 +145,56 @@ var submission =
         //         "90-40" : {"label": "Age at death", "multiValues": [0, 87]}
         //     }
         // },
-        // "lifeAssuredDisclosureSection" : {
-        //     "disclosures": {
-        //         "10" : { "label":"Height", "value": 170},
-        //         "20" : {"label": "Weight", "value": 80},
-        //         "30" : {"label": "Do you smoke?" , "value": "yes"},
-        //         "30-10": {"label": "Type" , "value" : "CI" },
-        //         "30-20" : {"label":"How many stcks per day", "value": "10"},
-        //         "30-30" : {"label": "How Long? (yrs)" , "value": 2},
-        //         "40" :  {"label":"Do you have disability or treated for conditions?", "value" : "yes"},
-        //         "40-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
-        //         "40-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
-        //         "40-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
-        //         "40-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
-        //         "40-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
-        //
-        //         "50" :  {"label":"Do you have applications?", "value" : "yes"},
-        //         "50-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
-        //         "50-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
-        //         "50-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
-        //         "50-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
-        //         "50-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
-        //
-        //         "60" :  {"label":"Have you had surgery / treatment in the last 2 years?", "value" : "yes"},
-        //         "60-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
-        //         "60-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
-        //         "60-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
-        //         "60-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
-        //         "60-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
-        //
-        //         "70" :  {"label":"Are you waiting for medical treatment?", "value" : "yes"},
-        //         "70-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
-        //         "70-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
-        //         "70-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
-        //         "70-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
-        //         "70-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
-        //
-        //         "80" :  {"label":"Have you been taking drugs?", "value" : "yes"},
-        //         "80-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
-        //         "80-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
-        //         "80-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
-        //         "80-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
-        //         "80-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
-        //
-        //         "90" :  {"label":"Have either of your direct family member (parents, brothers and sisters)....?", "value" : "Yes"},
-        //         "90-10" : {"label": "relationship", "multiValues": ["BR","SI"]},
-        //         "90-20" : {"label": "condition/ cause of death", "multiValues": ["XRAY", "ECG"]},
-        //         "90-30" : {"label": "Age of onset", "multiValues": [60, 0]},
-        //         "90-40" : {"label": "Age at death", "multiValues": [0, 87]}
-        //     }
-        // }
+        "lifeAssuredDisclosureSection" : {
+            "disclosures": {
+                "10" : { "label":"Height", "value": 170},
+                "20" : {"label": "Weight", "value": 80},
+                "30" : {"label": "Do you smoke?" , "value": "yes"},
+                "30-10": {"label": "Type" , "value" : "CI" },
+                "30-20" : {"label":"How many stcks per day", "value": "10"},
+                "30-30" : {"label": "How Long? (yrs)" , "value": 2},
+                "40" :  {"label":"Do you have disability or treated for conditions?", "value" : "yes"},
+                "40-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
+                "40-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
+                "40-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
+                "40-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
+                "40-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
+
+                "50" :  {"label":"Do you have applications?", "value" : "yes"},
+                "50-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
+                "50-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
+                "50-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
+                "50-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
+                "50-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
+
+                "60" :  {"label":"Have you had surgery / treatment in the last 2 years?", "value" : "yes"},
+                "60-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
+                "60-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
+                "60-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
+                "60-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
+                "60-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
+
+                "70" :  {"label":"Are you waiting for medical treatment?", "value" : "yes"},
+                "70-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
+                "70-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
+                "70-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
+                "70-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
+                "70-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
+
+                "80" :  {"label":"Have you been taking drugs?", "value" : "yes"},
+                "80-10" : {"label": "Date", "multiValues": ["2017-01-05","2017-06-03"]},
+                "80-20" : {"label": "Type of diagnostic", "multiValues": ["XRAY", "ECG"]},
+                "80-30" : {"label": "Hospital/Clinic", "multiValues": ["Assunta", "KPJ PJ"]},
+                "80-40" : {"label": "Address", "multiValues": ["PJ 222", "Damansara Kim"]},
+                "80-50" : {"label": "Remarks", "multiValues": ["Clean", "Clean"]},
+
+                "90" :  {"label":"Have either of your direct family member (parents, brothers and sisters)....?", "value" : "Yes"},
+                "90-10" : {"label": "relationship", "multiValues": ["BR","SI"]},
+                "90-20" : {"label": "condition/ cause of death", "multiValues": ["XRAY", "ECG"]},
+                "90-30" : {"label": "Age of onset", "multiValues": [60, 0]},
+                "90-40" : {"label": "Age at death", "multiValues": [0, 87]}
+            }
+        }
     }
 
 }
