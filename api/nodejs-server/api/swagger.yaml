@@ -1814,12 +1814,6 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The submission document containing the proposal"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
@@ -1831,6 +1825,12 @@ paths:
         description: "The insurer who will receive the document"
         required: false
         type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
       responses:
         200:
           description: "Successful response to create a new first party traditional\
@@ -1862,16 +1862,16 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "submissionId"
-        in: "path"
-        description: "Unique id for the submission"
-        required: true
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
         required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
         type: "string"
       responses:
         200:
@@ -1997,12 +1997,6 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The submission document containing the proposal"
-        required: true
-        schema:
-          $ref: "#/definitions/FirstPartyIlpProposalSubmission"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
@@ -2014,6 +2008,12 @@ paths:
         description: "The insurer who will receive the document"
         required: false
         type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/FirstPartyIlpProposalSubmission"
       responses:
         200:
           description: "Successful response to create a new first party ILP proposal\
@@ -2045,16 +2045,16 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "submissionId"
-        in: "path"
-        description: "Unique id for the submission"
-        required: true
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
         required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
         type: "string"
       responses:
         200:
@@ -2180,12 +2180,6 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The submission document containing the proposal"
-        required: true
-        schema:
-          $ref: "#/definitions/ThirdPartyTraditionalProposalSubmission"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
@@ -2197,6 +2191,12 @@ paths:
         description: "The insurer who will receive the document"
         required: false
         type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/ThirdPartyTraditionalProposalSubmission"
       responses:
         200:
           description: "Successful response to create a new third party traditional\
@@ -2228,16 +2228,16 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "submissionId"
-        in: "path"
-        description: "Unique id for the submission"
-        required: true
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
         required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
         type: "string"
       responses:
         200:
@@ -2363,12 +2363,6 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - in: "body"
-        name: "bodyParam"
-        description: "The submission document containing the proposal"
-        required: true
-        schema:
-          $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
@@ -2380,6 +2374,12 @@ paths:
         description: "The insurer who will receive the document"
         required: false
         type: "string"
+      - in: "body"
+        name: "bodyParam"
+        description: "The submission document containing the proposal"
+        required: true
+        schema:
+          $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
       responses:
         200:
           description: "Successful response to create a new third party ILP proposal\
@@ -2411,16 +2411,16 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "submissionId"
-        in: "path"
-        description: "Unique id for the submission"
-        required: true
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
         required: false
+        type: "string"
+      - name: "submissionId"
+        in: "path"
+        description: "Unique id for the submission"
+        required: true
         type: "string"
       responses:
         200:

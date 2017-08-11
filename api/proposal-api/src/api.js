@@ -467,8 +467,6 @@ exp.validateFirstPartyProposal = function(proposal) {
             }
         })
     }
-
-
     // check for required sections for the first-party-endowment and first-party-whole-life proposal ::TODO::
   }
 
@@ -727,6 +725,7 @@ function validateProposedInsuranceSection(proposal, validators) {
     // make use of the product-api to do the validation
     // let validators = ["validatePersonProduct","validateMain", "validateAllRiders"]
     let errmap = productApi.validate(proposal.proposedInsuranceSection,validators)
+    console.log("Calling product api to do the validation", errmap)
     Object.keys(errmap).forEach(errkey => errs = errs.concat( errmap[errkey] ) )
     return errs
 }

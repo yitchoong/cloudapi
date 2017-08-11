@@ -6,7 +6,8 @@ let exp = {};
 exp.validateAllFundAllocations__01 = function validateAllFundAllocations__01(ctx, parent, opts) {
     // validator should be attached to the main plan to check on all funds
     let errs = [], totalAllocation = 0, totalAdhoc=0, totalRegular=0 , totalTarget =0,
-        funds = ctx.get("policy").val("fundList");
+        funds = ctx.get("policy").val("fundList") || [];
+
     try {
         funds.forEach((fund,index) => {
           let res = validateFundAllocationInput(fund, ctx, parent, opts)
@@ -33,6 +34,9 @@ exp.validateAllFundAllocations__01 = function validateAllFundAllocations__01(ctx
 
     } catch (exc) {
         errs.push(exc.message)
+    }
+    if (funds.length == 0) {
+        errs.push(__("Fund allocations are required for ILP policies!"))
     }
 
     return errs;

@@ -7,7 +7,7 @@ let exp = {};
 
 exp.validateAllWithdrawals__01 = function validateAllWithdrawals__01(ctx, parent, opts) {
     let errs = [], tot = 0,
-        withdrawals = ctx.get("policy").val("withdrawalList");
+        withdrawals = ctx.get("policy").val("withdrawalList") || [];
     try {
         withdrawals.forEach((row,index) => {
 

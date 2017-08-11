@@ -8,7 +8,7 @@ let exp = {};
 
 exp.validateAllTopups__01 = function validateAllTopups__01(ctx, parent, opts) {
     let errs = [], tot = 0,
-        topups = ctx.get("policy").val("topupList");
+        topups = ctx.get("policy").val("topupList") || [];
     try {
         topups.forEach((topup,index) => {
            let res = validateTopupInput(topup, ctx, parent, opts)

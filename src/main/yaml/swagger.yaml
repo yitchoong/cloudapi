@@ -12,6 +12,8 @@ info:
   # version 0.0.12 Added support for updating & deleting pending proposals
   # version 0.0.13 Added support for submitting proposals - i.e. submissions
 
+
+
 # the domain of the service
 host: localhost:8080
 # array of all schemes that your API supports
@@ -1142,185 +1144,185 @@ paths:
           $ref: '#/responses/Standard500Response'
 
 
-  '/submissions/firstPartyMedicalProposal':
-    get:
-      summary: Fetch a list of direct first party medical proposal submissions
-      description: Use this end point to fetch all the direct first party medical proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision
-      parameters:
-        - $ref : '#/parameters/language'
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryFilter'
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Submission
-      operationId: "fetchFirstPartyMedicalSubmissionList"
-      responses:
-        200:
-          description: Successful response which returns a list of proposal submissions.
-          schema:
-            type: object
-            properties:
-              totalDocs:
-                type: number
-              offset:
-                type: number
-              docs:
-                type: array
-                items:
-                  $ref: '#/definitions/SubmissionSummary'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  # '/submissions/firstPartyMedicalProposal':
+  #   get:
+  #     summary: Fetch a list of direct first party medical proposal submissions
+  #     description: Use this end point to fetch all the direct first party medical proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision
+  #     parameters:
+  #       - $ref : '#/parameters/language'
+  #       - $ref : '#/parameters/queryOffset'
+  #       - $ref : '#/parameters/queryLimit'
+  #       - $ref : '#/parameters/queryKeys'
+  #       - $ref : '#/parameters/querySort'
+  #       - $ref : '#/parameters/queryFilter'
+  #       - $ref:  '#/parameters/Token'
+  #     tags:
+  #       - Submission
+  #     operationId: "fetchFirstPartyMedicalSubmissionList"
+  #     responses:
+  #       200:
+  #         description: Successful response which returns a list of proposal submissions.
+  #         schema:
+  #           type: object
+  #           properties:
+  #             totalDocs:
+  #               type: number
+  #             offset:
+  #               type: number
+  #             docs:
+  #               type: array
+  #               items:
+  #                 $ref: '#/definitions/SubmissionSummary'
+  #       400:
+  #         $ref: '#/responses/Standard400Response'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
-    post:
-      summary: Create a new direct first party medical proposal submission document (containing proposal details)
-      description: This end point is used for the submission of a proposal. This end point is useful when proposals are not persisted prior to submission.
-      tags:
-        - Submission
-      parameters:
-        - $ref: '#/parameters/language'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The submission document containing the proposal
-          schema:
-            $ref: '#/definitions/FirstPartyMedicalSubmission'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-      operationId: "createFirstPartyMedicalSubmission"
-      responses:
-        200:
-          description: Successful response to create a new proposal submission. Returns the new submission document.
-          schema:
-            $ref: '#/definitions/FirstPartyMedicalSubmission'
-        401:
-          $ref: '#/responses/Standard401Response'
-        # 404:
-        #   $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  #   post:
+  #     summary: Create a new direct first party medical proposal submission document (containing proposal details)
+  #     description: This end point is used for the submission of a proposal. This end point is useful when proposals are not persisted prior to submission.
+  #     tags:
+  #       - Submission
+  #     parameters:
+  #       - $ref: '#/parameters/language'
+  #       - name: bodyParam
+  #         in : body
+  #         required: true
+  #         description: The submission document containing the proposal
+  #         schema:
+  #           $ref: '#/definitions/FirstPartyMedicalSubmission'
+  #       - $ref:  '#/parameters/Token'
+  #       - $ref: '#/parameters/TenantCode'
+  #     operationId: "createFirstPartyMedicalSubmission"
+  #     responses:
+  #       200:
+  #         description: Successful response to create a new proposal submission. Returns the new submission document.
+  #         schema:
+  #           $ref: '#/definitions/FirstPartyMedicalSubmission'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       # 404:
+  #       #   $ref: '#/responses/Standard404Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
-  '/submissions/firstPartyMedical/{submissionId}':
-    get:
-      summary: Fetch a proposal submission document
-      description: Use this end-point to fetch a proposal submissions. This will fetch the full document including the proposal data, and the submission status.
-      parameters:
-        - $ref : '#/parameters/language'
-        - name : submissionId
-          in: path
-          required: true
-          type: string
-          description: Unique id for the submission
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Submission
-      operationId: "fetchFirstPartyMedicalSubmission"
-      responses:
-        200:
-          description: Successful response which returns the submission document
-          schema:
-            $ref: '#/definitions/FirstPartyMedicalSubmission'
-        401:
-          $ref: '#/responses/Standard401Response'
-        404:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  # '/submissions/firstPartyMedical/{submissionId}':
+  #   get:
+  #     summary: Fetch a proposal submission document
+  #     description: Use this end-point to fetch a proposal submissions. This will fetch the full document including the proposal data, and the submission status.
+  #     parameters:
+  #       - $ref : '#/parameters/language'
+  #       - name : submissionId
+  #         in: path
+  #         required: true
+  #         type: string
+  #         description: Unique id for the submission
+  #       - $ref:  '#/parameters/Token'
+  #     tags:
+  #       - Submission
+  #     operationId: "fetchFirstPartyMedicalSubmission"
+  #     responses:
+  #       200:
+  #         description: Successful response which returns the submission document
+  #         schema:
+  #           $ref: '#/definitions/FirstPartyMedicalSubmission'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       404:
+  #         $ref: '#/responses/Standard404Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
-  '/submissions/firstPartyTermProposal':
-    get:
-      summary: Fetch a list of direct first party term proposal submissions
-      description: Use this end point to fetch all the direct first party term proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision
-      parameters:
-        - $ref : '#/parameters/language'
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryFilter'
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Submission
-      operationId: "fetchFirstPartyTermProposalSubmissionList"
-      responses:
-        200:
-          description: Successful response which returns a list of proposal submissions.
-          schema:
-            type: object
-            properties:
-              totalDocs:
-                type: number
-              offset:
-                type: number
-              docs:
-                type: array
-                items:
-                  $ref: '#/definitions/SubmissionSummary'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  # '/submissions/firstPartyTermProposal':
+  #   get:
+  #     summary: Fetch a list of direct first party term proposal submissions
+  #     description: Use this end point to fetch all the direct first party term proposal submissions. When filtering the required rows, the available keys are pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and decision
+  #     parameters:
+  #       - $ref : '#/parameters/language'
+  #       - $ref : '#/parameters/queryOffset'
+  #       - $ref : '#/parameters/queryLimit'
+  #       - $ref : '#/parameters/queryKeys'
+  #       - $ref : '#/parameters/querySort'
+  #       - $ref : '#/parameters/queryFilter'
+  #       - $ref:  '#/parameters/Token'
+  #     tags:
+  #       - Submission
+  #     operationId: "fetchFirstPartyTermProposalSubmissionList"
+  #     responses:
+  #       200:
+  #         description: Successful response which returns a list of proposal submissions.
+  #         schema:
+  #           type: object
+  #           properties:
+  #             totalDocs:
+  #               type: number
+  #             offset:
+  #               type: number
+  #             docs:
+  #               type: array
+  #               items:
+  #                 $ref: '#/definitions/SubmissionSummary'
+  #       400:
+  #         $ref: '#/responses/Standard400Response'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
-    post:
-      summary: Create a new direct first party term proposal submission document (containing proposal details)
-      description: This end point is used for the submission of a first party term proposal. This end point is useful when proposals are not persisted prior to submission.
-      tags:
-        - Submission
-      parameters:
-        - $ref: '#/parameters/language'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The submission document containing the proposal
-          schema:
-            $ref: '#/definitions/FirstPartyTermProposalSubmission'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-      operationId: "createFirstPartyTermProposalSubmission"
-      responses:
-        200:
-          description: Successful response to create a new proposal submission. Returns the new submission document.
-          schema:
-            $ref: '#/definitions/FirstPartyTermProposalSubmission'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  #   post:
+  #     summary: Create a new direct first party term proposal submission document (containing proposal details)
+  #     description: This end point is used for the submission of a first party term proposal. This end point is useful when proposals are not persisted prior to submission.
+  #     tags:
+  #       - Submission
+  #     parameters:
+  #       - $ref: '#/parameters/language'
+  #       - name: bodyParam
+  #         in : body
+  #         required: true
+  #         description: The submission document containing the proposal
+  #         schema:
+  #           $ref: '#/definitions/FirstPartyTermProposalSubmission'
+  #       - $ref:  '#/parameters/Token'
+  #       - $ref: '#/parameters/TenantCode'
+  #     operationId: "createFirstPartyTermProposalSubmission"
+  #     responses:
+  #       200:
+  #         description: Successful response to create a new proposal submission. Returns the new submission document.
+  #         schema:
+  #           $ref: '#/definitions/FirstPartyTermProposalSubmission'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
-  '/submissions/firstPartyTermProposal/{submissionId}':
-    get:
-      summary: Fetch a first party term proposal submission document
-      description: Use this end-point to fetch a first party term proposal submissions. This will fetch the full document including the proposal data, and the submission status.
-      parameters:
-        - $ref : '#/parameters/language'
-        - name : submissionId
-          in: path
-          required: true
-          type: string
-          description: Unique id for the submission
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Submission
-      operationId: "fetchFirstPartyTermProposalSubmission"
-      responses:
-        200:
-          description: Successful response which returns the submission document
-          schema:
-            $ref: '#/definitions/FirstPartyTermProposalSubmission'
-        401:
-          $ref: '#/responses/Standard401Response'
-        404:
-          $ref: '#/responses/Standard404Response'
-        500:
-          $ref: '#/responses/Standard500Response'
+  # '/submissions/firstPartyTermProposal/{submissionId}':
+  #   get:
+  #     summary: Fetch a first party term proposal submission document
+  #     description: Use this end-point to fetch a first party term proposal submissions. This will fetch the full document including the proposal data, and the submission status.
+  #     parameters:
+  #       - $ref : '#/parameters/language'
+  #       - name : submissionId
+  #         in: path
+  #         required: true
+  #         type: string
+  #         description: Unique id for the submission
+  #       - $ref:  '#/parameters/Token'
+  #     tags:
+  #       - Submission
+  #     operationId: "fetchFirstPartyTermProposalSubmission"
+  #     responses:
+  #       200:
+  #         description: Successful response which returns the submission document
+  #         schema:
+  #           $ref: '#/definitions/FirstPartyTermProposalSubmission'
+  #       401:
+  #         $ref: '#/responses/Standard401Response'
+  #       404:
+  #         $ref: '#/responses/Standard404Response'
+  #       500:
+  #         $ref: '#/responses/Standard500Response'
 
   '/submissions/firstPartyTraditionalProposal':
     get:
@@ -1365,14 +1367,14 @@ paths:
         - Submission
       parameters:
         - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
         - name: bodyParam
           in : body
           required: true
           description: The submission document containing the proposal
           schema:
             $ref: '#/definitions/FirstPartyTraditionalProposalSubmission'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
 
       operationId: "createFirstPartyTraditionalProposalSubmission"
       responses:
@@ -1391,12 +1393,12 @@ paths:
       description: Use this end-point to fetch a first party traditional proposal submissions. This will fetch the full document including the proposal data, and the submission status.
       parameters:
         - $ref : '#/parameters/language'
+        - $ref:  '#/parameters/Token'
         - name : submissionId
           in: path
           required: true
           type: string
           description: Unique id for the submission
-        - $ref:  '#/parameters/Token'
       tags:
         - Submission
       operationId: "fetchFirstPartyTraditionalProposalSubmission"
@@ -1455,14 +1457,14 @@ paths:
         - Submission
       parameters:
         - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
         - name: bodyParam
           in : body
           required: true
           description: The submission document containing the proposal
           schema:
             $ref: '#/definitions/FirstPartyIlpProposalSubmission'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
 
       operationId: "createFirstPartyIlpProposalSubmission"
       responses:
@@ -1481,12 +1483,12 @@ paths:
       description: Use this end-point to fetch a first party ILP proposal submissions. This will fetch the full document including the proposal data, and the submission status.
       parameters:
         - $ref : '#/parameters/language'
+        - $ref:  '#/parameters/Token'
         - name : submissionId
           in: path
           required: true
           type: string
           description: Unique id for the submission
-        - $ref:  '#/parameters/Token'
       tags:
         - Submission
       operationId: "fetchFirstPartyIlpProposalSubmission"
@@ -1545,14 +1547,14 @@ paths:
         - Submission
       parameters:
         - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
         - name: bodyParam
           in : body
           required: true
           description: The submission document containing the proposal
           schema:
             $ref: '#/definitions/ThirdPartyTraditionalProposalSubmission'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
 
       operationId: "createThirdPartyTraditionalProposalSubmission"
       responses:
@@ -1571,12 +1573,12 @@ paths:
       description: Use this end-point to fetch a third party traditional proposal submissions. This will fetch the full document including the proposal data, and the submission status.
       parameters:
         - $ref : '#/parameters/language'
+        - $ref:  '#/parameters/Token'
         - name : submissionId
           in: path
           required: true
           type: string
           description: Unique id for the submission
-        - $ref:  '#/parameters/Token'
       tags:
         - Submission
       operationId: "fetchThirdPartyTraditionalProposalSubmission"
@@ -1636,14 +1638,14 @@ paths:
         - Submission
       parameters:
         - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
         - name: bodyParam
           in : body
           required: true
           description: The submission document containing the proposal
           schema:
             $ref: '#/definitions/ThirdPartyIlpProposalSubmission'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
 
       operationId: "createThirdPartyIlpProposalSubmission"
       responses:
@@ -1662,12 +1664,12 @@ paths:
       description: Use this end-point to fetch a third party traditional proposal submissions. This will fetch the full document including the proposal data, and the submission status.
       parameters:
         - $ref : '#/parameters/language'
+        - $ref:  '#/parameters/Token'
         - name : submissionId
           in: path
           required: true
           type: string
           description: Unique id for the submission
-        - $ref:  '#/parameters/Token'
       tags:
         - Submission
       operationId: "fetchThirdPartyIlpProposalSubmission"
@@ -1782,446 +1784,6 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
-  '/proposals/firstPartyIlp':
-    get:
-      summary: Fetch a list of first party ILP proposals
-      description: Use this end point to fetch all the proposals (both submitted and pending). When filtering the required rows, the available keys are pk, submissionChannel,tenantCode, status, proposalType
-      parameters:
-        - $ref : '#/parameters/language'
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryFilter'
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Proposal
-      operationId: "fetchFirstPartyIlpProposalList"
-      responses:
-        200:
-          description: Successful response which returns a list of first party ilp proposals
-          schema:
-            type: object
-            properties:
-              totalDocs:
-                type: number
-              offset:
-                type: number
-              docs:
-                type: array
-                items:
-                  $ref: '#/definitions/ProposalSummary'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-    post:
-      summary: Create a new first party ilp proposal document
-      description: This end point is used for creating a first party ilp proposal.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document to save
-          schema:
-            $ref: '#/definitions/FirstPartyIlpProposal'
-
-      operationId: "createFirstPartyIlpProposal"
-      responses:
-        200:
-          description: Successful response to create a new first party ILP proposal submission. Returns the new submission document.
-          schema:
-            $ref: '#/definitions/FirstPartyIlpProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/firstPartyTraditional/sectionStatuses':
-    post:
-      summary: Submit details of the first party proposal to validate the completeness of the sections
-      description: This end point is used to validate that the information in the first party proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document that needs to be validated
-          schema:
-            $ref: '#/definitions/FirstPartyTraditionalProposal'
-
-      operationId: "validateFirstPartyTraditionalProposalSections"
-      responses:
-        200:
-          description: Successful response where the statuses of the various sections is returned
-          schema:
-            type: object
-            description: Key will be proposal section name, value is ok or ko
-            additionalProperties:
-              type: string
-
-
-            # $ref: '#/definitions/FirstPartyTraditionalProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/firstPartyIlp/sectionStatuses':
-    post:
-      summary: Submit details of the first party ILP proposal to validate the completeness of the sections
-      description: This end point is used to validate that the information in the first party ILP proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document that needs to be validated
-          schema:
-            $ref: '#/definitions/FirstPartyIlpProposal'
-
-      operationId: "validateFirstPartyIlpProposalSections"
-      responses:
-        200:
-          description: Successful response where the statuses of the various sections is returned
-          schema:
-            type: object
-            description: Key will be proposal section name, value is ok or ko
-            additionalProperties:
-              type: string
-            # $ref: '#/definitions/FirstPartyIlpProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/thirdPartyTraditional':
-    get:
-      summary: Fetch a list of third party proposals
-      description: Use this end point to fetch all the proposals (both submitted and pending). When filtering the required rows, the available keys are pk, submissionChannel,tenantCode, status, proposalType
-      parameters:
-        - $ref : '#/parameters/language'
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryFilter'
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Proposal
-      operationId: "fetchThirdPartyTraditionalProposalList"
-      responses:
-        200:
-          description: Successful response which returns a list of third party proposals
-          schema:
-            type: object
-            properties:
-              totalDocs:
-                type: number
-              offset:
-                type: number
-              docs:
-                type: array
-                items:
-                  $ref: '#/definitions/ProposalSummary'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-    post:
-      summary: Create a new third party traditional proposal document
-      description: This end point is used for creating a third party traditional proposal.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document to save
-          schema:
-            $ref: '#/definitions/ThirdPartyTraditionalProposal'
-
-      operationId: "createThirdPartyTraditionalProposal"
-      responses:
-        200:
-          description: Successful response to create a new third party traditional proposal submission. Returns the new submission document.
-          schema:
-            $ref: '#/definitions/ThirdPartyTraditionalProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/thirdPartyIlp':
-    get:
-      summary: Fetch a list of third party ILP proposals
-      description: Use this end point to fetch all the third party ILP proposals (both submitted and pending). When filtering the required rows, the available keys are pk, submissionChannel,tenantCode, status, proposalType
-      parameters:
-        - $ref : '#/parameters/language'
-        - $ref : '#/parameters/queryOffset'
-        - $ref : '#/parameters/queryLimit'
-        - $ref : '#/parameters/queryKeys'
-        - $ref : '#/parameters/querySort'
-        - $ref : '#/parameters/queryFilter'
-        - $ref:  '#/parameters/Token'
-      tags:
-        - Proposal
-      operationId: "fetchThirdPartyIlpProposalList"
-      responses:
-        200:
-          description: Successful response which returns a list of third party proposals
-          schema:
-            type: object
-            properties:
-              totalDocs:
-                type: number
-              offset:
-                type: number
-              docs:
-                type: array
-                items:
-                  $ref: '#/definitions/ProposalSummary'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-    post:
-      summary: Create a new third party ILP proposal document
-      description: This end point is used for creating a third party ILP proposal.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document to save
-          schema:
-            $ref: '#/definitions/ThirdPartyIlpProposal'
-
-      operationId: "createThirdPartyIlpProposal"
-      responses:
-        200:
-          description: Successful response to create a new third party ILP proposal submission. Returns the new submission document.
-          schema:
-            $ref: '#/definitions/ThirdPartyIlpProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/thirdPartyTraditional/sectionStatuses':
-    post:
-      summary: Submit details of the third party proposal to validate the completeness of the sections
-      description: This end point is used to validate that the information in the third party proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document that needs to be validated
-          schema:
-            $ref: '#/definitions/ThirdPartyTraditionalProposal'
-
-      operationId: "validateThirdPartyTraditionalProposalSections"
-      responses:
-        200:
-          description: Successful response where the statuses of the various sections is returned
-          schema:
-            type: object
-            description: Key will be proposal section name, value is ok or ko
-            additionalProperties:
-              type: string
-            # $ref: '#/definitions/ThirdPartyTraditionalProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/thirdPartyIlp/sectionStatuses':
-    post:
-      summary: Submit details of the third party ILP proposal to validate the completeness of the sections
-      description: This end point is used to validate that the information in the third party ILP proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - name: bodyParam
-          in : body
-          required: true
-          description: The proposal document that needs to be validated
-          schema:
-            $ref: '#/definitions/ThirdPartyIlpProposal'
-
-      operationId: "validateThirdPartyIlpProposalSections"
-      responses:
-        200:
-          description: Successful response where the statuses of the various sections is returned
-          schema:
-            type: object
-            description: Key will be proposal section name, value is ok or ko
-            additionalProperties:
-              type: string
-            # $ref: '#/definitions/ThirdPartyIlpProposal'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/firstPartyTraditional/{proposalId}/submissions':
-    post:
-      summary: Create a first party traditional proposal submission for the given propoal id.
-      description: This end point is used to a proposal submission. It is similar to the POST /submissions/firstPartyTraditionalProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - $ref: '#/parameters/proposalId'
-        - name: version
-          in: query
-          required: true
-          description: The version id of the proposal document
-          type: number
-
-      operationId: "submitFirstPartyTraditionalProposal"
-      responses:
-        200:
-          description: Successful response where the proposal submission is created
-          schema:
-            $ref: '#/definitions/FirstPartyTraditionalProposalSubmission'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/firstPartyIlp/{proposalId}/submissions':
-    post:
-      summary: Create a first party ILP proposal submission for the given propoal id.
-      description: This end point is used to a proposal submission. It is similar to the POST /submissions/firstPartyIlpProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - $ref: '#/parameters/proposalId'
-        - name: version
-          in: query
-          required: true
-          description: The version id of the proposal document
-          type: number
-
-
-      operationId: "submitFirstPartyIlpProposal"
-      responses:
-        200:
-          description: Successful response where the proposal submission is created
-          schema:
-            $ref: '#/definitions/FirstPartyIlpProposalSubmission'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/thirdPartyTraditional/{proposalId}/submissions':
-    post:
-      summary: Create a third party traditional proposal submission for the given propoal id.
-      description: This end point is used to a proposal submission. It is similar to the POST /submissions/thirdPartyTraditionalProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - $ref: '#/parameters/proposalId'
-        - name: version
-          in: query
-          required: true
-          description: The version id of the proposal document
-          type: number
-
-      operationId: "submitThirdPartyTraditionalProposal"
-      responses:
-        200:
-          description: Successful response where the proposal submission is created
-          schema:
-            $ref: '#/definitions/ThirdPartyTraditionalProposalSubmission'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
-  '/proposals/thirdPartyIlp/{proposalId}/submissions':
-    post:
-      summary: Create a third party ILP proposal submission for the given propoal id.
-      description: This end point is used to a proposal submission. It is similar to the POST /submissions/thirdPartyIlpProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
-      tags:
-        - Proposal
-      parameters:
-        - $ref: '#/parameters/language'
-        - $ref:  '#/parameters/Token'
-        - $ref: '#/parameters/TenantCode'
-        - $ref: '#/parameters/proposalId'
-        - name: version
-          in: query
-          required: true
-          description: The version id of the proposal document
-          type: number
-
-      operationId: "submitThirdPartyIlpProposal"
-      responses:
-        200:
-          description: Successful response where the proposal submission is created
-          schema:
-            $ref: '#/definitions/ThirdPartyIlpProposalSubmission'
-        400:
-          $ref: '#/responses/Standard400Response'
-        401:
-          $ref: '#/responses/Standard401Response'
-        500:
-          $ref: '#/responses/Standard500Response'
-
   '/proposals/firstPartyTraditional/{proposalId}':
     get:
       summary: Fetch a first party traditional proposal document
@@ -2311,6 +1873,133 @@ paths:
           $ref: '#/responses/Standard404Response'
         409:
           $ref: '#/responses/ConflictResponse'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/firstPartyTraditional/sectionStatuses':
+    post:
+      summary: Submit details of the first party proposal to validate the completeness of the sections
+      description: This end point is used to validate that the information in the first party proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document that needs to be validated
+          schema:
+            $ref: '#/definitions/FirstPartyTraditionalProposal'
+
+      operationId: "validateFirstPartyTraditionalProposalSections"
+      responses:
+        200:
+          description: Successful response where the statuses of the various sections is returned
+          schema:
+            type: object
+            description: Key will be proposal section name, value is ok or ko
+            additionalProperties:
+              type: string
+
+            # $ref: '#/definitions/FirstPartyTraditionalProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/firstPartyTraditional/{proposalId}/submissions':
+    post:
+      summary: Create a first party traditional proposal submission for the given propoal id.
+      description: This end point is used to a proposal submission. It is similar to the POST /submissions/firstPartyTraditionalProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - $ref: '#/parameters/proposalId'
+        - name: version
+          in: query
+          required: true
+          description: The version id of the proposal document
+          type: number
+
+      operationId: "submitFirstPartyTraditionalProposal"
+      responses:
+        200:
+          description: Successful response where the proposal submission is created
+          schema:
+            $ref: '#/definitions/FirstPartyTraditionalProposalSubmission'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+  '/proposals/firstPartyIlp':
+    get:
+      summary: Fetch a list of first party ILP proposals
+      description: Use this end point to fetch all the proposals (both submitted and pending). When filtering the required rows, the available keys are pk, submissionChannel,tenantCode, status, proposalType
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Proposal
+      operationId: "fetchFirstPartyIlpProposalList"
+      responses:
+        200:
+          description: Successful response which returns a list of first party ilp proposals
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/ProposalSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new first party ilp proposal document
+      description: This end point is used for creating a first party ilp proposal.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document to save
+          schema:
+            $ref: '#/definitions/FirstPartyIlpProposal'
+
+      operationId: "createFirstPartyIlpProposal"
+      responses:
+        200:
+          description: Successful response to create a new first party ILP proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/FirstPartyIlpProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
         500:
           $ref: '#/responses/Standard500Response'
 
@@ -2408,6 +2097,133 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
+  '/proposals/firstPartyIlp/sectionStatuses':
+    post:
+      summary: Submit details of the first party ILP proposal to validate the completeness of the sections
+      description: This end point is used to validate that the information in the first party ILP proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document that needs to be validated
+          schema:
+            $ref: '#/definitions/FirstPartyIlpProposal'
+
+      operationId: "validateFirstPartyIlpProposalSections"
+      responses:
+        200:
+          description: Successful response where the statuses of the various sections is returned
+          schema:
+            type: object
+            description: Key will be proposal section name, value is ok or ko
+            additionalProperties:
+              type: string
+            # $ref: '#/definitions/FirstPartyIlpProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/firstPartyIlp/{proposalId}/submissions':
+    post:
+      summary: Create a first party ILP proposal submission for the given propoal id.
+      description: This end point is used to a proposal submission. It is similar to the POST /submissions/firstPartyIlpProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - $ref: '#/parameters/proposalId'
+        - name: version
+          in: query
+          required: true
+          description: The version id of the proposal document
+          type: number
+
+
+      operationId: "submitFirstPartyIlpProposal"
+      responses:
+        200:
+          description: Successful response where the proposal submission is created
+          schema:
+            $ref: '#/definitions/FirstPartyIlpProposalSubmission'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+  '/proposals/thirdPartyTraditional':
+    get:
+      summary: Fetch a list of third party proposals
+      description: Use this end point to fetch all the proposals (both submitted and pending). When filtering the required rows, the available keys are pk, submissionChannel,tenantCode, status, proposalType
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Proposal
+      operationId: "fetchThirdPartyTraditionalProposalList"
+      responses:
+        200:
+          description: Successful response which returns a list of third party proposals
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/ProposalSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new third party traditional proposal document
+      description: This end point is used for creating a third party traditional proposal.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document to save
+          schema:
+            $ref: '#/definitions/ThirdPartyTraditionalProposal'
+
+      operationId: "createThirdPartyTraditionalProposal"
+      responses:
+        200:
+          description: Successful response to create a new third party traditional proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/ThirdPartyTraditionalProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
   '/proposals/thirdPartyTraditional/{proposalId}':
     get:
       summary: Fetch a third party traditional proposal document
@@ -2502,6 +2318,132 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
+  '/proposals/thirdPartyTraditional/sectionStatuses':
+    post:
+      summary: Submit details of the third party proposal to validate the completeness of the sections
+      description: This end point is used to validate that the information in the third party proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document that needs to be validated
+          schema:
+            $ref: '#/definitions/ThirdPartyTraditionalProposal'
+
+      operationId: "validateThirdPartyTraditionalProposalSections"
+      responses:
+        200:
+          description: Successful response where the statuses of the various sections is returned
+          schema:
+            type: object
+            description: Key will be proposal section name, value is ok or ko
+            additionalProperties:
+              type: string
+            # $ref: '#/definitions/ThirdPartyTraditionalProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+  '/proposals/thirdPartyTraditional/{proposalId}/submissions':
+    post:
+      summary: Create a third party traditional proposal submission for the given propoal id.
+      description: This end point is used to a proposal submission. It is similar to the POST /submissions/thirdPartyTraditionalProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - $ref: '#/parameters/proposalId'
+        - name: version
+          in: query
+          required: true
+          description: The version id of the proposal document
+          type: number
+
+      operationId: "submitThirdPartyTraditionalProposal"
+      responses:
+        200:
+          description: Successful response where the proposal submission is created
+          schema:
+            $ref: '#/definitions/ThirdPartyTraditionalProposalSubmission'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+  '/proposals/thirdPartyIlp':
+    get:
+      summary: Fetch a list of third party ILP proposals
+      description: Use this end point to fetch all the third party ILP proposals (both submitted and pending). When filtering the required rows, the available keys are pk, submissionChannel,tenantCode, status, proposalType
+      parameters:
+        - $ref : '#/parameters/language'
+        - $ref : '#/parameters/queryOffset'
+        - $ref : '#/parameters/queryLimit'
+        - $ref : '#/parameters/queryKeys'
+        - $ref : '#/parameters/querySort'
+        - $ref : '#/parameters/queryFilter'
+        - $ref:  '#/parameters/Token'
+      tags:
+        - Proposal
+      operationId: "fetchThirdPartyIlpProposalList"
+      responses:
+        200:
+          description: Successful response which returns a list of third party proposals
+          schema:
+            type: object
+            properties:
+              totalDocs:
+                type: number
+              offset:
+                type: number
+              docs:
+                type: array
+                items:
+                  $ref: '#/definitions/ProposalSummary'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+    post:
+      summary: Create a new third party ILP proposal document
+      description: This end point is used for creating a third party ILP proposal.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document to save
+          schema:
+            $ref: '#/definitions/ThirdPartyIlpProposal'
+
+      operationId: "createThirdPartyIlpProposal"
+      responses:
+        200:
+          description: Successful response to create a new third party ILP proposal submission. Returns the new submission document.
+          schema:
+            $ref: '#/definitions/ThirdPartyIlpProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
   '/proposals/thirdPartyIlp/{proposalId}':
     get:
       summary: Fetch a third party ILP proposal document
@@ -2532,7 +2474,7 @@ paths:
 
     delete:
       summary: Delete a third party ILP proposal
-      description: This end point is used to delete the proposal with the given proposal id. The version of the proposal document is required to ensure there are no changes since the proposal document was fetched. e.g. DELETE /proposals/thirdPartyTraditional/1234?version=12
+      description: This end point is used to delete the proposal with the given proposal id. The version of the proposal document is required to ensure there are no changes since the proposal document was fetched. e.g. DELETE /proposals/thirdPartyIlp/1234?version=12
       tags:
         - Proposal
       security:
@@ -2596,7 +2538,68 @@ paths:
         500:
           $ref: '#/responses/Standard500Response'
 
+  '/proposals/thirdPartyIlp/sectionStatuses':
+    post:
+      summary: Submit details of the third party ILP proposal to validate the completeness of the sections
+      description: This end point is used to validate that the information in the third party ILP proposal is complete. Each of the sections that is required must be complete, before the proposal is considered to be complete. This check can be done prior to submission or it will be done automatically as part of the proposal submission.
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - name: bodyParam
+          in : body
+          required: true
+          description: The proposal document that needs to be validated
+          schema:
+            $ref: '#/definitions/ThirdPartyIlpProposal'
 
+      operationId: "validateThirdPartyIlpProposalSections"
+      responses:
+        200:
+          description: Successful response where the statuses of the various sections is returned
+          schema:
+            type: object
+            description: Key will be proposal section name, value is ok or ko
+            additionalProperties:
+              type: string
+            # $ref: '#/definitions/ThirdPartyIlpProposal'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
+
+
+  '/proposals/thirdPartyIlp/{proposalId}/submissions':
+    post:
+      summary: Create a third party ILP proposal submission for the given propoal id.
+      description: This end point is used to a proposal submission. It is similar to the POST /submissions/thirdPartyIlpProposal, except that the proposal details does not need to be submitted as part of the request (as the proposalId is used to retrieve the proposal details).
+      tags:
+        - Proposal
+      parameters:
+        - $ref: '#/parameters/language'
+        - $ref:  '#/parameters/Token'
+        - $ref: '#/parameters/TenantCode'
+        - $ref: '#/parameters/proposalId'
+        - name: version
+          in: query
+          required: true
+          description: The version id of the proposal document
+          type: number
+
+      operationId: "submitThirdPartyIlpProposal"
+      responses:
+        200:
+          description: Successful response where the proposal submission is created
+          schema:
+            $ref: '#/definitions/ThirdPartyIlpProposalSubmission'
+        400:
+          $ref: '#/responses/Standard400Response'
+        401:
+          $ref: '#/responses/Standard401Response'
+        500:
+          $ref: '#/responses/Standard500Response'
 
   '/proposals' :
     get:
@@ -3878,7 +3881,6 @@ definitions:
       proposalType:
         type: string
         description: e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal, etc
-        default: "FirstyPartyTermProposal"
       proposalReferenceNo:
         type: string
         description: Reference number assigned by client. Should be unique to the client to identify the proposal.
