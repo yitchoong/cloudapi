@@ -10,6 +10,7 @@ dist/**/*.woff binary
 dist/**/*.woff2 binary
 dist/**/*.png binary
 dist/*.html text
+api/**/api.db binary
 
 src/main/html/fonts/*.ttf binary
 src/main/html/images/*.png binary
