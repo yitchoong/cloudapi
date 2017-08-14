@@ -20,3 +20,5 @@ swaggerui.sublime-project
 swaggerui.sublime-workspace
 dist/
 api/**/node_modules
+api/**/api.db
+
