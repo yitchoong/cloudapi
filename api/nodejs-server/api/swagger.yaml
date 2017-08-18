@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Sales API for the product & proposal domain on eBao Cloud"
-  version: "0.0.13"
+  version: "0.0.14"
   title: "eBao Cloud API (Product, Proposal, Submission)"
 host: "localhost:8080"
 basePath: "/v1"
@@ -1716,7 +1716,10 @@ paths:
       description: "Use this end point to fetch all the first party traditional proposal\
         \ submissions. When filtering the required rows, the available keys are pk,\
         \ submissionDate, submissionRefNo, submissionChannel,tenantCode, status, and\
-        \ decision. Eg. submissionRefNo*eq*12345"
+        \ decision. The submissionRefNo is a number that the client and used to uniquely\
+        \ identify the proposal submission. It can be left blank as the system will\
+        \ assign its own unique key. If provided, the submissionRefNo will be used\
+        \ to check for duplicate submissions. Eg. submissionRefNo*eq*12345"
       operationId: "fetchFirstPartyTraditionalProposalSubmissionList"
       parameters:
       - name: "lang"
@@ -1801,11 +1804,11 @@ paths:
       tags:
       - "Submission"
       summary: "Create a new first party traditional proposal submission document\
-        \ (containing proposal details)"
+        \ (containing the proposal details)"
       description: "This end point is used for the submission of a first party traditional\
         \ proposal. This end point is used when proposals are not persisted prior\
-        \ to submission, as the complete proposal details will be included in the\
-        \ submission."
+        \ to submission. As such, the complete proposal details will be included in\
+        \ the submission."
       operationId: "createFirstPartyTraditionalProposalSubmission"
       parameters:
       - name: "lang"
@@ -1833,8 +1836,9 @@ paths:
           $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
       responses:
         200:
-          description: "Successful response to create a new first party traditional\
-            \ proposal submission. Returns the new submission document."
+          description: "Successful response to creating a new first party traditional\
+            \ proposal submission. Returns the new submission document together with\
+            \ the primary key (pk)"
           schema:
             $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
         401:
@@ -1850,7 +1854,8 @@ paths:
     get:
       tags:
       - "Submission"
-      summary: "Fetch a first party traditional proposal submission document"
+      summary: "Fetch a first party traditional proposal submission document (full\
+        \ details)"
       description: "Use this end-point to fetch a first party traditional proposal\
         \ submissions. This will fetch the full document including the proposal data,\
         \ and the submission status."
@@ -1896,7 +1901,8 @@ paths:
       tags:
       - "Submission"
       summary: "Fetch a list of first party ILP proposal submissions"
-      description: "Use this end point to fetch all the first party ILP proposal submissions.\
+      description: "Use this end point to fetch all the first party ILP proposal submissions\
+        \ for this user (based on Token parameter, defaults to \"default\" userId).\
         \ When filtering the required rows, the available keys are pk, submissionDate,\
         \ submissionRefNo, submissionChannel, tenantCode, status, and decision. Eg.\
         \ submissionRefNo*eq*12345"
@@ -1987,8 +1993,8 @@ paths:
         \ proposal details)"
       description: "This end point is used for the submission of a first party ILP\
         \ proposal. This end point is used when proposals are not persisted prior\
-        \ to submission, as the complete proposal details will be included in the\
-        \ submission."
+        \ to submission. As such, the complete proposal details will be included in\
+        \ the submission."
       operationId: "createFirstPartyIlpProposalSubmission"
       parameters:
       - name: "lang"
@@ -2016,8 +2022,9 @@ paths:
           $ref: "#/definitions/FirstPartyIlpProposalSubmission"
       responses:
         200:
-          description: "Successful response to create a new first party ILP proposal\
-            \ submission. Returns the new submission document."
+          description: "Successful response to the creation of a new first party ILP\
+            \ proposal submission. Returns the new submission document, together with\
+            \ the back end assigned primary key (pk)."
           schema:
             $ref: "#/definitions/FirstPartyIlpProposalSubmission"
         401:
@@ -2034,7 +2041,7 @@ paths:
       tags:
       - "Submission"
       summary: "Fetch a first party ILP proposal submission document"
-      description: "Use this end-point to fetch a first party ILP proposal submissions.\
+      description: "Use this end-point to fetch a first party ILP proposal submission.\
         \ This will fetch the full document including the proposal data, and the submission\
         \ status."
       operationId: "fetchFirstPartyIlpProposalSubmission"
@@ -2058,7 +2065,7 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns the submission document"
+          description: "Successful response which returns the full submission document"
           schema:
             $ref: "#/definitions/FirstPartyIlpProposalSubmission"
         401:
@@ -2145,8 +2152,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns a list of third party traditional\
-            \ proposal submissions."
+          description: "Successful response that returns a list of third party traditional\
+            \ proposal submissions that meets the filtering criteria."
           schema:
             $ref: "#/definitions/inline_response_200_11"
         400:
@@ -2169,9 +2176,11 @@ paths:
       summary: "Create a new third party traditional proposal submission document\
         \ (containing proposal details)"
       description: "This end point is used for the submission of a third party traditional\
-        \ proposal. This end point is used when proposals are not persisted prior\
-        \ to submission, as the complete proposal details will be included in the\
-        \ submission."
+        \ proposal. This end point is used when proposals are not persisted by the\
+        \ back end prior to submission. As such, the complete proposal details has\
+        \ to be included in the submission. There may be specific processing e.g.\
+        \ validation based on the tenantCode e.g. for tenantCode = \"ebao\", it may\
+        \ determine that certain sections of the proposal are mandatory or optional."
       operationId: "createThirdPartyTraditionalProposalSubmission"
       parameters:
       - name: "lang"
@@ -2241,7 +2250,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns the submission document"
+          description: "Successful response which returns the submission document,\
+            \ together with the newly assigned primary key (pk)"
           schema:
             $ref: "#/definitions/ThirdPartyTraditionalProposalSubmission"
         401:
@@ -2353,8 +2363,9 @@ paths:
         \ proposal details)"
       description: "This end point is used for the submission of a third party ILP\
         \ proposal. This end point is used when proposals are not persisted prior\
-        \ to submission, as the complete proposal details will be included in the\
-        \ submission."
+        \ to submission. As such, the complete proposal details will be included in\
+        \ the submission. Validations will be performed to ensure that the submission\
+        \ can be accepted."
       operationId: "createThirdPartyIlpProposalSubmission"
       parameters:
       - name: "lang"
@@ -2382,8 +2393,9 @@ paths:
           $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
       responses:
         200:
-          description: "Successful response to create a new third party ILP proposal\
-            \ submission. Returns the new submission document."
+          description: "Successful response to the creation of a new third party ILP\
+            \ proposal submission. Returns the new submission document with the newly\
+            \ assigned primary key (pk)"
           schema:
             $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
         401:
@@ -2424,7 +2436,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns the submission document"
+          description: "Successful response which returns the requested submission\
+            \ document"
           schema:
             $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
         401:
@@ -2448,7 +2461,8 @@ paths:
       description: "Use this end point to fetch all the submissions regardless of\
         \ submission types. When filtering the required rows, the available keys are\
         \ pk, submissionDate, submissionRefNo, submissionChannel,tenantCode, status,\
-        \ and decision"
+        \ and decision. Only summary details is retured for each of the submissions.\
+        \ Generally used for a browse screen."
       operationId: "fetchSubmissionList"
       parameters:
       - name: "lang"
@@ -2511,7 +2525,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns a list of proposal submissions."
+          description: "Successful response which returns a list of proposal submissions\
+            \ (summary)."
           schema:
             $ref: "#/definitions/inline_response_200_11"
         400:
@@ -2533,9 +2548,9 @@ paths:
       tags:
       - "Proposal"
       summary: "Fetch a list of first party traditional proposals"
-      description: "Use this end point to fetch all the proposals (both submitted\
-        \ and pending). When filtering the required rows, the available keys are pk,\
-        \ submissionChannel,tenantCode, status, proposalType"
+      description: "Use this end point to fetch all the proposals (all statuses).\
+        \ When filtering the required rows, the available keys are pk, submissionChannel,\
+        \ tenantCode, status, proposalType"
       operationId: "fetchFirstPartyTraditionalProposalList"
       parameters:
       - name: "lang"
@@ -2621,7 +2636,10 @@ paths:
       - "Proposal"
       summary: "Create a new first party traditional proposal document"
       description: "This end point is used for creating a first party traditional\
-        \ proposal."
+        \ proposal. The backend will assign a primary key (pk) and version for the\
+        \ proposal document. The proposal document can be incomplete but the required\
+        \ sections needs to be included e.g. the policyholderSection needs to be included\
+        \ but the data for the section can be incomplete."
       operationId: "createFirstPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -2649,8 +2667,9 @@ paths:
           $ref: "#/definitions/FirstPartyTraditionalProposal"
       responses:
         200:
-          description: "Successful response to create a new first party traditional\
-            \ proposal submission. Returns the new submission document."
+          description: "Successful response to the creation of a new first party traditional\
+            \ proposal submission. Returns the new submission document with the backend\
+            \ assigned primary key (pk) and version for the document."
           schema:
             $ref: "#/definitions/FirstPartyTraditionalProposal"
         401:
@@ -2668,7 +2687,7 @@ paths:
       - "Proposal"
       summary: "Fetch a first party traditional proposal document"
       description: "Use this end-point to fetch a first party traditional proposal.\
-        \ This will fetch the full document."
+        \ This will fetch the full document that was previously saved."
       operationId: "fetchFirstPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -2677,15 +2696,15 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
         required: false
         type: "string"
       - name: "proposalId"
@@ -2695,7 +2714,7 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns the proposal document"
+          description: "Successful response which returns the full proposal document"
           schema:
             $ref: "#/definitions/FirstPartyTraditionalProposal"
         401:
@@ -2740,13 +2759,14 @@ paths:
         type: "integer"
       - in: "body"
         name: "bodyParam"
-        description: "Represents the proposal record to save"
+        description: "Represents the proposal record to save with the updated proposal\
+          \ details."
         required: true
         schema:
           $ref: "#/definitions/FirstPartyTraditionalProposal"
       responses:
         200:
-          description: "Response when the proposal document is successfully updated."
+          description: "Response where the proposal document is successfully updated."
           schema:
             $ref: "#/definitions/FirstPartyTraditionalProposal"
         400:
@@ -2778,10 +2798,11 @@ paths:
     delete:
       tags:
       - "Proposal"
-      summary: "Delete a first party traditional proposal"
+      summary: "Delete a first party traditional proposal."
       description: "This end point is used to delete the proposal with the given proposal\
         \ id. The version of the proposal document is required to ensure there are\
-        \ no changes since the proposal document was fetched. e.g. DELETE /proposals/firstPartyTraditional/1234?version=12"
+        \ no changes (and thus conflicts) since the proposal document was fetched.\
+        \ e.g. DELETE /proposals/firstPartyTraditional/1234?version=12"
       operationId: "deleteFirstPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -2836,13 +2857,13 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Submit details of the first party proposal to validate the completeness\
-        \ of the sections"
+      summary: "Submit details of the first party proposal to determine the completeness\
+        \ and correctness of the proposal sections"
       description: "This end point is used to validate that the information in the\
-        \ first party proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
+        \ first party proposal is complete and correct. Each of the sections that\
+        \ is required must be complete, before the proposal is considered to be complete.\
+        \ This check can be done prior to submission or it will be done automatically\
+        \ when submitting the proposal."
       operationId: "validateFirstPartyTraditionalProposalSections"
       parameters:
       - name: "lang"
@@ -2871,10 +2892,11 @@ paths:
       responses:
         200:
           description: "Successful response where the statuses of the various sections\
-            \ is returned"
+            \ is returned. Status \"ok\" means it is okay and \"ko\" mean the section\
+            \ status is incomplete."
           schema:
             type: "object"
-            description: "Key will be proposal section name, value is ok or ko"
+            description: "Key will be the proposal section names, value is ok or ko"
             additionalProperties:
               type: "string"
         401:
@@ -2891,11 +2913,11 @@ paths:
       tags:
       - "Proposal"
       summary: "Create a first party traditional proposal submission for the given\
-        \ propoal id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/firstPartyTraditionalProposal, except that the\
-        \ proposal details does not need to be submitted as part of the request (as\
-        \ the proposalId is used to retrieve the proposal details)."
+        \ proposal id."
+      description: "This end point is used to submit a proposal that is persisted\
+        \ in the backend. It is similar to the POST /submissions/firstPartyTraditionalProposal,\
+        \ except that the proposal details does not need to be submitted as part of\
+        \ the request (the proposalId is used to retrieve the proposal details)."
       operationId: "submitFirstPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -2922,12 +2944,14 @@ paths:
         type: "integer"
       - name: "version"
         in: "query"
-        description: "The version id of the proposal document"
+        description: "The version id of the proposal document. This is to ensure that\
+          \ the correct version of the proposal is submitted."
         required: true
         type: "number"
       responses:
         200:
-          description: "Successful response where the proposal submission is created"
+          description: "Successful response where the proposal submission is created.\
+            \ The backend will assign a primary key (pk) for the submission document."
           schema:
             $ref: "#/definitions/FirstPartyTraditionalProposalSubmission"
         400:
@@ -2949,9 +2973,10 @@ paths:
       tags:
       - "Proposal"
       summary: "Fetch a list of first party ILP proposals"
-      description: "Use this end point to fetch all the proposals (both submitted\
-        \ and pending). When filtering the required rows, the available keys are pk,\
-        \ submissionChannel,tenantCode, status, proposalType"
+      description: "Use this end point to fetch all the first party ILP proposals\
+        \ (all statuses including pending) for this user (refer to Token parameter).\
+        \ When filtering the required rows, the available keys include the pk, submissionChannel,\
+        \ tenantCode, status, proposalType"
       operationId: "fetchFirstPartyIlpProposalList"
       parameters:
       - name: "lang"
@@ -3036,7 +3061,8 @@ paths:
       tags:
       - "Proposal"
       summary: "Create a new first party ilp proposal document"
-      description: "This end point is used for creating a first party ilp proposal."
+      description: "This end point is used for creating a first party ilp proposal.\
+        \ The backend will assign a primary key (pk) for the newly created proposal."
       operationId: "createFirstPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -3058,14 +3084,15 @@ paths:
         type: "string"
       - in: "body"
         name: "bodyParam"
-        description: "The proposal document to save"
+        description: "The proposal document details"
         required: true
         schema:
           $ref: "#/definitions/FirstPartyIlpProposal"
       responses:
         200:
-          description: "Successful response to create a new first party ILP proposal\
-            \ submission. Returns the new submission document."
+          description: "Successful response to the creation of a first party ILP proposal\
+            \ submission. Returns the new newly created proposal document with a primary\
+            \ key (pk) and version number."
           schema:
             $ref: "#/definitions/FirstPartyIlpProposal"
         401:
@@ -3092,15 +3119,15 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
         required: false
         type: "string"
       - name: "proposalId"
@@ -3110,7 +3137,7 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns the proposal document"
+          description: "Successful response which returns the full proposal document"
           schema:
             $ref: "#/definitions/FirstPartyIlpProposal"
         401:
@@ -3142,15 +3169,15 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
         required: false
         type: "string"
       - name: "proposalId"
@@ -3160,13 +3187,13 @@ paths:
         type: "integer"
       - in: "body"
         name: "bodyParam"
-        description: "Represents the proposal record to save"
+        description: "Represents the proposal document to save"
         required: true
         schema:
           $ref: "#/definitions/FirstPartyIlpProposal"
       responses:
         200:
-          description: "Response when the proposal document is successfully updated."
+          description: "Response where the proposal document is successfully updated."
           schema:
             $ref: "#/definitions/FirstPartyIlpProposal"
         400:
@@ -3200,8 +3227,9 @@ paths:
       - "Proposal"
       summary: "Delete a first party ILP proposal"
       description: "This end point is used to delete the proposal with the given proposal\
-        \ id. The version of the proposal document is required to ensure there are\
-        \ no changes since the proposal document was fetched. e.g. DELETE /proposals/firstPartyIlp/1234?version=12"
+        \ id. The version number of the proposal document is required to ensure there\
+        \ are no changes (and thus no conflicts) since the proposal document was fetched.\
+        \ e.g. DELETE /proposals/firstPartyIlp/1234?version=9"
       operationId: "deleteFirstPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -3261,13 +3289,13 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Submit details of the first party ILP proposal to validate the completeness\
-        \ of the sections"
+      summary: "Submit details of the first party ILP proposal to determine the completeness\
+        \ and correctness of the proposal sections"
       description: "This end point is used to validate that the information in the\
-        \ first party ILP proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
+        \ first party ILP proposal, i.e. check for  correctness and completeness.\
+        \ Each of the proposal sections that is required must be complete, before\
+        \ the proposal is considered to be complete. This check can be done prior\
+        \ to submission or it will be done automatically when the proposal is submitted."
       operationId: "validateFirstPartyIlpProposalSections"
       parameters:
       - name: "lang"
@@ -3296,7 +3324,8 @@ paths:
       responses:
         200:
           description: "Successful response where the statuses of the various sections\
-            \ is returned"
+            \ is returned. A status code \"ok\" means that the section is complete,\
+            \ whereas status code = \"ko\" mean incomplete"
           schema:
             type: "object"
             description: "Key will be proposal section name, value is ok or ko"
@@ -3315,12 +3344,12 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Create a first party ILP proposal submission for the given propoal\
-        \ id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/firstPartyIlpProposal, except that the proposal\
-        \ details does not need to be submitted as part of the request (as the proposalId\
-        \ is used to retrieve the proposal details)."
+      summary: "Submit a first party ILP proposal."
+      description: "This end point is used to submit a proposal that has been previously\
+        \ persisted at the backend. It is similar to the POST /submissions/firstPartyIlpProposal\
+        \ endpoint, except that the proposal details does not need to be submitted\
+        \ as part of the request (the proposalId is used to retrieve the proposal\
+        \ details)."
       operationId: "submitFirstPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -3347,12 +3376,13 @@ paths:
         type: "integer"
       - name: "version"
         in: "query"
-        description: "The version id of the proposal document"
+        description: "The version number of the proposal document"
         required: true
         type: "number"
       responses:
         200:
-          description: "Successful response where the proposal submission is created"
+          description: "Successful response where the proposal submission is created.\
+            \ The backend will assign a primary key (pk) for the submission."
           schema:
             $ref: "#/definitions/FirstPartyIlpProposalSubmission"
         400:
@@ -3373,9 +3403,9 @@ paths:
     get:
       tags:
       - "Proposal"
-      summary: "Fetch a list of third party proposals"
-      description: "Use this end point to fetch all the proposals (both submitted\
-        \ and pending). When filtering the required rows, the available keys are pk,\
+      summary: "Fetch a list of third party traditional proposals"
+      description: "Use this end point to fetch all the proposals (all statuses including\
+        \ pending). When filtering the required rows, the available keys include pk,\
         \ submissionChannel,tenantCode, status, proposalType"
       operationId: "fetchThirdPartyTraditionalProposalList"
       parameters:
@@ -3439,7 +3469,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns a list of third party proposals"
+          description: "Successful response which returns a list of third party traditional\
+            \ proposals"
           schema:
             $ref: "#/definitions/inline_response_200_12"
         400:
@@ -3461,7 +3492,8 @@ paths:
       - "Proposal"
       summary: "Create a new third party traditional proposal document"
       description: "This end point is used for creating a third party traditional\
-        \ proposal."
+        \ proposal. The backend will assign a primary key (pk) for the newly created\
+        \ proposal document."
       operationId: "createThirdPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -3483,14 +3515,15 @@ paths:
         type: "string"
       - in: "body"
         name: "bodyParam"
-        description: "The proposal document to save"
+        description: "The proposal document to create"
         required: true
         schema:
           $ref: "#/definitions/ThirdPartyTraditionalProposal"
       responses:
         200:
           description: "Successful response to create a new third party traditional\
-            \ proposal submission. Returns the new submission document."
+            \ proposal. Returns the new proposal document with the primary key (pk)\
+            \ and version number"
           schema:
             $ref: "#/definitions/ThirdPartyTraditionalProposal"
         401:
@@ -3530,7 +3563,7 @@ paths:
         type: "string"
       - name: "proposalId"
         in: "path"
-        description: "Unique id for the proposal"
+        description: "Unique id for the proposal document"
         required: true
         type: "string"
       responses:
@@ -3585,7 +3618,7 @@ paths:
         type: "string"
       - in: "body"
         name: "bodyParam"
-        description: "Represents the proposal record to save"
+        description: "Represents the proposal document to save"
         required: true
         schema:
           $ref: "#/definitions/ThirdPartyTraditionalProposal"
@@ -3625,8 +3658,9 @@ paths:
       - "Proposal"
       summary: "Delete a third party traditional proposal"
       description: "This end point is used to delete the proposal with the given proposal\
-        \ id. The version of the proposal document is required to ensure there are\
-        \ no changes since the proposal document was fetched. e.g. DELETE /proposals/thirdPartyTraditional/1234?version=12"
+        \ id and version number. The version of the proposal document is required\
+        \ to ensure there are no changes (and thus no conflicts) since the proposal\
+        \ document was fetched. e.g. DELETE /proposals/thirdPartyTraditional/1234?version=12"
       operationId: "deleteThirdPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -3686,13 +3720,13 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Submit details of the third party proposal to validate the completeness\
-        \ of the sections"
+      summary: "Submit details of the third party traditional proposal to determine\
+        \ the completeness of the sections"
       description: "This end point is used to validate that the information in the\
-        \ third party proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
+        \ third party proposal is complete and correct. Each of the sections that\
+        \ is required must be complete, before the proposal is considered to be complete.\
+        \ This check can be done prior to submission or it will be done automatically\
+        \ when the proposal is submitted."
       operationId: "validateThirdPartyTraditionalProposalSections"
       parameters:
       - name: "lang"
@@ -3721,7 +3755,8 @@ paths:
       responses:
         200:
           description: "Successful response where the statuses of the various sections\
-            \ is returned"
+            \ is returned. Status code \"ok\" means that the proposal section is complete\
+            \ and \"ko\" means incomplete."
           schema:
             type: "object"
             description: "Key will be proposal section name, value is ok or ko"
@@ -3740,12 +3775,11 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Create a third party traditional proposal submission for the given\
-        \ propoal id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/thirdPartyTraditionalProposal, except that the\
-        \ proposal details does not need to be submitted as part of the request (as\
-        \ the proposalId is used to retrieve the proposal details)."
+      summary: "Submit a third party traditional proposal"
+      description: "This end point is used to submit a proposal that is persisted\
+        \ at the backend. It is similar to the POST /submissions/thirdPartyTraditionalProposal,\
+        \ except that the proposal details are not included in the request (the proposalId\
+        \ is used to retrieve the proposal details)."
       operationId: "submitThirdPartyTraditionalProposal"
       parameters:
       - name: "lang"
@@ -3772,12 +3806,13 @@ paths:
         type: "integer"
       - name: "version"
         in: "query"
-        description: "The version id of the proposal document"
+        description: "The version number of the proposal document"
         required: true
         type: "number"
       responses:
         200:
-          description: "Successful response where the proposal submission is created"
+          description: "Successful response where the proposal submission is created\
+            \ and a primark key (pk) is assigned for the submission."
           schema:
             $ref: "#/definitions/ThirdPartyTraditionalProposalSubmission"
         400:
@@ -3800,8 +3835,8 @@ paths:
       - "Proposal"
       summary: "Fetch a list of third party ILP proposals"
       description: "Use this end point to fetch all the third party ILP proposals\
-        \ (both submitted and pending). When filtering the required rows, the available\
-        \ keys are pk, submissionChannel,tenantCode, status, proposalType"
+        \ (all statuses including pending). When filtering the required rows, the\
+        \ available keys include pk, submissionChannel,tenantCode, status, proposalType"
       operationId: "fetchThirdPartyIlpProposalList"
       parameters:
       - name: "lang"
@@ -3864,7 +3899,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response which returns a list of third party proposals"
+          description: "Successful response which returns a list of third party ILP\
+            \ proposals"
           schema:
             $ref: "#/definitions/inline_response_200_12"
         400:
@@ -3885,7 +3921,9 @@ paths:
       tags:
       - "Proposal"
       summary: "Create a new third party ILP proposal document"
-      description: "This end point is used for creating a third party ILP proposal."
+      description: "This end point is used for creating a third party ILP proposal.\
+        \ The backend will assign a primary key (pk) and version number for the newly\
+        \ created proposal document."
       operationId: "createThirdPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -3907,14 +3945,15 @@ paths:
         type: "string"
       - in: "body"
         name: "bodyParam"
-        description: "The proposal document to save"
+        description: "The proposal document to create"
         required: true
         schema:
           $ref: "#/definitions/ThirdPartyIlpProposal"
       responses:
         200:
-          description: "Successful response to create a new third party ILP proposal\
-            \ submission. Returns the new submission document."
+          description: "Successful response for the creation of a new third party\
+            \ ILP proposal submission. Returns the new submission document with primary\
+            \ key (pk) and version number"
           schema:
             $ref: "#/definitions/ThirdPartyIlpProposal"
         401:
@@ -3932,7 +3971,7 @@ paths:
       - "Proposal"
       summary: "Fetch a third party ILP proposal document"
       description: "Use this end-point to fetch a third party ILP proposal. This will\
-        \ fetch the full document."
+        \ fetch the full proposal document."
       operationId: "fetchThirdPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -3941,15 +3980,15 @@ paths:
           \ error messages)"
         required: false
         type: "string"
-      - name: "tenantCode"
-        in: "header"
-        description: "The insurer who will receive the document"
-        required: false
-        type: "string"
       - name: "Token"
         in: "header"
         description: "The security token, for the moment it is equal to the authenticated\
           \ user id"
+        required: false
+        type: "string"
+      - name: "tenantCode"
+        in: "header"
+        description: "The insurer who will receive the document"
         required: false
         type: "string"
       - name: "proposalId"
@@ -3979,10 +4018,10 @@ paths:
       tags:
       - "Proposal"
       summary: "Save a third party ILP proposal document."
-      description: "Used when updating an existing proposal document. The version\
-        \ field must be part of the proposal details in the request body. This is\
-        \ to ensure that there were no changes to the proposal document since it was\
-        \ fetched."
+      description: "Used when updating an existing third party ILP proposal document.\
+        \ The version number field must be part of the proposal details in the request\
+        \ body. This is to ensure that there were no changes to the proposal document\
+        \ since it was fetched."
       operationId: "updateThirdPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -4009,13 +4048,14 @@ paths:
         type: "integer"
       - in: "body"
         name: "bodyParam"
-        description: "Represents the proposal record to save"
+        description: "Represents the proposal document to save"
         required: true
         schema:
           $ref: "#/definitions/ThirdPartyIlpProposal"
       responses:
         200:
-          description: "Response when the proposal document is successfully updated."
+          description: "Response when the proposal document is successfully updated.\
+            \ A new version number will be assigned by the backend."
           schema:
             $ref: "#/definitions/ThirdPartyIlpProposal"
         400:
@@ -4049,8 +4089,9 @@ paths:
       - "Proposal"
       summary: "Delete a third party ILP proposal"
       description: "This end point is used to delete the proposal with the given proposal\
-        \ id. The version of the proposal document is required to ensure there are\
-        \ no changes since the proposal document was fetched. e.g. DELETE /proposals/thirdPartyIlp/1234?version=12"
+        \ id. The version number of the proposal document is required to ensure there\
+        \ are no changes (and thus no conflicts) since the proposal document was fetched.\
+        \ e.g. DELETE /proposals/thirdPartyIlp/1234?version=12"
       operationId: "deleteThirdPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -4077,7 +4118,7 @@ paths:
         type: "integer"
       - name: "version"
         in: "query"
-        description: "The version of the document"
+        description: "The version number of the document"
         required: true
         type: "number"
       responses:
@@ -4110,13 +4151,13 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Submit details of the third party ILP proposal to validate the completeness\
-        \ of the sections"
+      summary: "Submit details of the third party ILP proposal to determine the completeness\
+        \ and correctness of the proposal sections"
       description: "This end point is used to validate that the information in the\
-        \ third party ILP proposal is complete. Each of the sections that is required\
-        \ must be complete, before the proposal is considered to be complete. This\
-        \ check can be done prior to submission or it will be done automatically as\
-        \ part of the proposal submission."
+        \ third party ILP proposal for completeness and correctness. Each of the proposal\
+        \ sections that is required must be complete, before the proposal is considered\
+        \ to be complete. This check can be done prior to submission or it will be\
+        \ done automatically when the proposal is submitted."
       operationId: "validateThirdPartyIlpProposalSections"
       parameters:
       - name: "lang"
@@ -4138,17 +4179,19 @@ paths:
         type: "string"
       - in: "body"
         name: "bodyParam"
-        description: "The proposal document that needs to be validated"
+        description: "The proposal document that needs to be checked for completeness"
         required: true
         schema:
           $ref: "#/definitions/ThirdPartyIlpProposal"
       responses:
         200:
-          description: "Successful response where the statuses of the various sections\
-            \ is returned"
+          description: "Successful response where the statuses of the various proposal\
+            \ sections are returned. Status code = \"ok\" means complete, and status\
+            \ code = \"ko\", means incomplete"
           schema:
             type: "object"
-            description: "Key will be proposal section name, value is ok or ko"
+            description: "Key will be the proposal section name, value is \"ok\" or\
+              \ \"ko\""
             additionalProperties:
               type: "string"
         401:
@@ -4164,12 +4207,11 @@ paths:
     post:
       tags:
       - "Proposal"
-      summary: "Create a third party ILP proposal submission for the given propoal\
-        \ id."
-      description: "This end point is used to a proposal submission. It is similar\
-        \ to the POST /submissions/thirdPartyIlpProposal, except that the proposal\
-        \ details does not need to be submitted as part of the request (as the proposalId\
-        \ is used to retrieve the proposal details)."
+      summary: "Submit a third party ILP proposal."
+      description: "This end point is used to submit a proposal. It is similar to\
+        \ the POST /submissions/thirdPartyIlpProposal end-point, except that the proposal\
+        \ details does not need to be included in the request (the proposalId is used\
+        \ to retrieve the proposal details)."
       operationId: "submitThirdPartyIlpProposal"
       parameters:
       - name: "lang"
@@ -4196,12 +4238,13 @@ paths:
         type: "integer"
       - name: "version"
         in: "query"
-        description: "The version id of the proposal document"
+        description: "The version number of the proposal document"
         required: true
         type: "number"
       responses:
         200:
-          description: "Successful response where the proposal submission is created"
+          description: "Successful response where the proposal submission is created\
+            \ and a new primary key (pk) and version number is assigned by the backend"
           schema:
             $ref: "#/definitions/ThirdPartyIlpProposalSubmission"
         400:
@@ -4223,9 +4266,9 @@ paths:
       tags:
       - "Proposal"
       summary: "Fetch a list of proposals"
-      description: "Use this end point to fetch all the proposals (both submitted\
-        \ and pending). When filtering the required rows, the available keys are pk,\
-        \ channel,tenantCode, status, proposalType"
+      description: "Use this end point to fetch all the proposals (All proposal types).\
+        \ When filtering the required proposal documents, the available keys include\
+        \ pk, channel,tenantCode, status, proposalType"
       operationId: "fetchProposalList"
       parameters:
       - name: "lang"
@@ -4348,12 +4391,19 @@ paths:
       tags:
       - "Submission"
       summary: "Fetch the specification for the policyholder disclosure section for\
-        \ the given tenantCode.  used in the proposal application."
-      description: "This end point should be used at design time to get the list of\
-        \ codeTables with the valid values that can be used for the fields with drop\
-        \ down values in the proposal form."
+        \ the given tenantCode."
+      description: "This end point should be used at design time to get the required\
+        \ questions for the policyholder disclosure section of the proposal document.\
+        \  The policyholder disclosure section is one of the sections in the proposal\
+        \ document that differs from insurer to insurer."
       operationId: "fetchPolicyholderDisclosureSpecs"
       parameters:
+      - name: "lang"
+        in: "header"
+        description: "Language to be used in case the response has text data (e.g.\
+          \ error messages)"
+        required: false
+        type: "string"
       - name: "productCode"
         in: "query"
         description: "Product code"
@@ -4362,12 +4412,6 @@ paths:
       - name: "tenantCode"
         in: "header"
         description: "The insurer who will receive the document"
-        required: false
-        type: "string"
-      - name: "lang"
-        in: "header"
-        description: "Language to be used in case the response has text data (e.g.\
-          \ error messages)"
         required: false
         type: "string"
       responses:
@@ -4382,9 +4426,10 @@ paths:
       tags:
       - "Submission"
       summary: "Fetch the specification for the life assured disclosure section for\
-        \ the given tenantCode.  Used in third party proposal applications."
+        \ the given tenantCode.  Used in third party proposal documents."
       description: "This end point should be used at design time to get the list of\
-        \ fields that are applicable to the life assured section of the proposal form"
+        \ fields that are applicable to the life assured disclosure section of the\
+        \ proposal form"
       operationId: "fetchLifeAssuredDisclosureSpecs"
       parameters:
       - name: "productCode"
@@ -4405,8 +4450,8 @@ paths:
         type: "string"
       responses:
         200:
-          description: "Successful response. Returns the list of question in the policyholder\
-            \ disclosure section"
+          description: "Successful response. Returns the list of question in the life\
+            \ assured disclosure section"
           schema:
             $ref: "#/definitions/LifeAssuredDisclosuresSpecification"
       x-swagger-router-controller: "Submission"
@@ -4699,7 +4744,9 @@ definitions:
         type: "number"
         format: "percentage"
         description: "Use this allocation percentage if the allocation for the targetPremium,\
-          \ adhoc topup, and regular topup percentages are the same"
+          \ adhoc topup, and regular topup percentages are the same. Value should\
+          \ be between 0 and 100. Think of this as the default allocation % for all\
+          \ premium types."
       targetPremiumPercent:
         type: "number"
         format: "percentage"
@@ -5154,77 +5201,6 @@ definitions:
         type: "string"
         description: "Simple message to indicate no validation errors e.g. ok"
         default: "ok"
-  FirstPartyMedicalProposal:
-    type: "object"
-    required:
-    - "policyholderSection"
-    - "proposalType"
-    - "proposedInsuranceSection"
-    - "proposerName"
-    properties:
-      proposalType:
-        type: "string"
-        description: "e.g. FirstPartyTerm, FirstPartyMedical etc"
-      policyNumber:
-        type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
-      proposerName:
-        type: "string"
-        description: "Should be the same as the policyholder full name"
-      submissionChannel:
-        type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
-      tenantCode:
-        type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
-      policyholderSection:
-        $ref: "#/definitions/BasicPolicyholderSection"
-      proposedInsuranceSection:
-        $ref: "#/definitions/FirstPartyMedicalProposedInsurance"
-      premiumPaymentSection:
-        $ref: "#/definitions/PaymentGatewayPaymentSection"
-      promotionCode:
-        type: "string"
-        description: "For marketing purposes, the campaign or promotion code."
-  FirstPartyTermProposal:
-    type: "object"
-    required:
-    - "policyholderSection"
-    - "proposalType"
-    - "proposedInsuranceSection"
-    - "proposerName"
-    properties:
-      proposalType:
-        type: "string"
-        description: "e.g. FirstPartyTerm, FirstPartyMedical etc"
-        default: "FirstyPartyTerm"
-      policyNumber:
-        type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
-        readOnly: true
-      proposerName:
-        type: "string"
-        description: "Should be the same as the policyholder full name"
-      submissionChannel:
-        type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
-        default: "direct"
-      tenantCode:
-        type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
-      policyholderSection:
-        $ref: "#/definitions/BasicPolicyholderSection"
-      proposedInsuranceSection:
-        $ref: "#/definitions/FirstPartyTermProposedInsurance"
-      premiumPaymentSection:
-        $ref: "#/definitions/PaymentGatewayPaymentSection"
-      promotionCode:
-        type: "string"
-        description: "For marketing purposes, the campaign or promotion code."
   ProposalSummary:
     type: "object"
     properties:
@@ -5235,27 +5211,28 @@ definitions:
       proposalReferenceNo:
         type: "string"
         description: "Reference number assigned by client. Should be unique to the\
-          \ client to identify the proposal."
+          \ client which helps the client to identify the proposal."
       policyNumber:
         type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
+        description: "Policy number assigned by the insurer to this proposal. This\
+          \ number is to be assigned by the server."
         readOnly: true
       proposerName:
         type: "string"
         description: "Should be the same as the policyholder full name"
       submissionChannel:
         type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
+        description: "Channel which the proposal is submitted from , e.g. direct,\
+          \ banca, etc"
         default: "direct"
       tenantCode:
         type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
+        description: "Code for the Insurer i.e. recipient of the proposal submission"
       lifeAssuredName:
         type: "string"
       mainProductCode:
         type: "string"
+        description: "Used for searching. The code for the main product."
       mainProductName:
         type: "string"
       pk:
@@ -5264,6 +5241,7 @@ definitions:
         type: "number"
       policyholderSection:
         $ref: "#/definitions/BasicPolicyholderSection"
+    description: "Summary object representing the proposal. Useful for browse screens."
   FirstPartyTraditionalProposal:
     type: "object"
     required:
@@ -5274,29 +5252,28 @@ definitions:
     properties:
       proposalType:
         type: "string"
-        description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
+        description: "e.g. FirstPartyTerm, FirstPartyEndowment, FirstPartyWholeLife,\
           \ etc"
-        default: "FirstyPartyTermProposal"
+        default: "FirstyPartyTerm"
       proposalReferenceNo:
         type: "string"
         description: "Reference number assigned by client. Should be unique to the\
           \ client to identify the proposal."
       policyNumber:
         type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
+        description: "Policy number assigned by the insurer to this proposal. Assigned\
+          \ by the insurer."
         readOnly: true
       proposerName:
         type: "string"
         description: "Should be the same as the policyholder full name"
       submissionChannel:
         type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
+        description: "Channel for this proposal, e.g. direct, banca, etc"
         default: "direct"
       tenantCode:
         type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
+        description: "Insurer i.e. recipient of this proposal"
       status:
         type: "string"
       policyholderSection:
@@ -5324,13 +5301,12 @@ definitions:
     properties:
       proposalType:
         type: "string"
-        description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
-          \ etc"
-        default: "FirstyPartyTermProposal"
+        description: "The proposal type. In this case, it should be FirstPartyIlp"
+        default: "FirstyPartyIlp"
       policyNumber:
         type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
+        description: "Policy number assigned by the insurer to this proposal. Usually\
+          \ assigned by the insurer."
         readOnly: true
       proposalReferenceNo:
         type: "string"
@@ -5341,18 +5317,124 @@ definitions:
         description: "Should be the same as the policyholder full name"
       submissionChannel:
         type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
+        description: "Channel for this proposal, e.g. direct, banca, etc"
         default: "direct"
       tenantCode:
         type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
+        description: "Code for the Insurer i.e. recipient of this proposal"
+      status:
+        type: "string"
+        description: "Status will include PENDING, COMPLETE, SUBMITTED"
+      policyholderSection:
+        $ref: "#/definitions/BasicPolicyholderSection"
+      policyholderDisclosureSection:
+        $ref: "#/definitions/PolicyholderDisclosures"
+      proposedInsuranceSection:
+        $ref: "#/definitions/ILPProposedInsurance"
+      premiumPaymentSection:
+        $ref: "#/definitions/PaymentSection"
+      promotionCode:
+        type: "string"
+        description: "For marketing purposes, the campaign or promotion code."
+      pk:
+        $ref: "#/definitions/Any"
+      version:
+        type: "number"
+  ThirdPartyTraditionalProposal:
+    type: "object"
+    required:
+    - "lifeAssuredDisclosureSection"
+    - "lifeAssuredSection"
+    - "policyholderSection"
+    - "proposalType"
+    - "proposedInsuranceSection"
+    - "proposerName"
+    properties:
+      proposalType:
+        type: "string"
+        description: "e.g. ThirdPartyTerm, ThirdPartyEndowment, ThirdPartyWholeLife,\
+          \ etc"
+        default: "ThirdPartyTerm"
+      policyNumber:
+        type: "string"
+        description: "Policy number assigned by the insurer to this proposal. Usually\
+          \ assigned by the insurer"
+        readOnly: true
+      proposalReferenceNo:
+        type: "string"
+        description: "Reference number assigned by client. Should be unique to the\
+          \ client to help the client to identify the proposal."
+      proposerName:
+        type: "string"
+        description: "Should be the same as the policyholder full name"
+      submissionChannel:
+        type: "string"
+        description: "Channel for this proposal, e.g. direct, banca, etc"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Code for the Insurer i.e. recipient of this proposal submission"
       status:
         type: "string"
       policyholderSection:
         $ref: "#/definitions/BasicPolicyholderSection"
       policyholderDisclosureSection:
         $ref: "#/definitions/PolicyholderDisclosures"
+      lifeAssuredSection:
+        $ref: "#/definitions/LifeAssuredSection"
+      lifeAssuredDisclosureSection:
+        $ref: "#/definitions/LifeAssuredDisclosureSection"
+      proposedInsuranceSection:
+        $ref: "#/definitions/TraditionalProposedInsurance"
+      premiumPaymentSection:
+        $ref: "#/definitions/PaymentSection"
+      promotionCode:
+        type: "string"
+        description: "For marketing purposes, the campaign or promotion code."
+      pk:
+        $ref: "#/definitions/Any"
+      version:
+        type: "number"
+  ThirdPartyIlpProposal:
+    type: "object"
+    required:
+    - "lifeAssuredDisclosureSection"
+    - "lifeAssuredSection"
+    - "policyholderSection"
+    - "proposalType"
+    - "proposedInsuranceSection"
+    - "proposerName"
+    properties:
+      proposalType:
+        type: "string"
+        description: "The proposal type. In this case, it should be ThirdPartyIlp"
+        default: "ThirdPartyIlp"
+      policyNumber:
+        type: "string"
+        description: "Policy number assigned by the insurer to this proposal."
+        readOnly: true
+      proposalReferenceNo:
+        type: "string"
+        description: "Reference number assigned by client. Should be unique to the\
+          \ client to help the client to identify the proposal."
+      proposerName:
+        type: "string"
+        description: "Should be the same as the policyholder full name"
+      submissionChannel:
+        type: "string"
+        description: "Channel for this proposal"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Code for the Insurer i.e. recipient of this proposal submission"
+      policyholderSection:
+        $ref: "#/definitions/BasicPolicyholderSection"
+      policyholderDisclosureSection:
+        $ref: "#/definitions/PolicyholderDisclosures"
+      lifeAssuredSection:
+        $ref: "#/definitions/LifeAssuredSection"
+      lifeAssuredDisclosureSection:
+        $ref: "#/definitions/LifeAssuredDisclosureSection"
       proposedInsuranceSection:
         $ref: "#/definitions/ILPProposedInsurance"
       premiumPaymentSection:
@@ -5380,17 +5462,18 @@ definitions:
         format: "date"
       submissionType:
         type: "string"
-        description: "submission type e.g. proposal"
+        description: "submission type e.g. proposal, endorsement"
         default: "Proposal"
       submissionRefNo:
         type: "string"
-        description: "Unique id identifying the submission type e.g. the proposalId"
+        description: "Unique id assigned by the client to help the client to search\
+          \ for the submission."
       submissionChannel:
         type: "string"
         description: "Channel of submission e.g. direct, banca, agency, broker"
       tenantCode:
         type: "string"
-        description: "Insurer, i.e. receipient of the submission"
+        description: "Code for the Insurer, i.e. recipient of the submission"
       status:
         type: "string"
         description: "Status of the submission. Valid values should be SUBMITTED,\
@@ -5415,153 +5498,9 @@ definitions:
         description: "The revision number used for optimistic locking"
         readOnly: true
       extensionFields:
-        type: "object"
-        description: "Use this object to hold the aditional fields due to local customizations"
-        additionalProperties:
-          type: "string"
-  FirstPartyMedicalSubmission:
-    type: "object"
-    required:
-    - "submissionChannel"
-    - "submissionData"
-    - "submissionDate"
-    - "submissionType"
-    - "tenantCode"
-    properties:
-      pk:
-        type: "string"
-        description: "Unique id for the submission. Assigned by backend"
-        readOnly: true
-      doctype:
-        type: "string"
-        description: "Assigned by backend"
-        readOnly: true
-        default: "Submission"
-      submissionDate:
-        type: "string"
-        format: "date"
-      submissionType:
-        type: "string"
-        description: "submission type e.g. FirstPartyMedicalProposal"
-        default: "FirstPartyMedicalProposal"
-      submissionChannel:
-        type: "string"
-        description: "Channel of submission e.g. direct, banca, agency, broker"
-      tenantCode:
-        type: "string"
-        description: "Insurer, i.e. recipient of the submission"
-      submissionRefNo:
-        type: "string"
-        description: "A reference number supplied by the client to uniquely identify\
-          \ the submission"
-      status:
-        type: "string"
-        description: "Status of the submission. Valid values should be SUBMITTED,\
-          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
-        readOnly: true
-        default: "SUBMITTED"
-      decision:
-        type: "string"
-        description: "After the submission is processed, there should be a decision\
-          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
-          \ is sold online (direct), only clean cases are accepted, so the decision\
-          \ should always be ACCEPTED"
-        readOnly: true
-        default: "ACCEPTED"
-      userId:
-        type: "string"
-        description: "The user that created this submission i.e. sender"
-        readOnly: true
-      lastModified:
-        type: "string"
-        format: "date"
-        description: "The last time this submission document has been modified"
-        readOnly: true
-      extensionFields:
-        type: "object"
-        description: "Use this object to hold the aditional fields due to local customizations"
-        additionalProperties:
-          type: "string"
-      submissionData:
-        $ref: "#/definitions/FirstPartyMedicalProposal"
-      messages:
-        type: "array"
-        description: "messages can be used to provide more information on the status\
-          \ or decision on the submission"
-        items:
-          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
-  FirstPartyTermProposalSubmission:
-    type: "object"
-    required:
-    - "submissionChannel"
-    - "submissionData"
-    - "submissionDate"
-    - "submissionType"
-    - "tenantCode"
-    properties:
-      pk:
-        type: "string"
-        description: "Unique id for the submission. Assigned by backend"
-        readOnly: true
-      doctype:
-        type: "string"
-        description: "Assigned by backend"
-        readOnly: true
-        default: "Submission"
-      submissionDate:
-        type: "string"
-        format: "date"
-      submissionType:
-        type: "string"
-        description: "submission type e.g. FirstPartyMedicalProposal"
-        default: "FirstPartyTermProposal"
-      submissionChannel:
-        type: "string"
-        description: "Channel of submission e.g. direct, banca, agency, broker"
-        default: "direct"
-      tenantCode:
-        type: "string"
-        description: "Insurer, i.e. recipient of the submission"
-      submissionRefNo:
-        type: "string"
-        description: "A reference number supplied by the client to uniquely identify\
-          \ the submission"
-      status:
-        type: "string"
-        description: "Status of the submission. Valid values should be SUBMITTED,\
-          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
-        readOnly: true
-        default: "SUBMITTED"
-      decision:
-        type: "string"
-        description: "After the submission is processed, there should be a decision\
-          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
-          \ is sold online (direct), only clean cases are accepted, so the decision\
-          \ should always be ACCEPTED"
-        readOnly: true
-        default: "ACCEPTED"
-      userId:
-        type: "string"
-        description: "The user that created this submission i.e. sender"
-        readOnly: true
-      lastModified:
-        type: "string"
-        format: "date"
-        description: "The last time this submission document has been modified"
-        readOnly: true
-      extensionFields:
-        type: "object"
-        description: "Use this object to hold the aditional fields due to local customizations"
-        additionalProperties:
-          type: "string"
-      submissionData:
-        $ref: "#/definitions/FirstPartyTermProposal"
-      messages:
-        type: "array"
-        description: "messages can be used to provide more information on the status\
-          \ or decision on the submission"
-        items:
-          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+        $ref: "#/definitions/ExtensionField"
+    description: "Document to represent a submission summary. Generally used for browse\
+      \ screens."
   FirstPartyTraditionalProposalSubmission:
     type: "object"
     required:
@@ -5585,8 +5524,8 @@ definitions:
         format: "date"
       submissionType:
         type: "string"
-        description: "submission type e.g. FirstPartyEndowmentProposal"
-        default: "FirstPartyTermProposal"
+        description: "submission type e.g. FirstPartyEndowmentProposalSubmission"
+        default: "FirstPartyTermProposalSubmission"
       submissionChannel:
         type: "string"
         description: "Channel of submission e.g. direct, banca, agency, broker"
@@ -5596,7 +5535,7 @@ definitions:
         description: "Insurer, i.e. recipient of the submission"
       submissionRefNo:
         type: "string"
-        description: "A reference number supplied by the client to uniquely identify\
+        description: "A reference number assigned by the client to uniquely identify\
           \ the submission at the client"
       status:
         type: "string"
@@ -5608,8 +5547,8 @@ definitions:
         type: "string"
         description: "After the submission is processed, there should be a decision\
           \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
-          \ is sold online (direct), only clean cases are accepted, so the decision\
-          \ should always be ACCEPTED"
+          \ is sold online (direct), only clean cases are accepted, so in that case,\
+          \ the decision will always be ACCEPTED"
         readOnly: true
         default: "ACCEPTED"
       userId:
@@ -5628,7 +5567,7 @@ definitions:
         description: "messages can be used to provide more information on the status\
           \ or decision on the submission"
         items:
-          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission_messages"
       extensionFields:
         $ref: "#/definitions/ExtensionField"
   FirstPartyIlpProposalSubmission:
@@ -5654,8 +5593,8 @@ definitions:
         format: "date"
       submissionType:
         type: "string"
-        description: "submission type e.g. FirstPartyEndowmentProposal"
-        default: "FirstPartyTermProposal"
+        description: "submission type e.g. FirstPartyEndowmentProposalSubmission"
+        default: "FirstPartyTermProposalSubmission"
       submissionChannel:
         type: "string"
         description: "Channel of submission e.g. direct, banca, agency, broker"
@@ -5665,8 +5604,8 @@ definitions:
         description: "Insurer, i.e. recipient of the submission"
       submissionRefNo:
         type: "string"
-        description: "A reference number supplied by the client to uniquely identify\
-          \ the submission at the client"
+        description: "A reference number assigned by the client to uniquely identify\
+          \ the submission at the client. Can be omitted."
       status:
         type: "string"
         description: "Status of the submission. Valid values should be SUBMITTED,\
@@ -5697,7 +5636,145 @@ definitions:
         description: "messages can be used to provide more information on the status\
           \ or decision on the submission"
         items:
-          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
+          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission_messages"
+      extensionFields:
+        $ref: "#/definitions/ExtensionField"
+  ThirdPartyTraditionalProposalSubmission:
+    type: "object"
+    required:
+    - "submissionChannel"
+    - "submissionData"
+    - "submissionDate"
+    - "submissionType"
+    - "tenantCode"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission. Assigned by backend"
+        readOnly: true
+      doctype:
+        type: "string"
+        description: "Assigned by backend"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. ThirdPartyWholeLifeProposalSubmission"
+        default: "ThirdPartyTermProposalSubmission"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Code for the Insurer, i.e. recipient of the submission"
+      submissionRefNo:
+        type: "string"
+        description: "A reference number assigned by the client to help it to uniquely\
+          \ identify the submission"
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
+        readOnly: true
+        default: "SUBMITTED"
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
+          \ is sold online (direct), only clean cases are accepted, so the decision\
+          \ should always be ACCEPTED"
+        readOnly: true
+        default: "ACCEPTED"
+      userId:
+        type: "string"
+        description: "The user that created this submission i.e. sender"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      submissionData:
+        $ref: "#/definitions/ThirdPartyTraditionalProposal"
+      messages:
+        type: "array"
+        description: "messages can be used to provide more information on the status\
+          \ or decision on the submission"
+        items:
+          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission_messages"
+      extensionFields:
+        $ref: "#/definitions/ExtensionField"
+  ThirdPartyIlpProposalSubmission:
+    type: "object"
+    required:
+    - "submissionChannel"
+    - "submissionData"
+    - "submissionDate"
+    - "submissionType"
+    - "tenantCode"
+    properties:
+      pk:
+        type: "string"
+        description: "Unique id for the submission. Assigned by backend"
+        readOnly: true
+      doctype:
+        type: "string"
+        description: "Assigned by backend"
+        readOnly: true
+        default: "Submission"
+      submissionDate:
+        type: "string"
+        format: "date"
+      submissionType:
+        type: "string"
+        description: "submission type e.g. ThirdPartyIlpProposalSubmission"
+        default: "ThirdPartyIlpProposalSubmission"
+      submissionChannel:
+        type: "string"
+        description: "Channel of submission e.g. direct, banca, agency, broker"
+        default: "direct"
+      tenantCode:
+        type: "string"
+        description: "Code for the Insurer, i.e. recipient of the submission"
+      submissionRefNo:
+        type: "string"
+        description: "A unique reference number assigned by the client to help it\
+          \ to identify the submission."
+      status:
+        type: "string"
+        description: "Status of the submission. Valid values should be SUBMITTED,\
+          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
+        readOnly: true
+        default: "SUBMITTED"
+      decision:
+        type: "string"
+        description: "After the submission is processed, there should be a decision\
+          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
+          \ is sold online (direct), only clean cases are accepted, so the decision\
+          \ should always be ACCEPTED"
+        readOnly: true
+        default: "ACCEPTED"
+      userId:
+        type: "string"
+        description: "The user that created this submission i.e. sender"
+        readOnly: true
+      lastModified:
+        type: "string"
+        format: "date"
+        description: "The last time this submission document has been modified"
+        readOnly: true
+      submissionData:
+        $ref: "#/definitions/ThirdPartyIlpProposal"
+      messages:
+        type: "array"
+        description: "messages can be used to provide more information on the status\
+          \ or decision on the submission"
+        items:
+          $ref: "#/definitions/FirstPartyTraditionalProposalSubmission_messages"
       extensionFields:
         $ref: "#/definitions/ExtensionField"
   BasicPolicyholderSection:
@@ -5797,7 +5874,7 @@ definitions:
           \ for servicing and marketing purposes."
       occupation:
         type: "string"
-        description: "Select from a coded list of occupations"
+        description: "Occupation of the insured"
       employmentNature:
         type: "string"
       mailingAddress:
@@ -5815,29 +5892,12 @@ definitions:
         $ref: "#/definitions/QuestionAndResponses"
       status:
         type: "string"
-  PaymentGatewayPaymentSection:
-    type: "object"
-    required:
-    - "initialPaymentMethod"
-    - "subsequentPaymentMethod"
-    properties:
-      initialPaymentMethod:
-        type: "string"
-        default: "PaymentGatewayRecurringPayment"
-      subsequentPaymentMethod:
-        type: "string"
-        default: "PaymentGatewayRecurringPayment"
-      status:
-        type: "string"
-    description: "For direct insurance via internet the payment gateway can be used\
-      \ to pay for the iniitial payment and subsequent payment using recurring payments.\
-      \ All  the account details are handled by the payment gateway provider."
   PaymentMethod:
     type: "object"
     properties:
       paymentMethod:
         type: "string"
-        description: "Valid values are cheque, giro, payment-gateway"
+        description: "Valid values are CHEQUE, GIRO, PAYMENT-GATEWAY"
       giroDetails:
         $ref: "#/definitions/PaymentMethod_giroDetails"
       status:
@@ -5856,150 +5916,6 @@ definitions:
         $ref: "#/definitions/PaymentMethod"
       status:
         type: "string"
-  DirectMedicalProduct:
-    type: "object"
-    properties:
-      productId:
-        type: "integer"
-      productCode:
-        type: "string"
-      productName:
-        type: "string"
-      packageCode:
-        type: "string"
-        description: "The package code to reference the marketing plan for this product."
-      insured:
-        $ref: "#/definitions/DirectMedicalProduct_insured"
-      benefitLevel:
-        type: "string"
-        description: "For medical plans, to simplify the input, there are usually\
-          \ predefined plans e.g. platinum, gold, silver. These map to different benefits\
-          \ with their sum assured (amount of the benefit)"
-      coverageTermType:
-        type: "string"
-        description: "Valid values 1=Cover Whole Life, 2=Cover for certain years,\
-          \ 3=Cover up to certain age, 4=Cover for certain months. Normally, customers\
-          \ will be given a choice to cover for a certain years (i.e. 2) or cover\
-          \ up certain age (i.e. 3). At times, the product can only have 1 coverage\
-          \ term, e.g. 5 years, which is typical for medical products"
-        default: "2"
-      coverageTermValue:
-        type: "number"
-        description: "If coverageTermType=2, then it means the number of years that\
-          \ coveraage if required, if coverageTermType=3, then value here means the\
-          \ age in which coverage is required."
-      premiumPaymentTermType:
-        type: "string"
-        description: "Similar meaning to coverageTermType"
-      premiumPaymentTermValue:
-        type: "number"
-        description: "Similar meaning to coverageTermValue"
-      currency:
-        type: "string"
-        description: "When selling direct (online), there should be only one currency,\
-          \ and should be known to the client or omitted."
-        default: "CNY"
-      paymentMode:
-        type: "string"
-        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
-          \ 4=Monthly, 5=Single. When selling direct (internet), to show that it is\
-          \ cheap, default is montly"
-        default: "4"
-      firstYearPremium:
-        type: "number"
-        description: "Calculated by the eBaoCloud service, representing the 1st year\
-          \ annual premium"
-      premiumAmount:
-        type: "number"
-        description: "Premium amount taking into account the payment mode, so if payment\
-          \ mode is monthly (default), then this represents the monthly premium amount.\
-          \ This is also calculated by the eBaoCloud API service"
-  DirectTermProduct:
-    type: "object"
-    properties:
-      productId:
-        type: "integer"
-      productCode:
-        type: "string"
-      productName:
-        type: "string"
-      packageCode:
-        type: "string"
-        description: "The package code to reference the marketing plan for this product."
-      insured:
-        $ref: "#/definitions/DirectMedicalProduct_insured"
-      benefitLevel:
-        type: "string"
-        description: "For some term plans, to simplify the input, there are usually\
-          \ predefined levels. These can be mapped to the pre-defined amounts of death\
-          \ benefit and TPD benefit"
-      sumAssured:
-        type: "number"
-        description: "The amount of death benefit / TPD coverage. Possibly derived\
-          \ from the benefitLevel or entered directly in some cases"
-      coverageTermType:
-        type: "string"
-        description: "Valid values 1=Cover Whole Life, 2=Cover for certain years,\
-          \ 3=Cover up to certain age, 4=Cover for certain months. Normally, customers\
-          \ will be given a choice to cover for a certain years (i.e. 2) or cover\
-          \ up certain age (i.e. 3). At times, the product can only have 1 coverage\
-          \ term, e.g. 5 years, which is typical for medical products"
-        default: "2"
-      coverageTermValue:
-        type: "number"
-        description: "If coverageTermType=2, then it means the number of years that\
-          \ coveraage if required, if coverageTermType=3, then value here means the\
-          \ age in which coverage is required."
-      premiumPaymentTermType:
-        type: "string"
-        description: "Similar meaning to coverageTermType"
-      premiumPaymentTermValue:
-        type: "number"
-        description: "Similar meaning to coverageTermValue"
-      currency:
-        type: "string"
-        description: "When selling direct (online), there should be only one currency,\
-          \ and should be known to the client or omitted."
-        default: "CNY"
-      paymentMode:
-        type: "string"
-        description: "The payment frequency 1=Yearly, 2=Half Yearly, 3=Quarterly,\
-          \ 4=Monthly, 5=Single. When selling direct (internet), to show that it is\
-          \ cheap, default is montly"
-        default: "4"
-      firstYearPremium:
-        type: "number"
-        description: "Calculated by the eBaoCloud service, representing the 1st year\
-          \ annual premium"
-      premiumAmount:
-        type: "number"
-        description: "Premium amount taking into account the payment mode, so if payment\
-          \ mode is monthly (default), then this represents the monthly premium amount.\
-          \ This is also calculated by the eBaoCloud API service"
-  FirstPartyMedicalProposedInsurance:
-    type: "object"
-    required:
-    - "directMedicalProduct"
-    - "startDate"
-    properties:
-      startDate:
-        type: "string"
-        format: "date"
-        description: "The proposed commencement date of the insurance"
-      directMedicalProduct:
-        $ref: "#/definitions/DirectMedicalProduct"
-  FirstPartyTermProposedInsurance:
-    type: "object"
-    required:
-    - "coverage"
-    - "startDate"
-    properties:
-      startDate:
-        type: "string"
-        format: "date"
-        description: "The proposed commencement date of the insurance"
-      coverage:
-        $ref: "#/definitions/DirectTermProduct"
   TraditionalProposedInsurance:
     type: "object"
     required:
@@ -6219,254 +6135,6 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/PolicyholderDisclosuresSpecification_questionList"
-  ThirdPartyTraditionalProposal:
-    type: "object"
-    required:
-    - "lifeAssuredDisclosureSection"
-    - "lifeAssuredSection"
-    - "policyholderSection"
-    - "proposalType"
-    - "proposedInsuranceSection"
-    - "proposerName"
-    properties:
-      proposalType:
-        type: "string"
-        description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
-          \ etc"
-        default: "FirstyPartyTermProposal"
-      policyNumber:
-        type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
-        readOnly: true
-      proposalReferenceNo:
-        type: "string"
-        description: "Reference number assigned by client. Should be unique to the\
-          \ client to identify the proposal."
-      proposerName:
-        type: "string"
-        description: "Should be the same as the policyholder full name"
-      submissionChannel:
-        type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
-        default: "direct"
-      tenantCode:
-        type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
-      status:
-        type: "string"
-      policyholderSection:
-        $ref: "#/definitions/BasicPolicyholderSection"
-      policyholderDisclosureSection:
-        $ref: "#/definitions/PolicyholderDisclosures"
-      lifeAssuredSection:
-        $ref: "#/definitions/LifeAssuredSection"
-      lifeAssuredDisclosureSection:
-        $ref: "#/definitions/LifeAssuredDisclosureSection"
-      proposedInsuranceSection:
-        $ref: "#/definitions/TraditionalProposedInsurance"
-      premiumPaymentSection:
-        $ref: "#/definitions/PaymentSection"
-      promotionCode:
-        type: "string"
-        description: "For marketing purposes, the campaign or promotion code."
-      pk:
-        $ref: "#/definitions/Any"
-      version:
-        type: "number"
-  ThirdPartyTraditionalProposalSubmission:
-    type: "object"
-    required:
-    - "submissionChannel"
-    - "submissionData"
-    - "submissionDate"
-    - "submissionType"
-    - "tenantCode"
-    properties:
-      pk:
-        type: "string"
-        description: "Unique id for the submission. Assigned by backend"
-        readOnly: true
-      doctype:
-        type: "string"
-        description: "Assigned by backend"
-        readOnly: true
-        default: "Submission"
-      submissionDate:
-        type: "string"
-        format: "date"
-      submissionType:
-        type: "string"
-        description: "submission type e.g. FirstPartyEndowmentProposal"
-        default: "ThirdPartyTermProposal"
-      submissionChannel:
-        type: "string"
-        description: "Channel of submission e.g. direct, banca, agency, broker"
-        default: "direct"
-      tenantCode:
-        type: "string"
-        description: "Insurer, i.e. recipient of the submission"
-      submissionRefNo:
-        type: "string"
-        description: "A reference number supplied by the client to uniquely identify\
-          \ the submission at the client"
-      status:
-        type: "string"
-        description: "Status of the submission. Valid values should be SUBMITTED,\
-          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
-        readOnly: true
-        default: "SUBMITTED"
-      decision:
-        type: "string"
-        description: "After the submission is processed, there should be a decision\
-          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
-          \ is sold online (direct), only clean cases are accepted, so the decision\
-          \ should always be ACCEPTED"
-        readOnly: true
-        default: "ACCEPTED"
-      userId:
-        type: "string"
-        description: "The user that created this submission i.e. sender"
-        readOnly: true
-      lastModified:
-        type: "string"
-        format: "date"
-        description: "The last time this submission document has been modified"
-        readOnly: true
-      submissionData:
-        $ref: "#/definitions/ThirdPartyTraditionalProposal"
-      messages:
-        type: "array"
-        description: "messages can be used to provide more information on the status\
-          \ or decision on the submission"
-        items:
-          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
-      extensionFields:
-        $ref: "#/definitions/ExtensionField"
-  ThirdPartyIlpProposal:
-    type: "object"
-    required:
-    - "lifeAssuredDisclosureSection"
-    - "lifeAssuredSection"
-    - "policyholderSection"
-    - "proposalType"
-    - "proposedInsuranceSection"
-    - "proposerName"
-    properties:
-      proposalType:
-        type: "string"
-        description: "e.g. FirstPartyTermProposal, FirstPartyEndowmentProposal, FirstPartyWholeLifeProposal,\
-          \ etc"
-        default: "ThirdPartyIlpProposal"
-      policyNumber:
-        type: "string"
-        description: "Policy number assigned by the insurer to this proposal. Should\
-          \ be omitted when by the client."
-        readOnly: true
-      proposalReferenceNo:
-        type: "string"
-        description: "Reference number assigned by client. Should be unique to the\
-          \ client to identify the proposal."
-      proposerName:
-        type: "string"
-        description: "Should be the same as the policyholder full name"
-      submissionChannel:
-        type: "string"
-        description: "Channel which the proposal is submitted, e.g. direct, banca,\
-          \ etc"
-        default: "direct"
-      tenantCode:
-        type: "string"
-        description: "Insurer i.e. receipient of this proposal submission"
-      policyholderSection:
-        $ref: "#/definitions/BasicPolicyholderSection"
-      policyholderDisclosureSection:
-        $ref: "#/definitions/PolicyholderDisclosures"
-      lifeAssuredSection:
-        $ref: "#/definitions/LifeAssuredSection"
-      lifeAssuredDisclosureSection:
-        $ref: "#/definitions/LifeAssuredDisclosureSection"
-      proposedInsuranceSection:
-        $ref: "#/definitions/ILPProposedInsurance"
-      premiumPaymentSection:
-        $ref: "#/definitions/PaymentSection"
-      promotionCode:
-        type: "string"
-        description: "For marketing purposes, the campaign or promotion code."
-      pk:
-        $ref: "#/definitions/Any"
-      version:
-        type: "number"
-  ThirdPartyIlpProposalSubmission:
-    type: "object"
-    required:
-    - "submissionChannel"
-    - "submissionData"
-    - "submissionDate"
-    - "submissionType"
-    - "tenantCode"
-    properties:
-      pk:
-        type: "string"
-        description: "Unique id for the submission. Assigned by backend"
-        readOnly: true
-      doctype:
-        type: "string"
-        description: "Assigned by backend"
-        readOnly: true
-        default: "Submission"
-      submissionDate:
-        type: "string"
-        format: "date"
-      submissionType:
-        type: "string"
-        description: "submission type e.g. FirstPartyIlpProposal"
-        default: "ThirdPartyIlpProposal"
-      submissionChannel:
-        type: "string"
-        description: "Channel of submission e.g. direct, banca, agency, broker"
-        default: "direct"
-      tenantCode:
-        type: "string"
-        description: "Insurer, i.e. recipient of the submission"
-      submissionRefNo:
-        type: "string"
-        description: "A reference number supplied by the client to uniquely identify\
-          \ the submission at the client"
-      status:
-        type: "string"
-        description: "Status of the submission. Valid values should be SUBMITTED,\
-          \ ACKNOWLEDGED, PROCESSING, PROCESSED. Assigned by backend"
-        readOnly: true
-        default: "SUBMITTED"
-      decision:
-        type: "string"
-        description: "After the submission is processed, there should be a decision\
-          \ i.e. QUERY, CONDITIONAL, ACCEPTED, DECLINED. In the simple case which\
-          \ is sold online (direct), only clean cases are accepted, so the decision\
-          \ should always be ACCEPTED"
-        readOnly: true
-        default: "ACCEPTED"
-      userId:
-        type: "string"
-        description: "The user that created this submission i.e. sender"
-        readOnly: true
-      lastModified:
-        type: "string"
-        format: "date"
-        description: "The last time this submission document has been modified"
-        readOnly: true
-      submissionData:
-        $ref: "#/definitions/ThirdPartyIlpProposal"
-      messages:
-        type: "array"
-        description: "messages can be used to provide more information on the status\
-          \ or decision on the submission"
-        items:
-          $ref: "#/definitions/FirstPartyMedicalSubmission_messages"
-      extensionFields:
-        $ref: "#/definitions/ExtensionField"
   inline_response_200:
     properties:
       docs:
@@ -6935,7 +6603,7 @@ definitions:
         type: "string"
       displayOrder:
         type: "number"
-  FirstPartyMedicalSubmission_messages:
+  FirstPartyTraditionalProposalSubmission_messages:
     properties:
       messageDate:
         type: "string"
@@ -6976,34 +6644,7 @@ definitions:
         type: "string"
       bankAccountNumber:
         type: "string"
-    description: "Giro details are required when the paymentMethod=giro"
-  DirectMedicalProduct_insured:
-    properties:
-      name:
-        type: "string"
-        description: "Name of the insured"
-      birthDate:
-        type: "string"
-        format: "date"
-        description: "Date of birth for the insured"
-      age:
-        type: "number"
-        description: "Age of the insured. Can be derived from the age method (company\
-          \ or product specific) and the birth date if provided."
-      occupation:
-        type: "string"
-        description: "Typically provided to determine the risk class of this person."
-      occupationClass:
-        type: "string"
-        description: "For some products, this is a risk factor. Can be derived from\
-          \ the occupation if provided."
-      gender:
-        type: "string"
-        description: "MALE or FEMALE"
-      smoking:
-        type: "string"
-        description: "Generally SMOKER or NON-SMOKER and used as a factor to determine\
-          \ the risk premium"
+    description: "Giro details are required when the paymentMethod=GIRO"
   PolicyholderDisclosuresSpecification_questionList:
     properties:
       qid:

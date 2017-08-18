@@ -7,7 +7,9 @@ const crud = require('crud-api')
 const productApi = require('product-api')
 const codeTables = require('./proposalCodeTables')
 
-// use this definition for both life assured and policyholder -- only in sample implementation, in real life would depend on a few things
+// use this definition for both life assured and policyholder -- only in sample implementation,
+// in production version, would need to vary depending on the insurer (tenantCode), and possibly the product code
+// note that the questions can be in a hierarchy i.e. qid = 30 is parent question of qid 30-10
 const sampleDisclosureSpecs = {
     questionList: [
         {"qid": "10", "widget" : "numberInput", "required": true, "qlabel": __("Height (cms)")},
@@ -61,9 +63,7 @@ const sampleDisclosureSpecs = {
             {"qid": "90-30", "widget" : "numberInput", "required": false, "qlabel": "Age of condition onset"},
             {"qid": "90-40", "widget" : "numberInput", "required": false, "qlabel": "Age at death (if applicable)"}
     ]
-
 }
-
 
 // we get the tenant codes from the database and we cache it
 var tenants=[];
@@ -106,7 +106,7 @@ exp.validateFirstPartyMedicalSubmission = function(json) {
   if (!json.submissionType) {
     errs.push(__("The submissionType is required"))
   } else {
-    const validSubmissionTypes = ['FirstPartyMedicalProposal','FirstPartyTermProposalSubmission', 'FirstPartyEndowmentProposalSubmission',
+    const validSubmissionTypes = ['FirstPartyMedicalProposalSubmission','FirstPartyTermProposalSubmission', 'FirstPartyEndowmentProposalSubmission',
             'FirstPartyWholeLifeProposalSubmission'];
     if (validSubmissionTypes.indexOf(json.submissionType) < 0 ) errs.push( __(`The submissionType (${json.submissionType}) is invalid`))
   }
@@ -127,7 +127,6 @@ exp.validateFirstPartyMedicalSubmission = function(json) {
   } else {
     if (json.submissionType.toLowerCase() === 'firstpartymedicalproposalsubmission') {
         if (json.submissionData.proposalType.toLowerCase() === 'firstpartymedical') {
-            // let proposal = Object.assign({} , json.submissionData) ;
             let proposal = _.cloneDeep(json.submissionData); // create a clone for the proposal
 
             // there is a need to re-structure the json message to be compatible with the product api
@@ -182,7 +181,6 @@ exp.validateFirstPartyMedicalProposal = function(proposal) {
   }
   if (!proposal.proposerName) errs.push(__("The proposalName is required for the submitted proposal"))
 
-
   errs = errs.concat( validateFirstPartyMedicalPolicyholderSection(proposal))
   errs = errs.concat( validateFirstPartyMedicalProposedInsuranceSection(proposal))
   errs = errs.concat( validateFirstPartyMedicalPaymentSection(proposal))
@@ -195,8 +193,7 @@ exp.validateFirstPartyMedicalProposal = function(proposal) {
 exp.validateFirstPartySubmission = function(json) {
 
   let errs = []
-  const validSubmissionTypes = ['FirstPartyMedicalProposalSubmission','FirstPartyTermProposalSubmission', 'FirstPartyEndowmentProposalSubmission',
-                                'FirstPartyWholeLifeProposalSubmission','FirstPartyIlpProposalSubmission'];
+  const validSubmissionTypes = ['FirstPartyMedicalProposalSubmission','FirstPartyTermProposalSubmission', 'FirstPartyEndowmentProposalSubmission', 'FirstPartyWholeLifeProposalSubmission','FirstPartyIlpProposalSubmission'];
 
   if (json.submissionDate) {
       let workDate = json.submissionDate;
@@ -221,12 +218,14 @@ exp.validateFirstPartySubmission = function(json) {
   } else {
     if (validChannels.indexOf(json.submissionChannel) < 0 ) errs.push( __("The submissionChannel is invalid"))
   }
+
   if (!json.tenantCode) {
     errs.push(__("The tenantCode is required"))
   } else {
     let tenant = tenants.find( t => t.tenantCode === json.tenantCode)
     if (!tenant) errs.push( __(`The tenantCode (${json.tenantCode}) is invalid`))
   }
+
   if (!json.submissionData) {
     errs.push( __("The submissionData is required"))
   } else {
@@ -242,8 +241,6 @@ exp.validateFirstPartySubmission = function(json) {
         errs = errs.concat( processFirstPartyWholeLifeProposal(json, proposal) )
     } else if (json.submissionType === 'FirstPartyIlpProposalSubmission') {
         errs = errs.concat( processFirstPartyIlpProposal(json, proposal) )
-    // } else if (json.submissionType === 'ThirdPartyIlpProposalSubmission') {
-    //     errs = errs.concat( processThirdPartyIlpProposal(json, proposal) )
     } else {
         errs.push(__(`Submission type (${json.submissionType}) is not supported`))
     }
@@ -254,8 +251,7 @@ exp.validateFirstPartySubmission = function(json) {
 exp.validateThirdPartySubmission = function(json) {
 
   let errs = []
-  const validSubmissionTypes = ['ThirdPartyMedicalProposalSubmission','ThirdPartyTermProposalSubmission', 'ThirdPartyEndowmentProposalSubmission',
-                                'ThirdPartyWholeLifeProposalSubmission','ThirdPartyIlpProposalSubmission'];
+  const validSubmissionTypes = ['ThirdPartyMedicalProposalSubmission','ThirdPartyTermProposalSubmission', 'ThirdPartyEndowmentProposalSubmission', 'ThirdPartyWholeLifeProposalSubmission','ThirdPartyIlpProposalSubmission'];
 
   if (json.submissionDate) {
       let workDate = json.submissionDate;
@@ -292,8 +288,6 @@ exp.validateThirdPartySubmission = function(json) {
 
     let proposal = _.cloneDeep(json.submissionData); // create a clone for the proposal
 
-    // for the moment, we just call processThirdPartyProposal , if there is some pre-processing required based on the different type of proposal
-    // we should call the pre-processing function before calling processThirdPartyProposal, refer to first party cases
     if (json.submissionType === 'ThirdPartyMedicalProposalSubmission' || json.submissionType === 'ThirdPartyMedicalProposalSubmission') {
         errs = errs.concat( processThirdPartyProposal(json, proposal) )
     } else if (json.submissionType === 'ThirdPartyTermProposalSubmission') {
@@ -311,7 +305,6 @@ exp.validateThirdPartySubmission = function(json) {
   return errs
 }
 
-// function processFirstPartyMedicalProposal(submission,proposal) { return processFirstPartyProposal(submission, proposal, "directMedicalProduct") }
 function processFirstPartyMedicalProposal(submission,proposal) { return processFirstPartyProposal(submission, proposal, "coverageList") }
 function processFirstPartyTermProposal(submission,proposal) {return processFirstPartyProposal(submission, proposal,"coverageList") }
 function processFirstPartyEndowmentProposal(submission,proposal){return processFirstPartyProposal(submission, proposal, "coverageList") }
@@ -321,29 +314,16 @@ function processFirstPartyProposal(submission, proposal, productFieldName) {
     // there is a need to re-structure the json message to be compatible with the product api
     // check a few things first, i.e. must have field directMedicalProduct, and the insured must be a an object within the product
     let proceed = true;
-    //if (proposal.proposalType === 'FirstPartyEndowment' || proposal.proposalType === 'FirstPartyWholeLife') {
-        if (!proposal.proposedInsuranceSection.coverageList) {
-            errs.push(__(`There is no coverages (coverageList) specified in the proposed insurance`))
+    if (!proposal.proposedInsuranceSection.coverageList) {
+        errs.push(__(`There is no coverages (coverageList) specified in the proposed insurance`))
+        proceed = false
+    } else {
+        if (!proposal.proposedInsuranceSection.insuredList) {
+            errs.push(__("There is no insured details specified for the proposed insurance"))
             proceed = false
-        } else {
-            if (!proposal.proposedInsuranceSection.insuredList) {
-                errs.push(__("There is no insured details specified for the proposed insurance"))
-                proceed = false
-            }
         }
+    }
 
-    // } else {
-    //     productFieldName = productFieldName || "coverage"; // default name is coverage
-    //     if (!proposal.proposedInsuranceSection[productFieldName]) {
-    //         errs.push(__(`There is no field called ${productFieldName} in the proposed insurance`))
-    //         proceed = false
-    //     } else {
-    //         if (!proposal.proposedInsuranceSection[productFieldName].insured) {
-    //             errs.push(__("There is no insured details for the product"))
-    //             proceed = false
-    //         }
-    //     }
-    // }
     if (proceed) {
         proposal.tenantCode = submission.tenantCode;
         proposal.submissionChannel = submission.submissionChannel;
@@ -401,7 +381,7 @@ function processThirdPartyProposal(submission, proposal) {
     if (proceed) {
         proposal.tenantCode = submission.tenantCode;
         proposal.submissionChannel = submission.submissionChannel;
-        // map coverageList to productList (in the engine)
+        // map coverageList to productList (in the product engine we use productList instead of coverageList)
         if (proposal.proposedInsuranceSection.coverageList && !proposal.proposedInsuranceSection.productList) {
             proposal.proposedInsuranceSection.productList = proposal.proposedInsuranceSection.coverageList
         }
@@ -412,7 +392,7 @@ function processThirdPartyProposal(submission, proposal) {
 
 exp.validateFirstPartyProposal = function(proposal) {
   // have to validate the proposedInsurance section and the policyholderSection,
-  // paymentSection should be strainght forward, for channel = direct, i.e. assume paymentGateway
+  // paymentSection should be strainght forward, for channel = direct, i.e. assume payment-gateway
   let errs = []
 
   if (!proposal.proposerName) errs.push(__("The proposalName is required for the submitted proposal"))
@@ -433,8 +413,8 @@ exp.validateFirstPartyProposal = function(proposal) {
           errs = errs.concat( validateDirectPaymentSection(proposal))
         }
     }
-
-    if (proposal.paymentSection && !proposal.premiumPaymentSection) proposal.premiumPaymentSection = proposal.paymentSection // workaround
+    // workaround, we used different names for the payment section
+    if (proposal.paymentSection && !proposal.premiumPaymentSection) proposal.premiumPaymentSection = proposal.paymentSection
 
     if (proposal.proposalType === 'FirstPartyEndowment' || proposal.proposalType === 'FirstPartyWholeLife' ) {
         let requiredSections = ["policyholderSection", "proposedInsuranceSection","premiumPaymentSection"]
@@ -467,11 +447,8 @@ exp.validateFirstPartyProposal = function(proposal) {
             }
         })
     }
-    // check for required sections for the first-party-endowment and first-party-whole-life proposal ::TODO::
   }
-
   return errs
-
 }
 let validateMinimalProposal = function(proposal, supportedProposalTypes, minimalSections) {
   // Used to check that minimum information is available, before allowing it to be saved
@@ -531,9 +508,9 @@ exp.validateThirdPartyProposal = function(proposal) {
             let product = proposal.proposedInsuranceSection.productList.find( prd => prd.lifeAssuredNumber === 0 )
             if (product) requiredSections.push("policyholderDisclosureSection")
         }
-        // ::TODO:: can add rule that if channel === agency or bance => agentReportSection + beneficarySection + signatureSection  are required
+        // ::TODO:: can add rule that if channel === agency or bance => agentReportSection + beneficarySection + signatureSection  are required ? also depends on the tenantCode
 
-        // decide on the validators for the proposedInsuranceSection
+        // decide on the validators for the proposedInsuranceSection, depends on the proposal type
         validators = ["validatePersonProduct", "validateMain", "validateAllRiders"]
         if (proposal.proposalType.toLowerCase() === 'thirdpartyilp') {
             validators = validators.concat(["validateAllFundAllocations","validateAllTopups","validateAllWithdrawals"])
@@ -611,7 +588,6 @@ function validatePremiumPaymentSection(proposal) {
   return errs;
 }
 
-
 // validate policyholder-section
 function validateFirstPartyMedicalPolicyholderSection(proposal) { return validatePolicyholderSection(proposal) }
 function validateDirectPolicyholderSection(proposal){ return validatePolicyholderSection(proposal) }
@@ -622,7 +598,6 @@ function validatePolicyholderSection(proposal){
     // so we check that the values are valid for the fields that have restricted values
     let row = codeTables.idTypes.codeTableData.find(table => table.code === section.idType)
     if (!row) errs.push(__(`Invalid policyholder Id Type (${section.idType})`))
-
 
     // check occupation
     row  = codeTables.occupations.codeTableData.find(table => table.code === section.occupation)
@@ -714,7 +689,6 @@ function validateLifeAssuredSection(proposal){
     return errs;
 }
 
-
 // validate proposed-insurance-section
 function validateFirstPartyMedicalProposedInsuranceSection(proposal) {
     return validateProposedInsuranceSection(proposal,["validatePersonProduct","validateMain", "validateAllRiders"] )
@@ -724,8 +698,7 @@ function validateProposedInsuranceSection(proposal, validators) {
     // since we are looking at medical insurance, there are no need to run the investment validators
     // make use of the product-api to do the validation
     // let validators = ["validatePersonProduct","validateMain", "validateAllRiders"]
-    let errmap = productApi.validate(proposal.proposedInsuranceSection,validators)
-    console.log("Calling product api to do the validation", errmap)
+    let errmap = productApi.validate(proposal.proposedInsuranceSection,validators) // calll the product api
     Object.keys(errmap).forEach(errkey => errs = errs.concat( errmap[errkey] ) )
     return errs
 }
@@ -760,12 +733,10 @@ function validatePolicyholderDisclosureSection(proposal) {
                  }
                  if (val && spec.showChildrenValue ) {
                      if ((val+'').toLowerCase() === spec.showChildrenValue.toLowerCase() ) {
-                        //  debugger
                          let isList = spec.listChildren && spec.listChildren.length > 0 ? true : false;
                          let isObject = spec.objectChildren && spec.objectChildren.length > 0 ? true : false;
                          let children = isList ? spec.listChildren : isObject ? spec.objectChildren : []
                          children.forEach( (child,index) => {
-                            // if (child.startsWith('90-30')) debugger
                             let childSpec = specMap[child]
                             let childDisclosure = disclosures[child]
                             if (childSpec) {
@@ -901,23 +872,20 @@ exp.processThirdPartyIlpProposalSubmission = function(submission){
     return createProposalSubmission(submission, exp.validateThirdPartySubmission )
 }
 
-
 function createProposalSubmission( submission, validator) {
 
     return new Promise((resolve,reject) => {
         let errs = validator(submission);
-        // console.log("***** Errors from validation", errs)
         if (errs.length > 0) {
             reject( errs )
             return
         }
 
-        // we check for duplicates if the submissionRefNo is there, read the document by ref no, if exists, duplicate
+        // we check for duplicates if the submissionRefNo is set, read the document by ref no, if exists, duplicate
         let p = submission.submissionRefNo ? crud.fetchProposalSubmissionByRefNo(submission.submissionRefNo)
                                                      : new Promise(resolve => resolve(null ));
 
         p.then(doc => {
-            // console.log("proposalApi ---> doc", doc)
             if (!doc) {
                 return crud.createProposalSubmission(submission)
             } else {
@@ -961,35 +929,6 @@ exp.newThirdPartyIlpProposal = function(proposal){
     proposal = patchProposal(proposal)
     return createProposal(proposal, exp.validateMinimalThirdPartyProposal,thirdPartyIlpProposalTypes )
 }
-function patchProposal(proposal) {
-    if (proposal.proposedInsuranceSection.coverageList && !proposal.proposedInsuranceSection.productList) {
-        proposal.proposedInsuranceSection.productList = proposal.proposedInsuranceSection.coverageList
-    }
-    let products = proposal.proposedInsuranceSection.productList
-    if (!proposal.mainProductCode) proposal.mainProductCode = products[0].productCode
-    if (!proposal.mainProductName) proposal.mainProductName = products[0].productName
-    if (!proposal.lifeAssuredName) {
-        let insured = products[0].lifeAssuredNumber
-        proposal.lifeAssuredName = proposal.proposedInsuranceSection.insuredList[insured].name
-    }
-    return proposal
-}
-exp.updateFirstPartyTraditionalProposal = function(proposal) {
-    proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyTraditionalProposalTypes)
-}
-exp.updateFirstPartyIlpProposal = function(proposal){
-    proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyIlpProposalTypes )
-}
-exp.updateThirdPartyTraditionalProposal = function(proposal){
-    proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal,thirdPartyTraditionalProposalTypes  )
-}
-exp.updateThirdPartyIlpProposal = function(proposal){
-    proposal = patchProposal(proposal)
-    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal, thirdPartyIlpProposalTypes )
-}
 
 function createProposal( proposal, validator, validProposalTypes) {
     return new Promise((resolve,reject) => {
@@ -1006,12 +945,11 @@ function createProposal( proposal, validator, validProposalTypes) {
             return
         }
 
-        // we check for duplicates if the proposalReferenceNo is there, read the document by ref no, if exists, duplicate
+        // we check for duplicates if the proposalReferenceNo is set, read the document by ref no, if exists, duplicate
         let p = proposal.proposalReferenceNo ? crud.fetchProposalByRefNo(proposal.proposalReferenceNo)
                                                      : new Promise(resolve => resolve(null ));
 
         p.then(doc => {
-            // console.log("proposalApi ---> doc", doc)
             if (!doc) {
                 return crud.createProposal(proposal)
             } else {
@@ -1030,6 +968,38 @@ function createProposal( proposal, validator, validProposalTypes) {
             reject(err)
         })
     });
+}
+
+function patchProposal(proposal) {
+    if (proposal.proposedInsuranceSection.coverageList && !proposal.proposedInsuranceSection.productList) {
+        proposal.proposedInsuranceSection.productList = proposal.proposedInsuranceSection.coverageList
+    }
+    let products = proposal.proposedInsuranceSection.productList
+    if (!proposal.mainProductCode) proposal.mainProductCode = products[0].productCode
+    if (!proposal.mainProductName) proposal.mainProductName = products[0].productName
+    if (!proposal.lifeAssuredName) {
+        let insured = products[0].lifeAssuredNumber
+        proposal.lifeAssuredName = proposal.proposedInsuranceSection.insuredList[insured].name
+    }
+    return proposal
+}
+
+exp.updateFirstPartyTraditionalProposal = function(proposal) {
+    proposal = patchProposal(proposal)
+    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyTraditionalProposalTypes)
+}
+
+exp.updateFirstPartyIlpProposal = function(proposal){
+    proposal = patchProposal(proposal)
+    return updateProposal(proposal, exp.validateMinimalFirstPartyProposal,firstPartyIlpProposalTypes )
+}
+exp.updateThirdPartyTraditionalProposal = function(proposal){
+    proposal = patchProposal(proposal)
+    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal,thirdPartyTraditionalProposalTypes  )
+}
+exp.updateThirdPartyIlpProposal = function(proposal){
+    proposal = patchProposal(proposal)
+    return updateProposal(proposal, exp.validateMinimalThirdPartyProposal, thirdPartyIlpProposalTypes )
 }
 
 function updateProposal( proposal, validator, validProposalTypes) {
@@ -1074,6 +1044,7 @@ function updateProposal( proposal, validator, validProposalTypes) {
         })
     });
 }
+
 exp.deleteFirstPartyTraditionalProposal = function(pk, version, userId) {
     return deleteProposal(pk, version, userId,  ['FirstPartyTerm','FirstPartyMedical','FirstPartyWholeLife','FirstPartyEndowment'])
 }
@@ -1144,12 +1115,10 @@ exp.fetchProposalSubmissionByPk = function(pk, submissionType="") {
 
 exp.fetchFirstPartyMedicalSubmissionSummaryList = function(userId, submissionType, filter, limit, offset, orderBy) {
     return crud.fetchSubmissionSummaryList(userId, submissionType , filter, limit, offset, orderBy)
-    // return crud.fetchSubmissionSummaryList(userId, 'FirstPartyMedicalProposal' , filter, limit, offset, orderBy)
 }
 
 exp.fetchSubmissionSummaryList = function(userId, submissionType, filter, limit, offset, orderBy) {
     return crud.fetchSubmissionSummaryList(userId, submissionType , filter, limit, offset, orderBy)
-    // return crud.fetchSubmissionSummaryList(userId, 'FirstPartyMedicalProposal' , filter, limit, offset, orderBy)
 }
 
 exp.fetchPolicyholderDiscloureSpec = function(tenantCode, productId) {
@@ -1172,7 +1141,6 @@ exp.deriveProposalSectionStatuses = function(proposal, tenantCode, userId, lang)
     return new Promise((resolve,reject) => {
         let sectionStatusMap = getProposalSectionStatuses(proposal,tenantCode, userId, lang)
         resolve(sectionStatusMap)
-        // return sectionStatusMap
 
     });
 }
@@ -1207,11 +1175,9 @@ function getProposalSectionStatuses(proposal, tenantCode, userId, lang) {
           }
           errs = validateProposedInsuranceSection(proposal, validators )
       }
-    //   console.log("Section & errs", sections, section, errs)
       sectionStatusMap[section] = errs  && errs.length > 0 ? 'ko' : 'ok'
     })
     return sectionStatusMap
-
 }
 
 // functions to allow for the creation of the submission by using the proposal id --
@@ -1219,7 +1185,7 @@ exp.verifyAndSubmitFirstPartyTraditionalProposal = function(pk, version, userId,
     return verifyAndSubmitProposal(['FirstPartyTerm','FirstPartyMedical','FirstPartyWholeLife','FirstPartyEndowment'], pk, version, userId, tenantCode, language )
 }
 exp.verifyAndSubmitFirstPartyIlpProposal = function(pk, version, userId, tenantCode, language) {
-    console.log(">>>> proposalApi. submitFirstPartyIlp", pk, version)
+    // console.log(">>>> proposalApi. submitFirstPartyIlp", pk, version)
     return verifyAndSubmitProposal(['FirstPartyIlp'], pk, version, userId, tenantCode, language )
 }
 exp.verifyAndSubmitThirdPartyTraditionalProposal = function(pk, version, userId, tenantCode, language) {
@@ -1242,7 +1208,6 @@ function verifyAndSubmitProposal(proposalTypes, pk, version, userId, tenantCode,
 
             if (doc.version !== version) return { ok:false, errors: __(`The proposal version does not match with the provided version ${doc.version} ! `)}
 
-            // console.log("***** proposalTypes", proposalTypes, doc.proposalType)
             if (proposalTypes.indexOf(doc.proposalType) < 0 ) return {ok:false, errors: __(`The proposal type is incorrect.`)}
 
             if (["SUBMITTED","COMPLETED"].indexOf(doc.status) >= 0) return {ok:false, errors: __(`The proposal has already been submitted / processed. It cannot be submitted again`)}
@@ -1250,13 +1215,11 @@ function verifyAndSubmitProposal(proposalTypes, pk, version, userId, tenantCode,
             const proposal = patchProposal( _.cloneDeep(doc) )
 
             const statuses = getProposalSectionStatuses(proposal, tenantCode, userId, language)
-            // console.log(">>>>>> statuses ==> ", statuses, _.every(Object.keys(statuses), function(key) { return statuses[key] === "ok" }))
             return _.every(Object.keys(statuses), function(key) { return statuses[key] === "ok" }) ?
                 {ok: true, doc: proposal} :
                 {ok: false, errors: __(`There proposal has incomplete sections. Please complete the proposal before submitting`)}
         })
         .then(result => {
-            // console.log(">>> after validating proposal", result)
             if (!result.ok) return result
             const doc = result.doc
             const subType = doc.proposalType === 'FirstPartyTerm' ? "FirstPartyTermProposalSubmission" :
@@ -1279,17 +1242,16 @@ function verifyAndSubmitProposal(proposalTypes, pk, version, userId, tenantCode,
                 "userId" : userId || "default",
                 "submissionData": doc
             }
-            // validate the submission as well -- some duplicate work here as proposal is already validated -- can tighten code later
+            // validate the submission as well -- some duplicate work here as proposal is already validated -- treat as safety net
             const res = doc.proposalType.startsWith('First') ? exp.validateFirstPartySubmission(submission) :
                         exp.validateThirdPartySubmission(submission)
             if (res && res.length > 0 ) {
                 return { ok: false, errors : res }
             }
-            // write some code to create the submission record
+            // call the crud service to create the submission record
             return crud.submitProposal(submission)
         })
         .then(response => {
-            // console.log("*****response final =", response )
             response && !response.ok ? reject(response.errors) : resolve(response.submission)
         })
         .catch( (err) => {
@@ -1298,6 +1260,5 @@ function verifyAndSubmitProposal(proposalTypes, pk, version, userId, tenantCode,
         })
     });
 }
-
 
 module.exports = exp;

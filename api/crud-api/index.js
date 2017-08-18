@@ -3,7 +3,7 @@ var dbStatus = 'CLOSED'
 var _db;
 let moment = require('moment');
 let _ = require('lodash');
-var __ = (x) => x
+var __ = (x) => x // fake implementation of gettext
 
 function openDB() {
   return new Promise((resolve,reject) => {
@@ -15,7 +15,6 @@ function openDB() {
     } else {
       resolve(_db)
     }
-
   })
 }
 
@@ -39,24 +38,16 @@ function init() {
   var prom = new Promise((resolve,reject) => {
     getDB()
     .then(database => {
-//        database.get("SELECT name FROM sqlite_master WHERE type='table' AND name='users';", [], (err, row) => {
         database.all("SELECT name FROM sqlite_master WHERE type='table';", [], (err, rows) => {
-//            const tablesToCheck = ["users","submissions","proposals","tenants"];
-//            console.log("*** table names ", rows);
             const wantedTables = ["users", "submissions","proposals", "tenants"]
             let newTables = [];
             wantedTables.forEach(function(table) {
                 let doc = rows.find((row => row.name === table))
                 if (!doc) newTables.push(table)
             })
-//            console.log("New tables to create -->", newTables)
-
-//            let exists = rows.find(function(row,index) {return row.name === 'users'})
-//
-//            console.log("Database exists ?", exists)
-//
             var stmt, useStmt = false;
             if (newTables.length > 0 ) {
+                // means we have to create some tables since they do not exist yet
                 database.serialize(function() {
 
                   if (newTables.indexOf("users") >= 0 ) {
@@ -77,7 +68,6 @@ function init() {
                   useStmt = true;
                   }
                   if (newTables.indexOf("submissions") >= 0) {
-                    //   console.log("running create table for submissions")
                       let sql = `create table if not exists submissions (
                                     pk integer primary key, doctype varchar, submissionDate date, submissionType varchar,
                                     submissionChannel varchar, tenantCode varchar, submissionRefNo varchar,
@@ -87,7 +77,6 @@ function init() {
                         database.run(sql);
                   }
                   if (newTables.indexOf("proposals") >= 0) {
-                    //   console.log("running create table for submissions")
                       let sql = `create table if not exists proposals (
                                     pk integer primary key, doctype varchar, creationDate date, proposalType varchar,
                                     submissionChannel varchar, tenantCode varchar, proposalReferenceNo varchar,
@@ -101,18 +90,12 @@ function init() {
                         database.run(sql);
                   }
 
+                  if (useStmt) {
+                      stmt.finalize(() => resolve('OK'))
+                  } else {
+                      resolve('OK')
+                  }
 
-
-//
-//
-                if (useStmt) {
-                    stmt.finalize(() => resolve('OK'))
-                }  else {
-                    resolve('OK')
-                }
-//                  database.each("SELECT userId, favouritePackages FROM users", function(err, row) {
-//                      console.log(row.userId + ": " + row.favouritePackages);
-//                  });
                 });
             } else {
                 resolve('OK')
@@ -199,7 +182,6 @@ function saveUserDoc(doc) {
   })
 }
 function createUserDoc(doc) {
-  // console.log("Creating new user doc", doc)
   return new Promise((resolve,reject) => {
       let userId = doc.userId
       getDB()
@@ -223,9 +205,6 @@ function getTenantList(){
         })
     })
 }
-
-
-
 
 function createProposalSubmission(submission) {
     // augment the submission doc with additional fields
@@ -260,6 +239,7 @@ function createProposalSubmission(submission) {
         .catch((err) => reject(err))
     })
 }
+
 function submitProposal(submission) {
     // need to update proposal & submission tables -- use transactions
     submission.doctype = "Submission"
@@ -324,7 +304,6 @@ function submitProposal(submission) {
     })
 }
 
-
 function fetchProposalSubmissionByRefNo(refNo) {
     const fnames = ["pk", "doctype","submissionDate", "submissionType", "submissionChannel", "tenantCode", "submissionRefNo", "status", "decision", "userId", "lastModified","submissionData", "extensionFields", "messages"]
 
@@ -344,7 +323,6 @@ function fetchProposalSubmissionByRefNo(refNo) {
 function fetchProposalSubmissionByPk(pk, submissionType='') {
     const fnames = ["pk", "doctype","submissionDate", "submissionType", "submissionChannel", "tenantCode", "submissionRefNo", "status", "decision", "userId", "lastModified","submissionData", "extensionFields", "messages"]
 
-    // ["submissionData", "extensionFields", "messages"].forEach(fname => submission[fname] ? submission[fname] = JSON.stringify(submission[fname]) : "")
     const jsonFields = ["submissionData", "extensionFields", "messages"] ;
 
     let typeClause = ""
@@ -355,8 +333,6 @@ function fetchProposalSubmissionByPk(pk, submissionType='') {
     } else {
         typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
     }
-
-    // let typeClause = submissionType ? `AND submissionType = '${submissionType}'` : '';
 
     return new Promise((resolve,reject) => {
         getDB()
@@ -407,7 +383,6 @@ function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offse
     }
 
     // the filters need to be translated to where conditions , err....not so simple
-    // not production ready --- need to use prepare statement instead
     const validKeys = ["pk", "submissionType", "submissionDate", "submissionChannel", "tenantCode", "status", "lastModified"]
     let whereClause = ''
     if (filters) {
@@ -453,7 +428,7 @@ function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offse
         .then(database => {
             let fieldNames = fnames.join(',')
             let sql = `select ${fieldNames} from submissions ${whereClause} ${sorting} ${limitClause}  ${offsetClause}`
-            console.log("sql--->", sql)
+            // console.log("sql--->", sql)
             database.all(sql,[], (err, rows) => {
                 if (err) reject(err)
                 rows = rows.map(submission => {
@@ -465,7 +440,6 @@ function _fetchSubmissions(fnames, userId, submissionType, filters, limit, offse
         })
     })
 }
-// <<<<<<<<<<<<<<
 
 function createProposal(proposal) {
     proposal.doctype = "Proposal"
@@ -533,7 +507,6 @@ function updateProposal(proposal) {
     let kv = []
     updateFields.forEach(f => kv.push( f + ' = ?' ))
     let fields = kv.join(",");
-    // let values = _.range(updateFields.length).map(x => '?').join(",")
 
     let pk = proposal.pk,
     version = proposal.version
@@ -623,7 +596,6 @@ function fetchProposalByPk(pk, proposalType='') {
     "lifeAssuredName", "mainProductCode", "mainProductName",
     "paymentSection", "proposedInsuranceSection", "extensionFields", "messages","version"]
 
-    // ["submissionData", "extensionFields", "messages"].forEach(fname => submission[fname] ? submission[fname] = JSON.stringify(submission[fname]) : "")
     const jsonFields = ["policyholderSection", "policyholderDisclosureSection", "lifeAssuredSection", "lifeAssuredDisclosureSection", "paymentSection", "proposedInsuranceSection","extensionFields", "messages"]
 
     let typeClause = ""
@@ -691,7 +663,6 @@ function _fetchProposals(fnames, userId, proposalType, filters, limit, offset, o
     }
 
     // the filters need to be translated to where conditions , err....not so simple submission
-    // not production ready --- need to use prepare statement instead
     const validKeys = ["pk", "proposalType", "creationDate", "submissionChannel", "tenantCode", "status", "lastModified","proposalReferenceNo"]
     let whereClause = ''
     if (filters) {
@@ -725,7 +696,6 @@ function _fetchProposals(fnames, userId, proposalType, filters, limit, offset, o
             return "(" + andlist.join(' and ') + ")"; // (pk = 1 and channel = 'direct')
         })
         whereClause = `where (userId = '${userId}' ${typeClause} ) AND ` + wlist.join (' OR ')
-        // console.log("whereClause = ", limit , offset, whereClause)
     } else {
         whereClause = `where userId = '${userId}' ${typeClause}`
     }
@@ -737,7 +707,7 @@ function _fetchProposals(fnames, userId, proposalType, filters, limit, offset, o
         .then(database => {
             let fieldNames = fnames.join(',')
             let sql = `select ${fieldNames} from proposals ${whereClause} ${sorting} ${limitClause}  ${offsetClause}`
-            console.log("proposal fetch sql--->", sql)
+            // console.log("proposal fetch sql--->", sql)
             database.all(sql,[], (err, rows) => {
                 if (err) reject(err)
                 let datarows = rows || []
@@ -750,8 +720,6 @@ function _fetchProposals(fnames, userId, proposalType, filters, limit, offset, o
         })
     })
 }
-//>>>>>>>>>>>>>
-
 
 module.exports = { getDB, closeDB, getDBStatus, getUserDoc, init, addFavouritePackage, removeFavouritePackage,
                    getTenantList, createProposalSubmission, fetchProposalSubmissionByRefNo, fetchSubmissionList, fetchSubmissionSummaryList,
